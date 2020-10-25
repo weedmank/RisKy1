@@ -1,0 +1,174 @@
+m255
+K4
+z2
+!s11f vlog 2020.1 2020.02, Feb 28 2020
+!s112 1.1
+!i10d 8192
+!i10e 25
+!i10f 100
+cModel Technology
+Z0 dC:/RisKy1/design/sim/divider
+Xfunctions_pkg
+Z1 DXx6 sv_std 3 std 0 22 VYECXdT12H8WgbUP_5Y6:3
+!s110 1600626497
+!i10b 1
+!s100 0hofH0Yjn3_ke6AI6ACM=3
+Z2 !s11b Dg1SIo80bB@j0V0VzS_@n1
+IYHb?OLM1625TYXX=N;hzf1
+VYHb?OLM1625TYXX=N;hzf1
+S1
+R0
+w1600393272
+8C:/RisKy1/design/src/pkg/functions_pkg.sv
+FC:/RisKy1/design/src/pkg/functions_pkg.sv
+!i122 5
+L0 15 0
+Z3 OV;L;2020.1;71
+r1
+!s85 0
+31
+!s108 1600626497.000000
+!s107 C:/RisKy1/design/src/pkg/functions_pkg.sv|
+!s90 -reportprogress|300|-work|work|-sv|-stats=none|C:/RisKy1/design/src/pkg/functions_pkg.sv|
+!i113 1
+o-work work -sv
+Z4 tCvgOpt 0
+vonehot
+R1
+Z5 DXx4 work 13 functions_pkg 0 22 YHb?OLM1625TYXX=N;hzf1
+Z6 DXx4 work 19 sdiv_N_by_N_sv_unit 0 22 VBXz]f49ni8IOz01T?cCF0
+Z7 !s110 1600627214
+Z8 VDg1SIo80bB@j0V0VzS_@n1
+r1
+!s85 0
+!i10b 1
+!s100 Z`CU7oN8g=Yb1D<:1zOCQ3
+IYi18:iY9H;0K@QA1]:@_l0
+Z9 !s105 sdiv_N_by_N_sv_unit
+S1
+R0
+Z10 w1600397245
+Z11 8../../src/cpu_src/sdiv_N_by_N.sv
+Z12 F../../src/cpu_src/sdiv_N_by_N.sv
+!i122 16
+L0 236 32
+R3
+31
+Z13 !s108 1600627214.000000
+!s107 ../../src/cpu_src/sdiv_N_by_N.sv|
+Z14 !s90 -reportprogress|300|-sv|-hazards|+incdir+../../src/includes|../../src/cpu_src/sdiv_N_by_N.sv|
+!i113 1
+Z15 o-sv -hazards
+Z16 !s92 -sv -hazards +incdir+../../src/includes
+R4
+vpriority_encoder
+R1
+R5
+R6
+R7
+R8
+r1
+!s85 0
+!i10b 1
+!s100 OGR[kf41kPjz`4G3eab542
+I7?7EOniJ0>;Yz9FgL6WzS3
+R9
+S1
+R0
+R10
+R11
+R12
+!i122 16
+L0 211 16
+R3
+31
+R13
+Z17 !s107 ../../src/cpu_src/sdiv_N_by_N.sv|
+R14
+!i113 1
+R15
+R16
+R4
+vsdiv_N_by_N
+R1
+R5
+R6
+R7
+R8
+r1
+!s85 0
+!i10b 1
+!s100 FWPj]Ni6UWFAkHFfM3EM22
+I?:<FI67gcl1lAMR]Ld_DZ0
+R9
+S1
+R0
+R10
+R11
+R12
+!i122 16
+L0 20 189
+R3
+31
+R13
+R17
+R14
+!i113 1
+R15
+R16
+R4
+nsdiv_@n_by_@n
+Xsdiv_N_by_N_sv_unit
+R1
+R5
+R7
+VVBXz]f49ni8IOz01T?cCF0
+r1
+!s85 0
+!i10b 1
+!s100 SHoZV185eW36L8KT:9EbT0
+IVBXz]f49ni8IOz01T?cCF0
+!i103 1
+S1
+R0
+R10
+R11
+R12
+!i122 16
+L0 18 0
+R3
+31
+R13
+R17
+R14
+!i113 1
+R15
+R16
+R4
+nsdiv_@n_by_@n_sv_unit
+vsdiv_tb
+R1
+!s110 1600627213
+!i10b 1
+!s100 ;Rf4cc92XHM]CAQ;geN<L1
+R2
+Idm`mz72WXDSohAX]TnHXj1
+R8
+S1
+R0
+w1600627177
+8sdiv_tb.sv
+Fsdiv_tb.sv
+!i122 15
+L0 17 276
+R3
+r1
+!s85 0
+31
+!s108 1600627213.000000
+!s107 sdiv_tb.sv|
+!s90 -reportprogress|300|-sv|+incdir+../../src/includes|sdiv_tb.sv|
+!i113 1
+o-sv
+!s92 -sv +incdir+../../src/includes
+R4

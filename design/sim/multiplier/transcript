@@ -1,0 +1,88 @@
+# Compile of mult_N_by_N.sv failed with 1 errors.
+# Compile of mult_tb.sv was successful.
+# Compile of mult_N_by_N.sv was successful.
+do mult_tb.do
+# Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
+# Start time: 10:33:39 on Sep 20,2020
+# vlog -reportprogress 300 -sv "+incdir+../../src/includes" mult_tb.sv 
+# -- Compiling module mult_tb
+# 
+# Top level modules:
+# 	mult_tb
+# End time: 10:33:40 on Sep 20,2020, Elapsed time: 0:00:01
+# Errors: 0, Warnings: 0
+# Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
+# Start time: 10:33:40 on Sep 20,2020
+# vlog -reportprogress 300 -sv -hazards "+incdir+../../src/includes" ../../src/mult_N_by_N_cbit.sv 
+# ** Error: (vlog-7) Failed to open design unit file "../../src/mult_N_by_N_cbit.sv" in read mode.
+# No such file or directory. (errno = ENOENT)
+# End time: 10:33:40 on Sep 20,2020, Elapsed time: 0:00:00
+# Errors: 1, Warnings: 0
+# ** Error: C:/intelFPGA_pro/20.1/modelsim_ase/win32aloem/vlog failed.
+# Error in macro ./mult_tb.do line 7
+# C:/intelFPGA_pro/20.1/modelsim_ase/win32aloem/vlog failed.
+#     while executing
+# "vlog  -sv -hazards             +incdir+../../src/includes  ../../src/mult_N_by_N_cbit.sv"
+do mult_tb.do
+# Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
+# Start time: 10:34:46 on Sep 20,2020
+# vlog -reportprogress 300 -sv "+incdir+../../src/includes" mult_tb.sv 
+# -- Compiling module mult_tb
+# 
+# Top level modules:
+# 	mult_tb
+# End time: 10:34:47 on Sep 20,2020, Elapsed time: 0:00:01
+# Errors: 0, Warnings: 0
+# Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
+# Start time: 10:34:47 on Sep 20,2020
+# vlog -reportprogress 300 -sv -hazards "+incdir+../../src/includes" ../../src/cpu_src/mult_N_by_N.sv 
+# ** Warning: ../../src/cpu_src/mult_N_by_N.sv(18): (vlog-13233) Design unit "mult_N_by_N_sv_unit" already exists and will be overwritten. Overwriting SystemVerilog $unit with different source files.
+# -- Compiling package mult_N_by_N_sv_unit
+# -- Importing package functions_pkg
+# -- Compiling module mult_N_by_N
+# 
+# Top level modules:
+# 	mult_N_by_N
+# End time: 10:34:47 on Sep 20,2020, Elapsed time: 0:00:00
+# Errors: 0, Warnings: 1
+# .main_pane.assertions.interior.cs.body
+# vsim -assertdebug -voptargs="+acc" -t 1ps mult_tb 
+# Start time: 10:34:47 on Sep 20,2020
+# Loading sv_std.std
+# Loading work.mult_tb
+# Loading work.functions_pkg
+# Loading work.mult_N_by_N_sv_unit
+# Loading work.mult_N_by_N
+# ** UI-Msg: (vish-4014) No objects found matching '/mult_tb/mult1/mult_array'.
+# Executing ONERROR command at macro ./wave_mult.do line 44
+# ** UI-Msg: (vish-4014) No objects found matching '/mult_tb/mult1/carry'.
+# Executing ONERROR command at macro ./wave_mult.do line 45
+# ** UI-Msg: (vish-4014) No objects found matching '/mult_tb/mult1/row'.
+# Executing ONERROR command at macro ./wave_mult.do line 46
+# ** UI-Msg: (vish-4014) No objects found matching '/mult_tb/mult1/col'.
+# Executing ONERROR command at macro ./wave_mult.do line 47
+# ** UI-Msg: (vish-4014) No objects found matching '/mult_tb/mult1/cbit'.
+# Executing ONERROR command at macro ./wave_mult.do line 48
+# ** UI-Msg: (vish-4014) No objects found matching '/mult_tb/mult1/p'.
+# Executing ONERROR command at macro ./wave_mult.do line 49
+# ** UI-Msg: (vish-4014) No objects found matching '/mult_tb/mult1/q'.
+# Executing ONERROR command at macro ./wave_mult.do line 50
+# ** UI-Msg: (vish-4014) No objects found matching '/mult_tb/mult1/r'.
+# Executing ONERROR command at macro ./wave_mult.do line 51
+# ** UI-Msg: (vish-4014) No objects found matching '/mult_tb/mult1/c'.
+# Executing ONERROR command at macro ./wave_mult.do line 52
+# Reset completed, Simulation started.
+# 1 clock cycles  : 1017 multiply operations
+# Unlisted clock cycles had NO multiply operations
+# Simulation passed.
+# ** Note: $stop    : mult_tb.sv(125)
+#    Time: 3107544 ns  Iteration: 1  Instance: /mult_tb
+# Break in Module mult_tb at mult_tb.sv line 125
+write format wave -window .main_pane.wave.interior.cs.body.pw.wf C:/RisKy1/design/sim/multiplier/wave_mult.do
+write format wave -window .main_pane.wave.interior.cs.body.pw.wf C:/RisKy1/design/sim/multiplier/wave_mult.do
+add wave -position insertpoint sim:/mult_tb/mult2/*
+write format wave -window .main_pane.wave.interior.cs.body.pw.wf C:/RisKy1/design/sim/multiplier/wave_mult.do
+write format wave -window .main_pane.wave.interior.cs.body.pw.wf C:/RisKy1/design/sim/multiplier/wave_mult.do
+# End time: 10:57:33 on Sep 20,2020, Elapsed time: 0:22:46
+# Errors: 0, Warnings: 19
+# Closing project C:/RisKy1/design/sim/multiplier/RisKy1.mpf

@@ -1,0 +1,93 @@
+# Current time Mon Sep 21 13:03:24 2020
+# ModelSim - Intel FPGA Edition Stack Trace
+# Program = vsim
+# Id = "2020.1"
+# Version = "2020.02"
+# Date = "Feb 28 2020"
+# Platform = win32pe
+# Signature = 4a3706afe29a2b87def93ebd4f2693fa
+# 0    0x008dc440: '<unknown (@0x8dc440)>'
+# 1    0x008de0e3: '<unknown (@0x8de0e3)>'
+# 2    0x0090dbff: '<unknown (@0x90dbff)>'
+# End of Stack Trace
+
+
+# Current time Sun Oct 11 15:43:29 2020
+# ModelSim - Intel FPGA Edition Stack Trace
+# Program = vsim
+# Id = "2020.1"
+# Version = "2020.02"
+# Date = "Feb 28 2020"
+# Platform = win32pe
+# Signature = 4a3706afe29a2b87def93ebd4f2693fa
+# 0    0x008dc4ae: '<unknown (@0x8dc4ae)>'
+# 1    0x008de0e3: '<unknown (@0x8de0e3)>'
+# 2    0x0090dbff: '<unknown (@0x90dbff)>'
+# End of Stack Trace
+
+
+# Current time Thu Oct 15 10:23:32 2020
+# ModelSim - Intel FPGA Edition Stack Trace
+# Program = vsim
+# Id = "2020.1"
+# Version = "2020.02"
+# Date = "Feb 28 2020"
+# Platform = win32pe
+# Signature = 4a3706afe29a2b87def93ebd4f2693fa
+# 0    0x00ac5836: '<unknown (@0xac5836)>'
+# 1    0x00ac65a9: '<unknown (@0xac65a9)>'
+# End of Stack Trace
+
+
+# Current time Thu Oct 15 10:24:22 2020
+# ModelSim - Intel FPGA Edition Stack Trace
+# Program = vsim
+# Id = "2020.1"
+# Version = "2020.02"
+# Date = "Feb 28 2020"
+# Platform = win32pe
+# Signature = 4a3706afe29a2b87def93ebd4f2693fa
+# 0    0x00ac5836: '<unknown (@0xac5836)>'
+# 1    0x00ac65a9: '<unknown (@0xac65a9)>'
+# End of Stack Trace
+
+
+# Current time Thu Oct 15 10:32:00 2020
+# ModelSim - Intel FPGA Edition Stack Trace
+# Program = vsim
+# Id = "2020.1"
+# Version = "2020.02"
+# Date = "Feb 28 2020"
+# Platform = win32pe
+# Signature = 4a3706afe29a2b87def93ebd4f2693fa
+# 0    0x00ac5836: '<unknown (@0xac5836)>'
+# 1    0x00ac65a9: '<unknown (@0xac65a9)>'
+# End of Stack Trace
+
+
+# Current time Thu Oct 15 10:54:08 2020
+# ModelSim - Intel FPGA Edition Stack Trace
+# Program = vsim
+# Id = "2020.1"
+# Version = "2020.02"
+# Date = "Feb 28 2020"
+# Platform = win32pe
+# Signature = 4a3706afe29a2b87def93ebd4f2693fa
+# 0    0x00ac5836: '<unknown (@0xac5836)>'
+# 1    0x00ac65a9: '<unknown (@0xac65a9)>'
+# End of Stack Trace
+
+
+# Current time Thu Oct 15 10:57:30 2020
+# ModelSim - Intel FPGA Edition Stack Trace
+# Program = vsim
+# Id = "2020.1"
+# Version = "2020.02"
+# Date = "Feb 28 2020"
+# Platform = win32pe
+# Signature = 4a3706afe29a2b87def93ebd4f2693fa
+# 0    0x00ac5836: '<unknown (@0xac5836)>'
+# 1    0x00ac65a9: '<unknown (@0xac65a9)>'
+# End of Stack Trace
+
+

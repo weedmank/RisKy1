@@ -1,0 +1,77 @@
+// ----------------------------------------------------------------------------------------------------
+// Creative Commons - Attribution - ShareAlike 3.0
+// Copyright (c) 2019 Kirk Weedman www.hdlexpress.com
+// Notice: For any reuse or distribution, you must make clear to others the license terms of this work.
+// see http://creativecommons.org/licenses/by/3.0/
+// ----------------------------------------------------------------------------------------------------
+// Project       :  RisKy1 - new 5 stage pipelined RISC-V ISA based CPU tailored to the RISC-V RV32IM
+// Editor        :  Notepad++
+// File          :  irq.sv
+// Description   :  Interrupt Controller and Memory Mapped Registers
+//               :
+// Designer      :  Kirk Weedman - kirk@hdlexpress.com
+// ----------------------------------------------------------------------------------------------------
+`timescale 1ns/100ps
+
+import functions_pkg::*;
+import logic_params_pkg::*;
+import cpu_params_pkg::*;
+
+module irq
+(
+   input       logic                clk_in,
+   input       logic                reset_in,
+
+   input       logic                mtime_lo_wr,
+   input       logic                mtime_hi_wr,
+   input       logic                mtimecmp_lo_wr,
+   input       logic                mtimecmp_hi_wr,
+   input       logic      [RSZ-1:0] mmr_wr_data,
+   `ifdef ext_N
+   input       logic                msip_wr,
+   output      logic                time_irq,
+   output      logic                sw_irq,              // Machine mode Software Interrupt Register
+   `endif
+   output      logic    [RSZ*2-1:0] mtime,
+   output      logic    [RSZ*2-1:0] mtimecmp,            // not directly used in csr.sv
+   output      logic      [RSZ-1:0] msip_reg
+);
+
+   `ifdef ext_N
+   assign time_irq   = (mtime >= mtimecmp);
+
+   assign msip_reg = {31'd0,sw_irq};                     // not currently changable/writable
+   `else
+   assign msip_reg = 32'd0;
+   `endif
+
+   always_ff @(posedge clk_in)
+   begin
+      // ------------------------------ MSIP Register    (Machine mode Software Interrupt Pending)
+      `ifdef ext_N
+      if (reset_in)
+         sw_irq <= 1'b0;
+      else if (msip_wr)
+         sw_irq <= mmr_wr_data[0];
+      `endif
+
+      // ------------------------------ Time in Ticks Register
+      if (reset_in)
+         mtime <= 'd0;
+      else if (mtime_lo_wr)
+         mtime[RSZ-1:0] <= mmr_wr_data;                  // lower half of counter
+      else if (mtime_hi_wr)
+         mtime[RSZ*2-1:RSZ] <= mmr_wr_data;              // upper half of counter
+      else                                               // if (mtimecmp != 0) // don't let it count if mtimecmp is 0
+         mtime <= mtime + 'd1;                           // otherwise increment counter
+      //!!! ??? platform must provide a mechanism for determining the timebase of mtime.   p. 30
+
+      // ------------------------------ Time Compare Register
+      if (reset_in)
+         mtimecmp <= 'd0;
+      else if (mtimecmp_lo_wr)
+         mtimecmp[RSZ-1:0] <= mmr_wr_data;               // lower half of counter
+      else if (mtimecmp_hi_wr)
+         mtimecmp[RSZ*2-1:RSZ] <= mmr_wr_data;           // upper half of counter
+   end
+endmodule

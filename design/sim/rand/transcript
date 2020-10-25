@@ -1,0 +1,82 @@
+# Compile of logic_params_pkg.sv was successful.
+# Compile of functions_pkg.sv was successful.
+# Compile of cpu_params_pkg.sv was successful.
+# Compile of cpu_structs_pkg.sv was successful.
+# Compile of decode.sv was successful with warnings.
+# Compile of decode_core.sv was successful with warnings.
+# Compile of gpr.sv was successful with warnings.
+# Compile of br_fu.sv was successful with warnings.
+# Compile of im_fu.sv was successful with warnings.
+# Compile of alu_fu.sv was successful with warnings.
+# Compile of RisKy1_core.sv was successful with warnings.
+# Compile of vedic_mult16x16.v was successful.
+# Compile of vedic_mult32x32.v was successful.
+# Compile of pipe.sv was successful with warnings.
+# Compile of wb.sv was successful with warnings.
+# Compile of mem.sv was successful with warnings.
+# Compile of csr_fu.sv was successful with warnings.
+# Compile of ls_fu.sv was successful with warnings.
+# Compile of disasm_RV.sv was successful with warnings.
+# Compile of fetch.sv was successful with warnings.
+# Compile of mem_io.sv was successful with warnings.
+# Compile of csr_lo_cnt.sv was successful with warnings.
+# Compile of irq.sv was successful with warnings.
+# Compile of wb_asserts.sv was successful with warnings.
+# Compile of csr_std_wr.sv was successful with warnings.
+# Compile of top_tb1.sv was successful with warnings.
+# Compile of gpr_asserts.sv was successful with warnings.
+# Compile of mem_asserts.sv was successful with warnings.
+# Compile of csr_asserts.sv was successful with warnings.
+# Compile of idr_fu.sv was successful with warnings.
+# Compile of sdiv_N_by_N.sv was successful with warnings.
+# Compile of pipe_asserts.sv was successful.
+# Compile of fpr.sv was successful with warnings.
+# Compile of mem_arb_model.sv was successful with warnings.
+# Compile of L1_dcache.sv was successful with warnings.
+# Compile of L1_icache.sv was successful with warnings.
+# Compile of spfp_fu.sv was successful.
+# Compile of execute.sv was successful with warnings.
+# Compile of logic_params_pkg.sv was successful with warnings.
+# Compile of functions_pkg.sv was successful.
+# Compile of cpu_params_pkg.sv was successful.
+# Compile of cpu_structs_pkg.sv was successful.
+# Compile of decode.sv was successful.
+# Compile of decode_core.sv was successful.
+# Compile of gpr.sv was successful.
+# Compile of br_fu.sv was successful.
+# Compile of im_fu.sv was successful.
+# Compile of alu_fu.sv was successful.
+# Compile of RisKy1_core.sv was successful.
+# Compile of vedic_mult16x16.v was successful.
+# Compile of vedic_mult32x32.v was successful.
+# Compile of pipe.sv was successful.
+# Compile of wb.sv was successful.
+# Compile of mem.sv was successful.
+# Compile of csr_fu.sv was successful.
+# Compile of ls_fu.sv was successful.
+# Compile of disasm_RV.sv was successful.
+# Compile of fetch.sv was successful.
+# Compile of mem_io.sv was successful.
+# Compile of csr_lo_cnt.sv was successful.
+# Compile of irq.sv was successful.
+# Compile of wb_asserts.sv was successful.
+# Compile of csr_std_wr.sv was successful.
+# Compile of top_tb1.sv was successful.
+# Compile of gpr_asserts.sv was successful with warnings.
+# Compile of mem_asserts.sv was successful.
+# Compile of csr_asserts.sv was successful with warnings.
+# Compile of idr_fu.sv was successful.
+# Compile of sdiv_N_by_N.sv was successful.
+# Compile of pipe_asserts.sv was successful.
+# Compile of fpr.sv was successful.
+# Compile of mem_arb_model.sv was successful.
+# Compile of L1_dcache.sv was successful.
+# Compile of L1_icache.sv was successful.
+# Compile of spfp_fu.sv was successful.
+# Compile of execute.sv was successful.
+# Compile of cpu_intf_pkg.sv was successful.
+# 39 compiles, 0 failed with no errors.
+# Compile of cpu_intf_pkg.sv was successful.
+# 39 compiles, 0 failed with no errors.
+# Compile of logic_params_pkg.sv was successful.
+# Compile of gpr_asserts.sv was successful with warnings.
