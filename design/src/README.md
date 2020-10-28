@@ -11,7 +11,7 @@ Organization: HDLexpress.com
 
 ----------------------------------------------------------------------------------------
 
-FILE ORGANIZATION:
+FOLDER ORGANIZATION:
 
 Main System Verilog folders needed to create an RV32i type cpu core
 - cpu_src:     contains the source files needed to create an RV32i type cpu core
@@ -25,8 +25,8 @@ Main System Verilog folders needed to create an RV32i type cpu core
                cache arbiter with system memory.
 - peripherals: L1 Instruciton and Data Caches and a cache arbiter
 - pkg:         Various System Verilog Packages that most src files need
-- sva          A few simple System Verilog Assertion filess that are used in a testbench (see sim folder) and then
+- sva:         A few simple System Verilog Assertion filess that are used in a testbench (see sim folder) and then
                bound to various modules
-
+- vivado:      Wrappers for use in creating a Vivado Block Design
  
 ****************************************************************************************
