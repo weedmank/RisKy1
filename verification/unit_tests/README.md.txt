@@ -1,0 +1,25 @@
+****************************************************************************************
+
+				VERIFICATION EFFORT
+
+    RisKy1 CPU - A highly parameterized, 5 stage pipelined CPU based on RISC-V ISA
+----------------------------------------------------------------------------------------
+
+      Author: Abhishek Yadav (ya.abhishek@gmail.com)
+    Position: Design Verification Engineer (Volunteer)
+Organization: HDLexpress.com
+       Date : 28 October 2020
+
+----------------------------------------------------------------------------------------
+
+NOTE:
+
+- Keep all the NON-UVM based Unit level testbenches within this folder.
+
+- For a specific Unit to be verified 
+	- Create a subfolder with the unit name - eg. \ALU_FU 
+	- Keep the testbench related files within that subfolder.
+	- for Questasim simulations - create '\sim' folder under the specific unit test folder.
+	  eg: \ALU_FU\sim.
+	- Use that folder as home directory for the specific project in Questasim.  
+
