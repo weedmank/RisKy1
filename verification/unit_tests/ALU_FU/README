@@ -34,7 +34,7 @@ Packages            : \design\src\pkg\logic_params_pkg.sv
 
 2. Testbench components, environment and top level files:
 Top level testbench : \verification\unit_tests\ALU_FU\tb_alu_fu.sv
-Random tests        : \verification\unit_tests\ALU_FU\randon_test.sv
+Random tests        : \verification\unit_tests\ALU_FU\random_test.sv
 Test Environment    : \verification\unit_tests\ALU_FU\environment.sv
 Test Interface      : \verification\unit_tests\ALU_FU\AFU_intf.sv
 Test Components     : \verification\unit_tests\ALU_FU\TGDMS_afu.sv
