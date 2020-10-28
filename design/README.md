@@ -17,7 +17,7 @@ FOLDER ORGANIZATION:
          the risky1-core folder which contains a Modelsim/Questasim project that will run
          a simulation of a small program on the RisKy1 CPU.
          
-- src:   contains a various RisKy1 CPU design folders, each containing Verilog, System Verilog,
+- src:   contains various RisKy1 CPU design folders, each containing Verilog, System Verilog,
          include, packages, etc. files used to create an RV32i type cpu core.
  
 ****************************************************************************************
