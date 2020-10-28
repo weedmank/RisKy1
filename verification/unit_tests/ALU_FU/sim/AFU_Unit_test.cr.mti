@@ -1,0 +1,54 @@
+N:/Volunteering_KirkWeedman/RisKy1_Release21_Oct_15_2020/design/src/cpu_src/alu_fu.sv {1 {vlog -work work -vopt -sv -stats=none N:/Volunteering_KirkWeedman/RisKy1_Release21_Oct_15_2020/design/src/cpu_src/alu_fu.sv
+QuestaSim-64 vlog 2020.3 Compiler 2020.07 Jul 12 2020
+-- Compiling package alu_fu_sv_unit
+-- Importing package functions_pkg
+-- Importing package logic_params_pkg
+-- Importing package cpu_params_pkg
+-- Importing package cpu_structs_pkg
+-- Compiling module alu_fu
+
+Top level modules:
+	alu_fu
+
+} {} {}} N:/Volunteering_KirkWeedman/RisKy1_Release21_Oct_15_2020/design/src/pkg/functions_pkg.sv {1 {vlog -work work -vopt -sv -stats=none N:/Volunteering_KirkWeedman/RisKy1_Release21_Oct_15_2020/design/src/pkg/functions_pkg.sv
+QuestaSim-64 vlog 2020.3 Compiler 2020.07 Jul 12 2020
+-- Compiling package functions_pkg
+
+Top level modules:
+	--none--
+
+} {} {}} N:/Volunteering_KirkWeedman/RisKy1_Release21_Oct_15_2020/design/src/pkg/logic_params_pkg.sv {1 {vlog -work work -vopt -sv -stats=none N:/Volunteering_KirkWeedman/RisKy1_Release21_Oct_15_2020/design/src/pkg/logic_params_pkg.sv
+QuestaSim-64 vlog 2020.3 Compiler 2020.07 Jul 12 2020
+-- Compiling package logic_params_pkg
+
+Top level modules:
+	--none--
+
+} {} {}} N:/Volunteering_KirkWeedman/RisKy1_Release21_Oct_15_2020/verification/unit_tests/ALU_FU/TGDMS_afu.sv {1 {vlog -work work -vopt -sv -stats=none N:/Volunteering_KirkWeedman/RisKy1_Release21_Oct_15_2020/verification/unit_tests/ALU_FU/TGDMS_afu.sv
+QuestaSim-64 vlog 2020.3 Compiler 2020.07 Jul 12 2020
+-- Compiling package TGDMS_afu_sv_unit
+-- Importing package cpu_params_pkg
+-- Importing package functions_pkg
+-- Importing package cpu_structs_pkg
+
+Top level modules:
+	--none--
+
+} {} {}} N:/Volunteering_KirkWeedman/RisKy1_Release21_Oct_15_2020/design/src/pkg/cpu_params_pkg.sv {1 {vlog -work work -vopt -sv -stats=none N:/Volunteering_KirkWeedman/RisKy1_Release21_Oct_15_2020/design/src/pkg/cpu_params_pkg.sv
+QuestaSim-64 vlog 2020.3 Compiler 2020.07 Jul 12 2020
+-- Compiling package cpu_params_pkg
+-- Importing package functions_pkg
+
+Top level modules:
+	--none--
+
+} {} {}} N:/Volunteering_KirkWeedman/RisKy1_Release21_Oct_15_2020/design/src/pkg/cpu_structs_pkg.sv {1 {vlog -work work -vopt -sv -stats=none N:/Volunteering_KirkWeedman/RisKy1_Release21_Oct_15_2020/design/src/pkg/cpu_structs_pkg.sv
+QuestaSim-64 vlog 2020.3 Compiler 2020.07 Jul 12 2020
+-- Compiling package cpu_structs_pkg
+-- Importing package cpu_params_pkg
+-- Importing package functions_pkg
+
+Top level modules:
+	--none--
+
+} {} {}}
