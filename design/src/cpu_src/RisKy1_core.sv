@@ -74,8 +74,8 @@ import cpu_structs_pkg::*;
 //             
 //             
 //             
-`define VIVADO // WARNING! - These two define's MUST be commented out if not making a Vivado design becuase I have not yet figured out how to globally define them!!!!
-`define ext_M
+//`define VIVADO // WARNING! - These two define's MUST be commented out if not making a Vivado design becuase I have not yet figured out how to globally define them!!!!
+//`define ext_M
 `ifdef VIVADO
 module RisKy1_core // Verilog style - for use in Vivado
 (
