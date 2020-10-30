@@ -49,10 +49,10 @@ module fetch
    input    logic          [PC_SZ-1:0] pc_reload_addr,               // Input:   new branch path that needs to be run
 
    // L1 Instruction Cache signals : fetch.v requests info from the L1_icache.sv
-   L1IC.master                         L1IC_intf,
+   L1IC_intf.master                    L1IC_bus,
 
    // connections with next stage
-   F2D.master                          F2D_bus
+   F2D_intf.master                     F2D_bus
 );
    parameter   Q_DEPTH  = 2*MAX_IPCL;
    localparam  QP_SZ    = bit_size(Q_DEPTH-1);
@@ -88,7 +88,7 @@ module fetch
 
    enum logic [1:0] {CC_IDLE, CC_ACK, CC_RL_ACK} cc_state, Next_cc_state;
 
-   assign cl_xfer = L1IC_intf.req & L1IC_intf.ack;
+   assign cl_xfer = L1IC_bus.req & L1IC_bus.ack;
 
    // Determination of next Program Counter value
    logic    [PC_SZ-1:0] last_predicted_addr, lpa;
@@ -108,9 +108,9 @@ module fetch
          PC <= Next_PC;
 
       if (reset_in)
-         L1IC_intf.req <= FALSE;
+         L1IC_bus.req <= FALSE;
       else
-         L1IC_intf.req <= Next_ic_req;
+         L1IC_bus.req <= Next_ic_req;
 
       if (reset_in)
          reload_flag <= FALSE;
@@ -131,7 +131,7 @@ module fetch
          lpa <= last_predicted_addr;
    end
 
-   assign L1IC_intf.addr   = PC;                                     // Instruction Cache address = PC
+   assign L1IC_bus.addr   = PC;                                     // Instruction Cache address = PC
 
    assign qfull = (qip == qop) & (qcnt == Q_DEPTH);
 
@@ -309,7 +309,7 @@ module fetch
             rd                = 0;
             rs1               = 0;
 
-            lower5            = L1IC_intf.ack_data[bit_pos +: 5];                         // 5 lower bits of either a 16 or 32 bit instruction
+            lower5            = L1IC_bus.ack_data[bit_pos +: 5];                          // 5 lower bits of either a 16 or 32 bit instruction
             is48              = lower5[4:0] == 5'b11111;
             is32              = (lower5[4:2] != 3'b111) & (lower5[1:0] == 2'b11);
             is16              = (lower5[1:0] != 2'b11);
@@ -336,7 +336,7 @@ module fetch
 
             if (is16)                                                                     // is this a Compressed instruction (16 bit)?
             begin // RV16I
-               i           = {16'b0,L1IC_intf.ack_data[bit_pos +: CI_SZ]};                // instruction ready to be written into instr_bin[]
+               i           = {16'b0,L1IC_bus.ack_data[bit_pos +: CI_SZ]};                 // instruction ready to be written into instr_bin[]
                instr_sz[c] = CBPI;                                                        // 2 bytes per instruction
 
                b_imm       = {{25{i[12]}},i[6:5],i[2],i[11:10],i[4:3],1'b0};              // offset8_1 see decode_RV.sv
@@ -365,7 +365,7 @@ module fetch
             else
             `else // ext_C not allowed
             if (is16)                                                                     // not enabled to execute 16 bit Compressed instructions!
-               i = {16'b0,L1IC_intf.ack_data[bit_pos +: CI_SZ]};
+               i = {16'b0,L1IC_bus.ack_data[bit_pos +: CI_SZ]};
             else
             `endif // ext_C
 
@@ -373,10 +373,10 @@ module fetch
             begin
                `ifdef ext_C
                if (isoverlap)
-                  i     = {L1IC_intf.ack_data[bit_pos +: CI_SZ],overlap_instr};           // concatenated overlap_instr with lower 16 bit value from new L1IC_intf.ack_data
+                  i     = {L1IC_bus.ack_data[bit_pos +: CI_SZ],overlap_instr};            // concatenated overlap_instr with lower 16 bit value from new L1IC_bus.ack_data
                else
                `endif
-               i        = L1IC_intf.ack_data[bit_pos +: XLEN];                            // normal 32 bit instruction
+               i        = L1IC_bus.ack_data[bit_pos +: XLEN];                             // normal 32 bit instruction
 
                i_imm    = {{21{i[31]}},i[30:20]};                                         // sign extended immediate for JALR
                b_imm    = {{20{i[31]}},i[7],i[30:25],i[11:8],1'b0};                       // sign extended immediate for Bxx
@@ -419,7 +419,7 @@ module fetch
             end
 
             if ( is48 )                                                                   // 48 bit or larger instruction - we have a problem Houston!
-               i = L1IC_intf.ack_data[bit_pos +: XLEN];                                   // just save lower 32 bits of instruction  (lowest 5 bits determine instruction size)
+               i = L1IC_bus.ack_data[bit_pos +: XLEN];                                    // just save lower 32 bits of instruction  (lowest 5 bits determine instruction size)
 
             //************** 2nd - determine the program counter associated with each instruction
             addr[c]  = last_predicted_addr;                                               // cache line PC value for current instruction
@@ -548,7 +548,7 @@ module fetch
                if (bit_pos != (CL_LEN*8))                                                 // this 4 byte instruciton is split across a cache line boundary
                begin
                   set_overlap_flag  = TRUE;                                               // only 32bit instructions can overlap into next cache line
-                  ov_instr = L1IC_intf.ack_data[(CL_LEN*8 - CI_SZ) +: CI_SZ];             // record lower 16 bits of overlapping instruction
+                  ov_instr = L1IC_bus.ack_data[(CL_LEN*8 - CI_SZ) +: CI_SZ];              // record lower 16 bits of overlapping instruction
                end
                `endif
             end

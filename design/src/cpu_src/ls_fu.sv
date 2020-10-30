@@ -23,7 +23,7 @@ import cpu_structs_pkg::*;
 
 module ls_fu
 (
-   LSFU.slave     lsfu_bus
+   LSFU_intf.slave      lsfu_bus
 );
 
    // Load/Store logic

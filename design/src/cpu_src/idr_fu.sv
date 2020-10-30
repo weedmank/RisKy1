@@ -25,9 +25,9 @@ module idr_fu #(parameter N = 32)
 (
    input    logic    clk_in,
    input    logic    reset_in,
-   
-   IDRFU.slave       idrfu_bus
-);   
+
+   IDRFU_intf.slave  idrfu_bus
+);
    logic     [N-1:0] dividend;
    logic     [N-1:0] divisor;
    logic     [N-1:0] quotient;
@@ -36,7 +36,7 @@ module idr_fu #(parameter N = 32)
 
    logic             start;
    logic             done;
-   
+
    IDR_OP_TYPE       op;                  // DIV, DIVU, REM, REMU
    logic             is_signed;
 
@@ -44,7 +44,7 @@ module idr_fu #(parameter N = 32)
    assign divisor    = idrfu_bus.Rs2_data;
    assign op         = idrfu_bus.op;
    assign start      = idrfu_bus.start;
-   
+
    assign is_signed  = (op == DIV) | (op == REM);
 
    // WARNING: Currently this only handles UNSIGNED divides,remainder

@@ -22,8 +22,8 @@ module gpr_asserts
    input    logic                               reset_in,
 
    input    var logic   [MAX_GPR-1:0] [RSZ-1:0] gpr,              // MAX_GPR General Purpose registers
-   
-   RBUS.slave                                   gpr_bus
+
+   RBUS_intf.slave                              gpr_bus
 );
    // ************************************************ ASSERTIONS ************************************************
 

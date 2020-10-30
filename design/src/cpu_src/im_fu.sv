@@ -25,7 +25,7 @@ import cpu_structs_pkg::*;
 
 module im_fu
 (
-   IMFU.slave           imfu_bus
+   IMFU_intf.slave      imfu_bus
 );
    // separated input data
    logic      [RSZ-1:0] Rs1_data;
@@ -69,7 +69,7 @@ module im_fu
          MULHU:   m1Data = Rs1_data;
       endcase
    end
-   
+
    always_comb
    begin
       unique case(op)

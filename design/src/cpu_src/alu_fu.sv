@@ -25,7 +25,7 @@ import cpu_structs_pkg::*;
 
 module alu_fu
 (
-   AFU.slave            afu_bus
+   AFU_intf.slave       afu_bus
 );
 
    logic      [RSZ-1:0] mux_x;

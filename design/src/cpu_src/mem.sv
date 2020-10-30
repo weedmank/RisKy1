@@ -50,16 +50,16 @@ module mem
    output   FWD_GPR                       fwd_mem_gpr,
 
    // System Memory or I/O interface signals
-   L1DC.master                            MIO_bus,
+   L1DC_intf.master                       MIO_bus,
 
    // interface to Execute stage
-   E2M.slave                              E2M_bus,
+   E2M_intf.slave                         E2M_bus,
 
    // interface to WB stage
-   M2W.master                             M2W_bus,
+   M2W_intf.master                        M2W_bus,
 
    // signals between CSR Functional Unit (inside EXE stage) and MEM stage
-   CSR_MEM.slave                          CSR_MEM_bus
+   CSR_MEM_intf.slave                     CSR_MEM_bus
 );
 
    MEM_2_WB                mem_dout;
@@ -161,7 +161,7 @@ module mem
    `ifdef ext_N
    assign interrupt_flag               = CSR_MEM_bus.interrupt_flag;
    assign interrupt_cause              = CSR_MEM_bus.interrupt_cause;
-   `endif            
+   `endif
    assign trap_pc                      = CSR_MEM_bus.trap_pc;
    assign ialign                       = CSR_MEM_bus.ialign;                        // 1 = 16 bit alignment, 0 = 32 bit alignment
    assign mode                         = CSR_MEM_bus.mode;

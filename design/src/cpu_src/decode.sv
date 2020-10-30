@@ -29,10 +29,10 @@ module decode
    input    logic                   pipe_flush,             // Input:   1 = Flush this segment of the pipeline
 
    // connections with FETCH stage
-   F2D.slave                        F2D_bus,
+   F2D_intf.slave                   F2D_bus,
 
    // connections with Decode stage
-   D2E.master                       D2E_bus
+   D2E_intf.master                  D2E_bus
 );
 
 
@@ -41,7 +41,7 @@ module decode
    logic       full;
    DEC_2_EXE   dec_out;
 
-   DCORE       dcore_bus();
+   DCORE_intf  dcore_bus();
 
    assign F2D_bus.rdy      = !full & !reset_in & !cpu_halt;
 

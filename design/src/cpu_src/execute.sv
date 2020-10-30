@@ -51,13 +51,13 @@ module execute
    `endif
 
    // interface to Decode stage
-   D2E.slave                              D2E_bus,
+   D2E_intf.slave                         D2E_bus,
 
    // interface to Memory stage
-   E2M.master                             E2M_bus,
+   E2M_intf.master                        E2M_bus,
 
    // signals between CSR Functional Unit (inside EXE stage) and MEM stage
-   CSR_MEM.master                         CSR_MEM_bus
+   CSR_MEM_intf.master                    CSR_MEM_bus
 );
 
    logic                                  rd_pipe_in;
@@ -223,7 +223,7 @@ module execute
 
    //************************************ ALU Functional Unit ************************************
    // get the necessary information from the Decode data & GPR and pass to ALU functional unit
-   AFU    afu_bus();
+   AFU_intf afu_bus();
 
    assign afu_bus.Rs1_data   = Rs1D;
    assign afu_bus.Rs2_data   = Rs2D;
@@ -242,7 +242,7 @@ module execute
    //************************************ Branch Functional Unit *********************************
    // get the necessary information from the Decode data & GPR and pass to Branch functional unit
    // pull out the signals
-   BFU    brfu_bus();
+   BFU_intf brfu_bus();
 
    assign brfu_bus.Rs1_data    = Rs1D;
    assign brfu_bus.Rs2_data    = Rs2D;
@@ -272,20 +272,20 @@ module execute
    // get the necessary information from the Decode data & GPR and pass to Integer Multiply functional unit
    // pull out the signals
 
-   IMFU        imfu_bus();
+   IMFU_intf   imfu_bus();
 
    assign imfu_bus.Rs1_data   = Rs1D;
    assign imfu_bus.Rs2_data   = Rs2D;
    assign imfu_bus.op         = IM_OP_TYPE'(op_type[IM_OP_SZ-1:0]);
 
    assign im_fu_done = D2E_bus.valid & (i_type == IM_INSTR);  // This functional unit (currently using vedic multiplier) only takes 1 clock cycle. Note: try mult_N_by_N.sv to improve clock speed
-   im_fu MFU
+   im_fu IMFU
    (
       .imfu_bus(imfu_bus)
    );
 
    //************************************ Integer Divide/Remainder Functional Unit ***************
-   IDRFU    idrfu_bus();
+   IDRFU_intf idrfu_bus();
 
    assign idrfu_bus.Rs1_data  = Rs1D;
    assign idrfu_bus.Rs2_data  = Rs2D;
@@ -295,7 +295,7 @@ module execute
    assign idr_fu_done         = idrfu_bus.done;
 
    // NOTE: This functional unit may take many clock cycles to execute
-   idr_fu #(RSZ) idrfu
+   idr_fu #(RSZ) IDRFU
    (
       .clk_in(clk_in),
       .reset_in(reset_in),
@@ -304,7 +304,7 @@ module execute
    `endif
 
   //************************************ CSR Functional Unit *********************************
-  CSRFU     csrfu_bus();
+  CSRFU_intf csrfu_bus();
 
    logic                   mret;             // MRET retiring
    `ifdef ext_S
@@ -341,7 +341,7 @@ module execute
 
    assign csr_fu_done = D2E_bus.valid & (i_type == CSR_INSTR); // This functional unit only takes 1 clock cycle
    // Control & Status Registers
-   csr_fu CFU
+   csr_fu CSRFU
    (
       .clk_in(clk_in), .reset_in(reset_in),                                // Inputs:  system clock and reset
       .csrfu_bus(csrfu_bus)
@@ -377,7 +377,7 @@ module execute
    `ifdef ext_F
    //********************* Single-precision Floating Point Functional Unit //*********************
    // get the necessary information from the Decode data & GPR and pass to SFPU functional unit
-   SPFPFU       spfpfu_bus();
+   SPFPFU_intf spfpfu_bus();
 
    assign spfpfu_bus.Fs1_data  = Fs1D;
    assign spfpfu_bus.Fs2_data  = Fs2D;
@@ -387,7 +387,7 @@ module execute
    assign spfpfu_bus.op        = SPFP_OP_TYPE'(op_type[SPFP_OP_SZ-1:0]); // cast the op type of data (bit [N:0]) to SPFP_OP_TYPE. see cpu_struts.svh
 
    assign spfp_fu_start = D2E_bus.valid & (i_type == SPFP_INSTR);   // This functional unit may takes several clock cycles
-   spfp_fu SFPU
+   spfp_fu SPFPFU
    (
       .spfpfu_bus(spfpfu_bus) // WARNING:  There's no code yet in this module to send spfpfu data onward (via exe_dout like other instructions do) to next stage...needs to be added
    );
@@ -396,7 +396,7 @@ module execute
    //************************************ Load/Store Functional Unit *****************************
    // Calculate the Load/Store address
 
-   LSFU        lsfu_bus();
+   LSFU_intf lsfu_bus();
 
    assign lsfu_bus.Rs1_data    = Rs1D;
    assign lsfu_bus.Rs2_data    = Rs2D;

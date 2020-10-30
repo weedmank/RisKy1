@@ -21,7 +21,7 @@ import functions_pkg::*;
 import logic_params_pkg::*;
 import cpu_params_pkg::*;
 import cpu_structs_pkg::*;
-//                                                                                                                                                     
+//
 //                                          ............................................................................
 //                                          :  RisKy1_core                                                             :
 //                                          :                                                                          :
@@ -67,13 +67,13 @@ import cpu_structs_pkg::*;
 //         L1 Data Cache Interface <--------:---------------------------------------------------------------------+    :
 //                                          :                                                                          :
 //                                          :..........................................................................:
-//                                                                                                                      
-//             
-//             
-//             
-//             
-//             
-//             
+//
+//
+//
+//
+//
+//
+//
 //`define VIVADO // WARNING! - These two define's MUST be commented out if not making a Vivado design becuase I have not yet figured out how to globally define them!!!!
 //`define ext_M
 `ifdef VIVADO
@@ -81,7 +81,7 @@ module RisKy1_core // Verilog style - for use in Vivado
 (
    // This `ifdef VIVADO monkey business is all due to Vivado having a limited System Verilog understanding when instantiating a top level module in Block Design!!!
    // All the interfaces need to be in Verilog style as Vivado can't handle any SystemVerilog in the top level module when placing it in a Block Design. Therefore this
-   // module, RisKy1_core.sv, CANNOT be a top level module. This means we need a wrapper module (See RisKy1_RV32i.v). 
+   // module, RisKy1_core.sv, CANNOT be a top level module. This means we need a wrapper module (See RisKy1_RV32i.v).
    input    wire                       clk_in,
    input    wire                       reset_in,
 
@@ -119,33 +119,33 @@ module RisKy1_core // Verilog style - for use in Vivado
    output   wire                       io_rd,                                 // Output:  I/O Read signal. 1 = read
    output   wire                       io_wr,                                 // Output:  I/O Write signal. 1 = write
    output   wire             [RSZ-1:0] io_wr_data,                            // Output:  I/O Write data that is written when io_wr == 1
-   
+
    input    wire                       io_ack,                                // Input:   I/O Acknowledge
    input    wire                       io_ack_fault,                          // Input:   I/O Acknowledge
    input    wire             [RSZ-1:0] io_rd_data                             // Input:   I/O Read data
 );
    // Vivado 2019.2 cannot yet handle System Verilog, thus a wrapper has to be created (i.e. RisKy1_RV32i.v) and individual module port signals created/assigned in Verilog style
-   L1IC                         L1IC_intf();   // OK to use this in RisKy1_core outside of module ports for Vivado
-   L1DC                         L1DC_intf();
+   L1IC_intf                  L1IC_bus();                                     // OK to use this in RisKy1_core outside of module ports for Vivado
+   L1DC_intf                  L1DC_bus();
 
    // ports are/need to be Verilog type for Vivado
-   assign ic_req              = L1IC_intf.req;
-   assign ic_addr             = L1IC_intf.addr;
-   assign L1IC_intf.ack       = ic_ack;
-   assign L1IC_intf.ack_data  = ic_ack_data;
-   
-   
-   
-   assign dc_req              = L1DC_intf.req;                                // Request           - must remain high until ack
-   assign dc_rw_addr          = L1DC_intf.req_data.rw_addr;                   // Request data      - ls_addr - Load/Store Address
-   assign dc_rd               = L1DC_intf.req_data.rd;                        // Request data      - is_ld
-   assign dc_wr               = L1DC_intf.req_data.wr;                        // Request data      - is_ld
-   assign dc_wr_data          = L1DC_intf.req_data.wr_data;                   // Request data      - st_data - Store data
-   assign dc_size             = L1DC_intf.req_data.size;                      // Request data      - size in bytes -> 1 = 8 bit, 2 = 16 bit, 4 = 32 bit Load/Store
-   assign dc_zero_ext         = L1DC_intf.req_data.zero_ext;                  // Request data      - 1 = Zero Extend
-   assign dc_inv_flag         = L1DC_intf.req_data.inv_flag;                  // Request data      - invalidate flag
-   assign L1DC_intf.ack       = dc_ack;                                       // Acknowledge       - D$ is ackknowledging it has data (dc_ack_data) for the MEM unit
-   assign L1DC_intf.ack_data  = dc_ack_data;                                  // Acknowledge data
+   assign ic_req              = L1IC_bus.req;
+   assign ic_addr             = L1IC_bus.addr;
+   assign L1IC_bus.ack        = ic_ack;
+   assign L1IC_bus.ack_data   = ic_ack_data;
+
+
+
+   assign dc_req              = L1DC_bus.req;                                 // Request           - must remain high until ack
+   assign dc_rw_addr          = L1DC_bus.req_data.rw_addr;                    // Request data      - ls_addr - Load/Store Address
+   assign dc_rd               = L1DC_bus.req_data.rd;                         // Request data      - is_ld
+   assign dc_wr               = L1DC_bus.req_data.wr;                         // Request data      - is_ld
+   assign dc_wr_data          = L1DC_bus.req_data.wr_data;                    // Request data      - st_data - Store data
+   assign dc_size             = L1DC_bus.req_data.size;                       // Request data      - size in bytes -> 1 = 8 bit, 2 = 16 bit, 4 = 32 bit Load/Store
+   assign dc_zero_ext         = L1DC_bus.req_data.zero_ext;                   // Request data      - 1 = Zero Extend
+   assign dc_inv_flag         = L1DC_bus.req_data.inv_flag;                   // Request data      - invalidate flag
+   assign L1DC_bus.ack        = dc_ack;                                       // Acknowledge       - D$ is ackknowledging it has data (dc_ack_data) for the MEM unit
+   assign L1DC_bus.ack_data   = dc_ack_data;                                  // Acknowledge data
 
 `else // Normal System Verilog style
 module RisKy1_core
@@ -162,11 +162,11 @@ module RisKy1_core
    `endif
 
    // L1 Instruction cache interface signals
-   L1IC.master                         L1IC_intf,
+   L1IC_intf.master                    L1IC_bus,
    output   logic                      ic_flush,
 
    // L1 Data cache interface signals
-   L1DC.master                         L1DC_intf,
+   L1DC_intf.master                    L1DC_bus,
    output   logic                      dc_flush,
 
    // External I/O accesses
@@ -175,7 +175,7 @@ module RisKy1_core
    output   wire                       io_rd,                                 // Output:  I/O Read signal. 1 = read
    output   wire                       io_wr,                                 // Output:  I/O Write signal. 1 = write
    output   logic            [RSZ-1:0] io_wr_data,                            // Output:  I/O Write data that is written when io_wr == 1
-   
+
    input    logic                      io_ack,                                // Input:   I/O Acknowledge
    input    logic                      io_ack_fault,                          // Input:   I/O Acknowledge
    input    logic            [RSZ-1:0] io_rd_data                             // Input:   I/O Read data
@@ -201,9 +201,9 @@ module RisKy1_core
       if (NUM_MHPM == 0)                                                         $error ("use_MHPM_CNTRS is defined but NUM_MHPM is still 0. Change NUM_MHPM value in cpu_params.svh");
       `endif
       if (MAX_GPR != 32)                                                         $warning("RISC-V compatible designs should set MAX_GPR = 32. See cpu_params.svh");
-      
+
       if (SET_MCOUNTINHIBIT == 1)                                                $warning("Setting SET_MCOUNTINHIBIT == 1 forces CSR to read a constant value of SET_MCOUNTINHIBIT_BITS. See cpu_params.svh");
-      
+
       if ((Phys_Addr_Lo % 4) != 0)                                               $fatal ("Phys_Addr_Lo must be a multiple of 4. see cpu_params_pkg.sv");
       if ((Phys_Depth % 4) != 0)                                                 $fatal ("Phys_Depth must be a multiple of 4. see cpu_params_pkg.sv");
 
@@ -269,25 +269,25 @@ module RisKy1_core
    logic                               mem_rld_pc_flag;
    logic                               mem_rld_ic_flag;
    logic                   [PC_SZ-1:0] mem_rld_pc_addr;
-   
+
    logic                               exe_rld_pc_flag;
    logic                   [PC_SZ-1:0] exe_rld_pc_addr;
 
    // 1st Stage Fetch interface signals
-   F2D                                 F2D_bus();
+   F2D_intf                            F2D_bus();
 
    // 2nd Stage Decode interface signals
-   D2E                                 D2E_bus();
+   D2E_intf                            D2E_bus();
 
    // 3rd Stage Execute interface signals
-   E2M                                 E2M_bus();
+   E2M_intf                            E2M_bus();
 
    // 4th Stage Memory interface signals
-   M2W                                 M2W_bus();
-   L1DC                                MIO_bus();
+   M2W_intf                            M2W_bus();
+   L1DC_intf                           MIO_bus();
 
    // interface between MEM stage and CSR Functional Unit inside EXE stage
-   CSR_MEM                             CSR_MEM_bus();
+   CSR_MEM_intf                        CSR_MEM_bus();
 
    // register forwarding signals
    FWD_GPR                             fwd_mem_gpr;
@@ -314,7 +314,7 @@ module RisKy1_core
    // GPR signals
    logic       [MAX_GPR-1:0] [RSZ-1:0] gpr;                                   // MAX_GPR General Purpose registers
 
-   RBUS                                gpr_bus();
+   RBUS_intf                           gpr_bus();
 
    `ifdef ext_F
    // FPR signals
@@ -328,19 +328,19 @@ module RisKy1_core
    logic                               pipe_flush_dec, pipe_flush_exe, pipe_flush_mem;
    logic                               pc_reload, ic_reload;
    logic                   [PC_SZ-1:0] pc_reload_addr;
-   
+
    assign ic_flush = FALSE; // WARNING: THESE ARE NOT YET IMPLEMENTED!!!
    assign dc_flush = FALSE;
 
    // A branch misprediction (exe_rld_pc_flag) only flushes FET, DEC and EXE stages
-   assign pipe_flush_dec   = mem_rld_pc_flag | exe_rld_pc_flag;     
-   assign pipe_flush_exe   = mem_rld_pc_flag | exe_rld_pc_flag;;     
-   assign pipe_flush_mem   = mem_rld_pc_flag;     
-   
+   assign pipe_flush_dec   = mem_rld_pc_flag | exe_rld_pc_flag;
+   assign pipe_flush_exe   = mem_rld_pc_flag | exe_rld_pc_flag;;
+   assign pipe_flush_mem   = mem_rld_pc_flag;
+
    assign pc_reload        = mem_rld_pc_flag | exe_rld_pc_flag;
    assign ic_reload        = mem_rld_ic_flag;
    assign pc_reload_addr   = mem_rld_pc_flag ? mem_rld_pc_addr : exe_rld_pc_addr;
-   
+
    // 1st Stage = Fetch Stage
    fetch FET
    (
@@ -354,7 +354,7 @@ module RisKy1_core
       .pc_reload_addr(pc_reload_addr),                                        // Input:   New PC address when mem_rld_pc_flag == 1
 
       // interface to L1 Instruction Cache
-      .L1IC_intf(L1IC_intf),
+      .L1IC_bus(L1IC_bus),
 
       // interface to Decode stage
       .F2D_bus(F2D_bus)
@@ -383,7 +383,7 @@ module RisKy1_core
       .clk_in(clk_in), .reset_in(reset_in),                                   // Inputs:  system clock and reset
 
       .cpu_halt(cpu_halt),                                                    // Input:   Cause the CPU to stop processing instructions and data
-      
+
       // Time to flush pipeline and reload PC signal
       .pipe_flush(pipe_flush_exe),                                            // Input:   1 = flush pipeline
 
@@ -413,7 +413,7 @@ module RisKy1_core
 
       // interface to Memory stage
       .E2M_bus(E2M_bus),
-      
+
       // signals shared between CSR functional Unit inside EXE stage and MEM stage
       .CSR_MEM_bus(CSR_MEM_bus)
    );
@@ -429,10 +429,10 @@ module RisKy1_core
       .sw_irq(sw_irq),                                                        // Input:   Software Interrupt from clint.sv
       `endif
       .mtime(mtime),                                                          // Input:   Memory-mapped mtime register contents
-      
+
       // misprediction signals
       .pipe_flush(pipe_flush_mem),                                            // Input:  1 = flush pipeline
-      
+
       .rld_pc_flag(mem_rld_pc_flag),                                          // Output:  1 = flush pipeline & reload PC with mem_rld_pc_addr
       .rld_ic_flag(mem_rld_ic_flag),                                          // Output:  1 = A STORE to L1 D$ also wrote to L1 I$ address space
       .rld_pc_addr(mem_rld_pc_addr),                                          // Output:  New PC when mem_rld_pc_flag == 1
@@ -455,7 +455,7 @@ module RisKy1_core
 
       // interface to WB stage
       .M2W_bus(M2W_bus),
-      
+
       // signals shared between CSR functional Unit inside EXE stage and MEM stage
       .CSR_MEM_bus(CSR_MEM_bus)
    );
@@ -525,7 +525,7 @@ module RisKy1_core
       .MIO_bus(MIO_bus),
 
       // Interface between MEM_IO and L1 D$
-      .L1DC_intf(L1DC_intf),
+      .L1DC_bus(L1DC_bus),
 
       // Internal I/O Write Data - in case it's a Store instruction wanting to write to the contents of the following registers
       `ifdef ext_N

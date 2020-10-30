@@ -22,8 +22,8 @@ module gpr
    input    logic                            reset_in,
 
    output   logic    [MAX_GPR-1:0] [RSZ-1:0] gpr,              // MAX_GPR General Purpose registers
-   
-   RBUS.slave                                gpr_bus
+
+   RBUS_intf.slave                           gpr_bus
 );
 
    // For RISC-V ISA, R0 is Read Only
@@ -38,7 +38,7 @@ module gpr
       begin
          if (reset_in)
             gpr[k] <= 1'd0;
-         else if (gpr_bus.Rd_wr & (gpr_bus.Rd_addr == k))              // register Rd must match loop count to know which one to write to
+         else if (gpr_bus.Rd_wr & (gpr_bus.Rd_addr == k))      // register Rd must match loop count to know which one to write to
             gpr[k] <= gpr_bus.Rd_data;
       end
    end

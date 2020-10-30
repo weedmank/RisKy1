@@ -23,10 +23,10 @@ module mem_io
    input    logic                [1:0] mode,
 
    // I/O transfers between MEM Stage and MEM_IO
-   L1DC.slave                          MIO_bus,
+   L1DC_intf.slave                     MIO_bus,
 
    // Interface between MEM_IO and L1 D$
-   L1DC.master                         L1DC_intf,
+   L1DC_intf.master                    L1DC_bus,
 
    // I/O Write signals to specific RISC-V I/O registers
    `ifdef ext_N
@@ -53,7 +53,7 @@ module mem_io
    output   logic                      io_rd,               // Output:  I/O Read signal
    output   logic                      io_wr,               // Output:  I/O Write signal
    output   logic            [RSZ-1:0] io_wr_data,          // Output:  I/O Write data that is written when io_wr == 1
-   
+
    input    logic            [RSZ-1:0] io_rd_data,          // Input:   I/O Read data
    input    logic                      io_ack,              // Input:   I/O Acknowledge
    input    logic                      io_ack_fault         // Input:   I/O Access Fault occurred
@@ -62,14 +62,14 @@ module mem_io
    logic is_phy_mem, is_int_io, is_ext_io, access_fault;
 
    assign is_io_access = (MIO_bus.req_data.rd | MIO_bus.req_data.wr);
-   
+
    // Determine what type of memory this Load/Store is accessing - these are mutually exclusive addresses
    assign is_phy_mem       = (MIO_bus.req_data.rw_addr >= Phys_Addr_Lo  ) & (MIO_bus.req_data.rw_addr <= Phys_Addr_Hi  ) & MIO_bus.req;   // Physical System Memory
    assign is_int_io        = (MIO_bus.req_data.rw_addr >= Int_IO_Addr_Lo) & (MIO_bus.req_data.rw_addr <= Int_IO_Addr_Hi) & MIO_bus.req;   // internal I/O
    assign is_ext_io        = (MIO_bus.req_data.rw_addr >= Ext_IO_Addr_Lo) & (MIO_bus.req_data.rw_addr <= Ext_IO_Addr_Hi) & MIO_bus.req;   // external I/O
 
-   assign L1DC_intf.req_data  = is_phy_mem ? MIO_bus.req_data : '0;
-   assign L1DC_intf.req       = is_phy_mem ? TRUE             : FALSE;
+   assign L1DC_bus.req_data  = is_phy_mem ? MIO_bus.req_data : '0;
+   assign L1DC_bus.req       = is_phy_mem ? TRUE             : FALSE;
 
    always_comb
    begin
@@ -78,7 +78,7 @@ module mem_io
       MIO_bus.ack          = FALSE;
       MIO_bus.ack_data     = '0;
       MIO_bus.ack_fault    = FALSE;
-      
+
       io_req               = FALSE;
       io_addr              = '0;
       io_rd                = FALSE;
@@ -102,9 +102,9 @@ module mem_io
       // ************************** Physical System Memory (i.e. L1 Data Cache) accesses **************************
       if (is_phy_mem)
       begin
-         MIO_bus.ack                = L1DC_intf.ack;                                   // we don't know how long memory accesses take, so we let memory logic tell us
-         MIO_bus.ack_data           = L1DC_intf.ack_data;
-         access_fault               = L1DC_intf.ack_fault;
+         MIO_bus.ack                = L1DC_bus.ack;                                    // we don't know how long memory accesses take, so we let memory logic tell us
+         MIO_bus.ack_data           = L1DC_bus.ack_data;
+         access_fault               = L1DC_bus.ack_fault;
       end
 
       // ************************** Special: Simulation Debugging **************************
@@ -193,7 +193,7 @@ module mem_io
          io_rd                      = MIO_bus.req_data.rd;
          io_wr                      = MIO_bus.req_data.wr;
          io_wr_data                 = MIO_bus.req_data.wr_data;
-         
+
          access_fault               = io_ack_fault;                                    // good pin to use an external pullup resistor on...
       end
 

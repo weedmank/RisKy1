@@ -17,7 +17,7 @@
 import cpu_params_pkg::*;
 import cpu_structs_pkg::*;
 
-interface F2D;
+interface F2D_intf;
       FET_2_DEC               data;
 
       logic                   valid;
@@ -25,9 +25,9 @@ interface F2D;
 
       modport master (output data, valid, input  rdy);
       modport slave  (input  data, valid, output rdy);
-endinterface: F2D
+endinterface: F2D_intf
 
-interface D2E;
+interface D2E_intf;
       DEC_2_EXE               data;
 
       logic                   valid;
@@ -35,10 +35,10 @@ interface D2E;
 
       modport master (output data, valid, input  rdy);
       modport slave  (input  data, valid, output rdy);
-endinterface: D2E
+endinterface: D2E_intf
 
 
-interface E2M;
+interface E2M_intf;
       EXE_2_MEM               data;
 
       logic                   valid;
@@ -46,9 +46,9 @@ interface E2M;
 
       modport master (output data, valid, input  rdy);
       modport slave  (input  data, valid, output rdy);
-endinterface: E2M
+endinterface: E2M_intf
 
-interface M2W;
+interface M2W_intf;
       MEM_2_WB                data;
 
       logic                   valid;
@@ -56,11 +56,11 @@ interface M2W;
 
       modport master (output data, valid, input  rdy);
       modport slave  (input  data, valid, output rdy);
-endinterface: M2W
+endinterface: M2W_intf
 
 // ------------------------ Functional Unit interfaces used in execute.sv ------------------------
 
-interface AFU;
+interface AFU_intf;
       logic         [RSZ-1:0] Rs1_data;
       logic         [RSZ-1:0] Rs2_data;
       logic       [PC_SZ-1:0] pc;
@@ -73,10 +73,10 @@ interface AFU;
 
       modport master (output Rs1_data, Rs2_data, pc, imm, sel_x, sel_y, op, input  Rd_data);
       modport slave  (input  Rs1_data, Rs2_data, pc, imm, sel_x, sel_y, op, output Rd_data);
-endinterface: AFU
+endinterface: AFU_intf
 
 
-interface BFU;
+interface BFU_intf;
       logic         [RSZ-1:0] Rs1_data;
       logic         [RSZ-1:0] Rs2_data;
       logic       [PC_SZ-1:0] pc;
@@ -100,10 +100,10 @@ interface BFU;
 
       modport master (output Rs1_data, Rs2_data, pc, imm, funct3, ci, sel_x, sel_y, op, mepc, `ifdef ext_S sepc, `endif `ifdef ext_U uepc, `endif input  no_br_pc, br_pc, mis);
       modport slave  (input  Rs1_data, Rs2_data, pc, imm, funct3, ci, sel_x, sel_y, op, mepc, `ifdef ext_S sepc, `endif `ifdef ext_U uepc, `endif output no_br_pc, br_pc, mis);
-endinterface: BFU
+endinterface: BFU_intf
 
 `ifdef ext_M
-interface IMFU;
+interface IMFU_intf;
       logic         [RSZ-1:0] Rs1_data;
       logic         [RSZ-1:0] Rs2_data;
       IM_OP_TYPE              op;
@@ -112,10 +112,10 @@ interface IMFU;
 
       modport master (output Rs1_data, Rs2_data, op, input  Rd_data);
       modport slave  (input  Rs1_data, Rs2_data, op, output Rd_data);
-endinterface: IMFU
+endinterface: IMFU_intf
 
 
-interface IDRFU;
+interface IDRFU_intf;
       logic         [RSZ-1:0] Rs1_data;
       logic         [RSZ-1:0] Rs2_data;
       IDR_OP_TYPE             op;
@@ -127,11 +127,11 @@ interface IDRFU;
 
       modport master (output Rs1_data, Rs2_data, op, start, input  quotient, remainder, done);
       modport slave  (input  Rs1_data, Rs2_data, op, start, output quotient, remainder, done);
-endinterface: IDRFU
+endinterface: IDRFU_intf
 `endif
 
 
-interface LSFU;
+interface LSFU_intf;
       logic         [RSZ-1:0] Rs1_data;
       logic         [RSZ-1:0] Rs2_data;
       logic         [RSZ-1:0] imm;
@@ -145,12 +145,12 @@ interface LSFU;
 
       modport master (output Rs1_data, Rs2_data, imm, funct3, input  ls_addr, st_data, size, zero_ext, mis);
       modport slave  (input  Rs1_data, Rs2_data, imm, funct3, output ls_addr, st_data, size, zero_ext, mis);
-endinterface: LSFU
+endinterface: LSFU_intf
 
 
    `ifdef ext_F
    // see spfp_fu.sv
-interface SPFPFU;
+interface SPFPFU_intf;
       logic         [RSZ-1:0] Fs1_data;
       logic         [RSZ-1:0] Fs2_data;
       logic         [RSZ-1:0] imm;
@@ -167,10 +167,10 @@ interface SPFPFU;
 
       modport master (output Fs1_data, Fs2_data, imm, sel_x, sel_y, op, start input  ls_addr, st_data, Fd_data, mis, done);
       modport slave  (input  Fs1_data, Fs2_data, imm, sel_x, sel_y, op, start output ls_addr, st_data, Fd_data, mis, done);
-endinterface: SPFPFU
+endinterface: SPFPFU_intf
    `endif
 
-interface CSRFU;
+interface CSRFU_intf;
       logic            [11:0] csr_addr;         // R/W address
       logic                   csr_valid;        // 1 = Read & Write from/to csr[csr_addr] will occur this clock cylce
       logic     [GPR_ASZ-1:0] Rd_addr;
@@ -221,11 +221,11 @@ interface CSRFU;
                              mtime, `ifdef ext_N ext_irq, time_irq, sw_irq, `endif exception,
                       output Rd_data, mode, trap_pc, `ifdef ext_N interrupt_flag, interrupt_cause, `endif mepc, `ifdef ext_S sepc, `endif `ifdef ext_U uepc, `endif
                              ill_csr_access, ill_csr_addr, ialign);
-endinterface: CSRFU
+endinterface: CSRFU_intf
 
 
 // ------------------------ decode_core.sv interface used in decode.sv ------------------------
-interface DCORE;
+interface DCORE_intf;
       FET_2_DEC      fet_data;
 
       DEC_2_EXE      dec_data;
@@ -233,9 +233,9 @@ interface DCORE;
       modport master (output fet_data, input  dec_data);
       modport slave  (input  fet_data, output dec_data);
 
-endinterface: DCORE
+endinterface: DCORE_intf
 // ------------------------ gpr interface ------------------------
-interface RBUS;
+interface RBUS_intf;
       logic                   Rd_wr;         // 1 = write to destination register
       logic     [GPR_ASZ-1:0] Rd_addr;       // Destination Register to write
       logic         [RSZ-1:0] Rd_data;       // data that will be written to the destination register
@@ -243,10 +243,10 @@ interface RBUS;
       modport master (output Rd_wr, Rd_addr, Rd_data);
       modport slave  (input  Rd_wr, Rd_addr, Rd_data);
 
-endinterface: RBUS
+endinterface: RBUS_intf
 
 // ------------------------ L1 Instruction & Data Cache Interfaces ------------------------
-interface L1IC;
+interface L1IC_intf;
       logic                   req;           // Output: Request            - Fetch unit is requesting a cache line of data from the I $
       logic       [PC_SZ-1:0] addr;          // Output: Request address    - Memory address that Fetch unit wants to get a cache line of data from
 
@@ -257,10 +257,10 @@ interface L1IC;
       modport master (output addr, req, input  ack, ack_data, ack_fault);
       modport slave  (input  addr, req, output ack, ack_data, ack_fault);
 
-endinterface: L1IC
+endinterface: L1IC_intf
 
 
-interface L1DC;
+interface L1DC_intf;
       logic                   req;
       L1DC_Req_Data           req_data;
 
@@ -271,10 +271,10 @@ interface L1DC;
       modport master (output req, req_data, input  ack, ack_data, ack_fault);
       modport slave  (input  req, req_data, output ack, ack_data, ack_fault);
 
-endinterface: L1DC
+endinterface: L1DC_intf
 
 //------------------------ information shared betwee CSR Functional Unit and MEMstage ------------------------
-interface CSR_MEM;
+interface CSR_MEM_intf;
       // Master outputs
       `ifdef ext_N
       logic                   interrupt_flag;   // 1 = take an interrupt trap
@@ -285,7 +285,7 @@ interface CSR_MEM;
       logic            [11:0] ill_csr_addr;
       logic                   ialign;           // 1 = 16 bit alignment, 0 = 32 bit alignment
       logic             [1:0] mode;
-      
+
       // Master inputs
       EXCEPTION               exception;
       EVENTS                  current_events;   // number of retired instructions for current clock cycle
@@ -306,4 +306,17 @@ interface CSR_MEM;
       modport slave  (input  `ifdef ext_N interrupt_flag, interrupt_cause, `endif trap_pc, ill_csr_access, ill_csr_addr, ialign, mode,
                       output exception, current_events, mret, `ifdef ext_S sret, `endif `ifdef ext_U uret, `endif `ifdef ext_N ext_irq, time_irq, sw_irq, `endif mtime);
 
-endinterface: CSR_MEM
+endinterface: CSR_MEM_intf
+
+//------------------------ Loads & Stores that need to be saved into the LS Queue ------------------------
+`ifdef add_LSQ
+interface MEM2LSQ_intf;
+      logic                   valid;
+      logic                   rdy;
+      MEM_LS_Data             data;
+
+      modport master (output valid, data, input  rdy);
+      modport slave  (input  valid, data, output rdy);
+
+endinterface: MEM2LSQ_intf
+`endif

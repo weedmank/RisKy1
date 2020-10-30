@@ -23,7 +23,7 @@
 
 module spfp_fu
 (
-   SPFPFU.slave     spfpfu_bus
+   SPFPFU_intf.slave    spfpfu_bus
 );
 
    logic     [FLEN-1:0] mux_x;
@@ -48,7 +48,7 @@ module spfp_fu
    assign sel_y      = spfpfu_bus.sel_y;
    assign op         = spfpfu_bus.op;
    assign start      = spfpfu_bus.start;
-   
+
    // full_case — at least one item is true
    // parallel_case — at most one item is true
    always_comb

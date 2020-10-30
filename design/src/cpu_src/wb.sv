@@ -28,7 +28,7 @@ module wb
    input    logic                         cpu_halt,                                             // Input:   disable CPU operations by not allowing any more input to this stage
 
    // interface to Memory stage
-   M2W.slave                              M2W_bus,
+   M2W_intf.slave                         M2W_bus,
 
    `ifdef ext_F
    // interface to forwarding signals
@@ -44,7 +44,7 @@ module wb
    output   FWD_GPR                       fwd_wb_gpr,
 
    // interface to GPR
-   RBUS.master                            gpr_bus
+   RBUS_intf.master                       gpr_bus
 );
    logic xfer_in;
 

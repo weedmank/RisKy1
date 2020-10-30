@@ -257,6 +257,35 @@ import cpu_params_pkg::*;
       IP_Data                 ipd;
       logic                   is_ld;
    } ACC_FAULT;
+
+   // ---------------------------------------------------------------------------------------------------------------
+   // structures related to L/S Queue data from MEM stage that needs to be saved in the L/S Queue
+   typedef struct packed {
+      logic       [PC_SZ-1:0] ls_addr;
+      logic         [RSZ-1:0] st_data;
+      logic             [2:0] size;
+      logic                   zero_ext;         // 1 = LBU or LHU
+      logic                   inv_flag;
+      logic                   is_ld;
+      logic                   is_st;
+      logic                   mis;              // misalignment
+   } MEM_LS_Data;
+
+`ifdef add_LSQ   
+   typedef struct packed {
+      logic       [PC_SZ-1:0] addr;
+      logic         [RSZ-1:0] data;
+      logic             [2:0] size;
+      logic                   zero_ext;         // 1 = LBU or LHU
+      logic                   inv_flag;
+      logic                   is_ld;            // 1 = Load, 0 = Store
+      logic                   completed;
+      logic                   fault;            // Load/Store fault occured
+      logic                   mis;              // Load/store misalignment
+   } LSQ_Data;
+`endif
+
+
 /*
    Register     Alias      Description                      Saved by
    x0           zero       Zero

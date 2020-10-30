@@ -25,7 +25,7 @@ import cpu_structs_pkg::*;
 
 module br_fu
 (
-   BFU.slave            brfu_bus
+   BFU_intf.slave       brfu_bus
 );
 
    logic      [RSZ-1:0] mux_x;

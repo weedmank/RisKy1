@@ -35,13 +35,13 @@
 //
 //                         +------------------------------------------+
 //                         |                                          |
-// L1IC_intf.addr    ----->+                                          +-----> arb_bus.req_addr
+// L1IC_bus.addr    ----->+                                          +-----> arb_bus.req_addr
 //                         |                          Request to Arb  |
-// L1IC_intf.req     ----->+                                          +-----> arb_bus.req_valid
+// L1IC_bus.req     ----->+                                          +-----> arb_bus.req_valid
 //                         | Req/Ack with CPU                         |
-// L1IC_intf.ack     <-----+                                          +<----- arb_bus.req_rdy
+// L1IC_bus.ack     <-----+                                          +<----- arb_bus.req_rdy
 //                         |                                          |
-// L1IC_intf.ack_data <-----+                                          |
+// L1IC_bus.ack_data <-----+                                          |
 //                         |                                          +<----- arb_bus.ack_data
 //                         |                    Acknowledge from Arb  |
 //                         |                                          +<----- arb_bus.ack_valid
@@ -75,7 +75,7 @@ module L1_icache
    input    logic                   reset_in,
 
    // Interface signals to CPU
-   L1IC.slave                       L1IC_intf,
+   L1IC_intf.slave                  L1IC_bus,
    input    logic                   ic_flush,
 
    // Invalidate Cache Line request
@@ -131,8 +131,8 @@ module L1_icache
    assign arb_ack_xfer  = arb_bus.ack_valid & arb_bus.ack_rdy;
    assign arb_req_xfer  = arb_bus.req_valid & arb_bus.req_rdy;
 
-   assign set           = (IC_State == IC_INV_CL) ? inv_addr_in[CL_SZ        +: SET_SZ] : L1IC_intf.addr[CL_SZ        +: SET_SZ];            // current working set
-   assign tag           = (IC_State == IC_INV_CL) ? inv_addr_in[CL_SZ+SET_SZ +: T_SZ]   : L1IC_intf.addr[CL_SZ+SET_SZ +: T_SZ];
+   assign set           = (IC_State == IC_INV_CL) ? inv_addr_in[CL_SZ        +: SET_SZ] : L1IC_bus.addr[CL_SZ        +: SET_SZ];            // current working set
+   assign tag           = (IC_State == IC_INV_CL) ? inv_addr_in[CL_SZ+SET_SZ +: T_SZ]   : L1IC_bus.addr[CL_SZ+SET_SZ +: T_SZ];
    assign clr_all_valid = (IC_State == IC_IDLE) & icf_ff;            // when its OK to clear all the cache_valid bits
 
    assign arb_bus.req_addr = {tag,set};                              // pass the cache line address to the Arbiter/System Memory
@@ -261,15 +261,15 @@ module L1_icache
       end
    endgenerate
 
-   // NOTE: CPU is required to only change L1IC_intf.req on the posedge of clk_in
-   //       Once L1IC_intf.req is asserted it must remain asserted until req_ack_out is asserted - it may then be de-asserted on the next posedge of clk_in
-   //       CPU must capture any L1IC_intf.ack_data when L1IC_intf.ack is asserted at the posedge of clk_in
+   // NOTE: CPU is required to only change L1IC_bus.req on the posedge of clk_in
+   //       Once L1IC_bus.req is asserted it must remain asserted until req_ack_out is asserted - it may then be de-asserted on the next posedge of clk_in
+   //       CPU must capture any L1IC_bus.ack_data when L1IC_bus.ack is asserted at the posedge of clk_in
    always_comb
    begin
-      L1IC_intf.ack        = FALSE;                                  // L1 Data Cache is now ready to accept a request from the L/S Process block
-      L1IC_intf.ack_data   = '{default: 'd0};
-      L1IC_intf.ack_fault  = FALSE;
-      
+      L1IC_bus.ack        = FALSE;                                  // L1 Data Cache is now ready to accept a request from the L/S Process block
+      L1IC_bus.ack_data   = '{default: 'd0};
+      L1IC_bus.ack_fault  = FALSE;
+
       Next_IC_State        = IC_State;                               // default value
 
       arb_bus.req_valid    = FALSE;
@@ -289,12 +289,12 @@ module L1_icache
             begin
                if (inv_req_in)                                       // Is L1 D$ snooping and requesting to Invalidate a Cache Line?
                   Next_IC_State           = IC_INV_CL;
-               else if (L1IC_intf.req)                               // request from Fetch for a cache line of data
+               else if (L1IC_bus.req)                               // request from Fetch for a cache line of data
                begin
                   if (hit)
                   begin
-                     L1IC_intf.ack        = TRUE;
-                     L1IC_intf.ack_data   = current_cache_line;
+                     L1IC_bus.ack        = TRUE;
+                     L1IC_bus.ack_data   = current_cache_line;
                      update_lru           = TRUE;
                   end
                   else                                               // Cache Miss occurred - pass R/W info to the Arbiter/System Memory
@@ -329,9 +329,9 @@ module L1_icache
 
             CL_2_CPU:                                                // RD MISS
             begin
-               L1IC_intf.ack              = TRUE;                    // CPU required to take data when this goes high
-               L1IC_intf.ack_data         = current_cache_line;
-               L1IC_intf.ack_fault        = FALSE;
+               L1IC_bus.ack              = TRUE;                    // CPU required to take data when this goes high
+               L1IC_bus.ack_data         = current_cache_line;
+               L1IC_bus.ack_fault        = FALSE;
                update_lru                 = TRUE;
                Next_IC_State              = IC_IDLE;
             end

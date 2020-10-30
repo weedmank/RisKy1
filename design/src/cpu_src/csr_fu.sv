@@ -22,27 +22,27 @@ module csr_fu
 (
    input    logic    clk_in,
    input    logic    reset_in,
-   CSRFU.slave       csrfu_bus
-); 
-   
+   CSRFU_intf.slave  csrfu_bus
+);
+
    `include "csr_regs.svh"                               // declarations for mstatus, misa, etc. for all modes
-   
-   
+
+
    logic                  [11:0] csr_addr;               // R/W address
    logic                         csr_valid;              // 1 = Read & Write from/to csr[csr_addr] will occur this clock cylce
-   
+
    logic           [GPR_ASZ-1:0] Rd_addr;                // Rd address
    logic           [GPR_ASZ-1:0] Rs1_addr;               // Rs1 address
    logic               [RSZ-1:0] Rs1_data;               // Contents of R[rs1]
-   
-   logic                   [2:0] csr_funct;  
-   
-   EXCEPTION                     exception;     
+
+   logic                   [2:0] csr_funct;
+
+   EXCEPTION                     exception;
    EVENTS                        current_events;         // number of retired instructions for current clock cycle
    logic                         mret;                   // MRET retiring
    logic             [PC_SZ-1:0] mepc;                   // Machine   : Exception RET PC address
-   
-   `ifdef ext_S   
+
+   `ifdef ext_S
    logic                         sret;                   // SRET retiring
    logic             [PC_SZ-1:0] sepc;                   // Supervisor: Exception RET PC address
    `endif
@@ -50,26 +50,26 @@ module csr_fu
    `ifdef ext_U
    logic                         uret;                   // URET retiring
    logic             [PC_SZ-1:0] uepc;                   // User      : Exception RET PC address
-   `endif   
-   
+   `endif
+
    logic             [2*RSZ-1:0] mtime;                  // memory mapped mtime register
-   
-   `ifdef ext_N   
+
+   `ifdef ext_N
    logic                         ext_irq;                // External Interrupt
    logic                         time_irq;               // Timer Interrupt from irq.sv
    logic                         sw_irq;                 // Software Interrupt from irq.sv
-   `endif   
-   
+   `endif
+
    logic               [RSZ-1:0] csr_rd_data;            // read data from csr[csr_addr]
    logic                   [1:0] mode, nxt_mode;         // CPU mode: Machine, Supervisor, or User
    logic             [PC_SZ-1:0] trap_pc;                // trap vector handler address.
-   `ifdef ext_N   
-   logic               [RSZ-1:0] interrupt_cause;  
+   `ifdef ext_N
+   logic               [RSZ-1:0] interrupt_cause;
    logic                         interrupt_flag;         // 1 = take an interrupt trap
-   `endif   
+   `endif
    logic                         ill_csr_access;         // 1 = illegal csr access
-   logic                  [11:0] ill_csr_addr;  
-   
+   logic                  [11:0] ill_csr_addr;
+
    logic                         ialign;                 // Instruction Alignment. 1 = 16, 0 = 32
 
    assign ialign           = csr_misa [2];               // 1 = compressed instruction (16 bit alignment), 0 = 32 bit alignment.  See csr_wr_mach.sv
@@ -105,10 +105,10 @@ module csr_fu
    assign csrfu_bus.interrupt_cause = interrupt_cause;
    `endif
    assign csrfu_bus.mepc     = mepc;                     // csr_wr_mach.svh
-   `ifdef ext_S   
+   `ifdef ext_S
    assign csrfu_bus.sepc     = sepc;                     // csr_wr_super.svh
-   `endif   
-   `ifdef ext_U   
+   `endif
+   `ifdef ext_U
    assign csrfu_bus.uepc     = uepc;                     // csr_wr_user.svh
    `endif
    assign csrfu_bus.ill_csr_access  = ill_csr_access;

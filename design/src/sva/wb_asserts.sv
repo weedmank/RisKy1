@@ -26,12 +26,12 @@ module wb_asserts
    input    logic                         cpu_halt,                                 // Input:   disable CPU operations by not allowing any more input to this stage
 
    // interface to Memory stage
-   M2W.slave                              M2W_bus,
+   M2W_intf.slave                         M2W_bus,
 
    input    logic                         xfer_in,
 
    // interface to GPR
-   RBUS.slave                             gpr_bus
+   RBUS_intf.slave                        gpr_bus
 );
 
    // ************************************************ ASSERTIONS ************************************************

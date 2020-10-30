@@ -24,11 +24,7 @@ module  top_tb1 ();
    logic    reset;
    logic    clk_100;
    logic    debug;
-<<<<<<< Updated upstream
    integer  clock_cycle;
-=======
-   integer    clock_cycle;       // useful for knowing where an error may have occured
->>>>>>> Stashed changes
    logic    sim_stop;
 
    `define DelayClockCycles(a) \
@@ -81,14 +77,14 @@ module  top_tb1 ();
    //------------------------------------------------------------------------------------------------
    // L1 Instruction Cache model (synthesizable but uses Flip Flops)
    //------------------------------------------------------------------------------------------------
-   L1IC     L1IC_intf();
-   L1IC_ARB IC_arb_bus();
+   L1IC_intf   L1IC_bus();
+   L1IC_ARB    IC_arb_bus();
    logic ic_flush;
-   
+
    L1_icache #(.A_SZ(PC_SZ)) L1_ic
    (  .clk_in(clk_100), .reset_in(reset),
 
-      .L1IC_intf(L1IC_intf),        // CPU interface
+      .L1IC_bus(L1IC_bus),        // CPU interface
       .ic_flush(ic_flush),
 
       // Request from L1 D$ to Invalidate a specific Cache Line
@@ -101,14 +97,14 @@ module  top_tb1 ();
    // L1 Data Cache model (synthesizable but uses Flip Flops)
    //------------------------------------------------------------------------------------------------
    // Interface signals to CPU
-   L1DC     L1DC_intf();
-   L1DC_ARB DC_arb_bus();
+   L1DC_intf   L1DC_bus();
+   L1DC_ARB    DC_arb_bus();
    logic dc_flush;
 
    L1_dcache #(.A_SZ(PC_SZ)) L1_dc
    (  .clk_in(clk_100), .reset_in(reset),
 
-      .L1DC_intf(L1DC_intf),        // CPU interface
+      .L1DC_bus(L1DC_bus),          // CPU interface
       .dc_flush(dc_flush),
 
       // Request to L1 I$ to Invalidate a specific Cache Line
@@ -123,7 +119,7 @@ module  top_tb1 ();
    arb_sysmem_model arb
    (
       .clk_in(clk_100), .reset_in(reset),
-      
+
       .IC_arb_bus(IC_arb_bus),
       .DC_arb_bus(DC_arb_bus)
    );
@@ -136,7 +132,7 @@ module  top_tb1 ();
    cache_arbiter carb
    (
       .clk_in(clk_100), .reset_in(reset),
-      
+
       .IC_arb_bus(IC_arb_bus),
       .DC_arb_bus(DC_arb_bus),
       .sysmem_bus(sysmem_bus)
@@ -148,7 +144,7 @@ module  top_tb1 ();
    sys_mem_model sm
    (
       .clk_in(clk_100), .reset_in(reset),
-   
+
       .sysmem_bus(sysmem_bus)
    );
 
@@ -160,11 +156,11 @@ module  top_tb1 ();
    (  .clk_in(clk_100), .reset_in(reset),
 
       // L1 Instruction Cache Interface - could also be used to interface to "RAM Blocks" in an FPGA
-      .L1IC_intf(L1IC_intf),
+      .L1IC_bus(L1IC_bus),
       .ic_flush(ic_flush),
 
       // L1 Data Cache Interface - could also be used to interface to "RAM Blocks" in an FPGA
-      .L1DC_intf(L1DC_intf),
+      .L1DC_bus(L1DC_bus),
       .dc_flush(dc_flush),
 
       // External I/O accesses
@@ -173,7 +169,7 @@ module  top_tb1 ();
       .io_rd(),                        // Output:  I/O Read signal
       .io_wr(),                        // Output:  I/O Write signal
       .io_wr_data(),                   // Output:  I/O Write Data
-      
+
       .io_ack(FALSE),                  // Input:   I/O Acknowledge   - No external devices right now...
       .io_ack_fault(TRUE),             // Input:   I/O Acccess Fault - No external devices right now...
       .io_rd_data(32'hdeadbeef),       // Input:   I/O read data     - No external devices right now...

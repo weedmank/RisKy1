@@ -21,7 +21,7 @@ import cpu_structs_pkg::*;
 
 module decode_core
 (
-   DCORE.slave       dcore_bus
+   DCORE_intf.slave     dcore_bus
 );
 
    // ----------------------------------------------------------------------------------------------------------

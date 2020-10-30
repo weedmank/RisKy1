@@ -35,13 +35,13 @@
 
 //                          +------------------------------------------+
 //                          |                                          |
-// L1DC_intf.req      ----->+                                          +-----> arb_bus.req_data
+// L1DC_bus.req      ----->+                                          +-----> arb_bus.req_data
 //                          |                          Request to Arb  |
-// L1DC_intf.req_data ----->+                                          +-----> arb_bus.req_valid
+// L1DC_bus.req_data ----->+                                          +-----> arb_bus.req_valid
 //                          | Req/Ack with CPU                         |
-// L1DC_intf.ack      <-----+                                          +<----- arb_bus.req_rdy
+// L1DC_bus.ack      <-----+                                          +<----- arb_bus.req_rdy
 //                          |                                          |
-// L1DC_intf.ack_data <-----+                                          |
+// L1DC_bus.ack_data <-----+                                          |
 //                          |                                          +<----- arb_bus.ack_data
 //                          |                    Acknowledge from Arb  |
 //                          |                                          +<----- arb_bus.ack_valid
@@ -74,9 +74,9 @@ module L1_dcache
    input    logic                   clk_in,
    input    logic                   reset_in,
 
-   // Interface signals to CPU      
-   L1DC.slave                       L1DC_intf,     
-   input    logic                   dc_flush,    
+   // Interface signals to CPU
+   L1DC_intf.slave                  L1DC_bus,
+   input    logic                   dc_flush,
 
    // If a Load/Store to the L1 D$ occurs in Instruction Space then the L1 I$ needs to be notified
    // To know when to do this, the inv_flag (set to TRUE) is passed to the L1 D$.  The CPU core should flag when this Load/Store is occuring in instruction space
@@ -85,75 +85,75 @@ module L1_dcache
    input    logic                   inv_ack_in,                            // ack from L1 I$
 
    L1DC_ARB.master                  arb_bus
-);    
-      
-   // parameters that CANNOT be changed by the user      
+);
+
+   // parameters that CANNOT be changed by the user
    localparam  NUM_CL   = DC_Size/CL_LEN;                                  // number of cache lines = total Data Cache size / length of cache line
    localparam  NUM_SETS = NUM_CL/NUM_WAYS;                                 // i.e. 1024 cache lines /4 ways = 256 sets
-      
-   //             +----------------+----------+---------+      
-   //             |      T_SZ      |  SET_SZ  |  CL_SZ  |      
-   //             +----------------+----------+---------+      
-   // example:            20            7          5     
-   localparam CL_SZ     = bit_size(CL_LEN-1);      
+
+   //             +----------------+----------+---------+
+   //             |      T_SZ      |  SET_SZ  |  CL_SZ  |
+   //             +----------------+----------+---------+
+   // example:            20            7          5
+   localparam CL_SZ     = bit_size(CL_LEN-1);
    localparam SET_SZ    = bit_size(NUM_SETS-1);                            // i.e. if NUM_SETS = 128 then SET_SZ = 7 bits
    localparam T_SZ      = A_SZ - SET_SZ - CL_SZ;                           // Tag size = A_SZ - SET_SZ - CL_SZ
-      
+
    localparam WAY_SZ    = bit_size(NUM_WAYS-1);                            // i.e. if NUM_WAYS = 8 then WAY_SZ = 3 bits
-      
-   localparam NUM_SW    = NUM_SETS * NUM_WAYS;     
-   localparam SW_SZ     = SET_SZ + WAY_SZ;      
-      
-`pragma protect begin      
-   logic   [NUM_SW-1:0] [CL_LEN*8-1:0] cache_mem;     
+
+   localparam NUM_SW    = NUM_SETS * NUM_WAYS;
+   localparam SW_SZ     = SET_SZ + WAY_SZ;
+
+`pragma protect begin
+   logic   [NUM_SW-1:0] [CL_LEN*8-1:0] cache_mem;
    logic   [NUM_SW-1:0]                cache_valid;                        // valid data in cache line
    logic   [NUM_SW-1:0]                cache_dirty;                        // dirty - cache line has been updated (written to)
-   logic   [NUM_SW-1:0]     [T_SZ-1:0] cache_tag;     
-      
+   logic   [NUM_SW-1:0]     [T_SZ-1:0] cache_tag;
+
    logic   [NUM_SW-1:0]   [WAY_SZ-1:0] lru;                                // Example: NUM_WAYS = 8, WAY_SZ = 3 bits
-   logic [NUM_WAYS-1:0]   [WAY_SZ-1:0] next_lru;      
-      
-   logic               [CL_LEN*16-1:0] current_cache_line, ccl;      
-   logic                [CL_LEN*8-1:0] norm_ccl;      
-      
+   logic [NUM_WAYS-1:0]   [WAY_SZ-1:0] next_lru;
+
+   logic               [CL_LEN*16-1:0] current_cache_line, ccl;
+   logic                [CL_LEN*8-1:0] norm_ccl;
+
    logic                    [A_SZ-1:0] bc_addr;                            // boundary crossing address of next cache line
-      
-   logic                  [SET_SZ-1:0] set, norm_set, bc_set;     
-      
-   logic                  [WAY_SZ-1:0] way;     
-      
-   logic                    [T_SZ-1:0] tag, norm_tag, bc_tag;     
-      
+
+   logic                  [SET_SZ-1:0] set, norm_set, bc_set;
+
+   logic                  [WAY_SZ-1:0] way;
+
+   logic                    [T_SZ-1:0] tag, norm_tag, bc_tag;
+
    logic                               hit;                                // hit
-   logic                  [WAY_SZ-1:0] hit_num;    
-      
+   logic                  [WAY_SZ-1:0] hit_num;
+
    logic                               rd, wr;                             // read & write flags
-      
+
    logic                               zx;                                 // zero_extend flag : 0 = sign extend for 8 and 16 bit Loads, 1 = zero extend
-      
+
    logic                         [2:0] sz;                                 // size in bytes -> 1 = 8 bit, 2 = 16 bit, 4 = 32 bit Load/Store
-      
+
    logic                   [SW_SZ-1:0] set_way;                            // address = {set,way}
-      
+
    logic                     [CL_SZ:0] cla;                                // big enough to access 2 cache lines in width (due to boundary crossing)
-      
+
    logic                     [DSZ-1:0] std;                                // store data
-      
+
    logic                               ecf;                                // empty cache found
-   logic                  [WAY_SZ-1:0] ecf_num;    
-      
-   logic                  [WAY_SZ-1:0] lru_num;    
-      
-   logic                               dirty;      
-   logic                               update_lru;    
-   logic                               wr_cpu_data;      
-      
-   logic                               save_info;     
-   logic                [CL_LEN*8-1:0] tmp_cache_line;      
-   logic                    [T_SZ-1:0] tmp_cache_tag;    
-   logic                               save_tmp_cl;      
-      
-   logic                               wr_arb_data;      
+   logic                  [WAY_SZ-1:0] ecf_num;
+
+   logic                  [WAY_SZ-1:0] lru_num;
+
+   logic                               dirty;
+   logic                               update_lru;
+   logic                               wr_cpu_data;
+
+   logic                               save_info;
+   logic                [CL_LEN*8-1:0] tmp_cache_line;
+   logic                    [T_SZ-1:0] tmp_cache_tag;
+   logic                               save_tmp_cl;
+
+   logic                               wr_arb_data;
    logic                               cm_wr;                              // cache memory write
    logic                               bc_flag;                            // boundary crossing flag
    logic                               set_bc_ff, clr_bc_ff;
@@ -170,29 +170,29 @@ module L1_dcache
    assign arb_ack_xfer = arb_bus.ack_valid & arb_bus.ack_rdy;
    assign arb_req_xfer = arb_bus.req_valid & arb_bus.req_rdy;
 
-   // Determine some of the initial data that will need to be used.  L1DC_intf.req_data must be valid the entire req/ack cycle
-   assign norm_set   = L1DC_intf.req_data.rw_addr[CL_SZ        +: SET_SZ]; // current working set
-   assign norm_tag   = L1DC_intf.req_data.rw_addr[CL_SZ+SET_SZ +: T_SZ]; 
-   assign bc_addr    = L1DC_intf.req_data.rw_addr + CL_LEN;                // address within next cache line
-   assign bc_set     = bc_addr[CL_SZ        +: SET_SZ];  
-   assign bc_tag     = bc_addr[CL_SZ+SET_SZ +: T_SZ]; 
-   assign set        = bc_ff ? bc_set : norm_set;  
-   assign tag        = bc_ff ? bc_tag : norm_tag;  
-   
-   assign rd         = L1DC_intf.req_data.rd;   
-   assign wr         = L1DC_intf.req_data.wr;   
-   assign zx         = L1DC_intf.req_data.zero_ext; 
-   assign sz         = L1DC_intf.req_data.size;                            // size in bytes -> 1 = 8 bit, 2 = 16 bit, 4 = 32 bit Load/Store
-   assign cla        = L1DC_intf.req_data.rw_addr[CL_SZ-1:0];
-   assign std        = L1DC_intf.req_data.wr_data;
-   assign bc_flag    = (L1DC_intf.req_data.rw_addr[CL_SZ-1:0] > (CL_LEN - sz)); // check for access crossing a cache line boundary
-//   assign bc_flag    = (L1DC_intf.req_data.rw_addr[CL_SZ-1:0] > (CL_LEN - sz)) & L1DC_intf.req; // check for access crossing a cache line boundary
-   assign inv_flag   = L1DC_intf.req_data.inv_flag;                        // 1 = A store to L1 D$ also wrote to L1 I$ address space
+   // Determine some of the initial data that will need to be used.  L1DC_bus.req_data must be valid the entire req/ack cycle
+   assign norm_set   = L1DC_bus.req_data.rw_addr[CL_SZ        +: SET_SZ]; // current working set
+   assign norm_tag   = L1DC_bus.req_data.rw_addr[CL_SZ+SET_SZ +: T_SZ];
+   assign bc_addr    = L1DC_bus.req_data.rw_addr + CL_LEN;                // address within next cache line
+   assign bc_set     = bc_addr[CL_SZ        +: SET_SZ];
+   assign bc_tag     = bc_addr[CL_SZ+SET_SZ +: T_SZ];
+   assign set        = bc_ff ? bc_set : norm_set;
+   assign tag        = bc_ff ? bc_tag : norm_tag;
+
+   assign rd         = L1DC_bus.req_data.rd;
+   assign wr         = L1DC_bus.req_data.wr;
+   assign zx         = L1DC_bus.req_data.zero_ext;
+   assign sz         = L1DC_bus.req_data.size;                            // size in bytes -> 1 = 8 bit, 2 = 16 bit, 4 = 32 bit Load/Store
+   assign cla        = L1DC_bus.req_data.rw_addr[CL_SZ-1:0];
+   assign std        = L1DC_bus.req_data.wr_data;
+   assign bc_flag    = (L1DC_bus.req_data.rw_addr[CL_SZ-1:0] > (CL_LEN - sz)); // check for access crossing a cache line boundary
+//   assign bc_flag    = (L1DC_bus.req_data.rw_addr[CL_SZ-1:0] > (CL_LEN - sz)) & L1DC_bus.req; // check for access crossing a cache line boundary
+   assign inv_flag   = L1DC_bus.req_data.inv_flag;                        // 1 = A store to L1 D$ also wrote to L1 I$ address space
 
    assign set_way    = {set,way};
    assign dirty      = cache_dirty [set_way];                              // dirty bit status of current cache line
 
-   assign inv_addr_out = L1DC_intf.req_data.rw_addr;
+   assign inv_addr_out = L1DC_bus.req_data.rw_addr;
 
 
    // Sequential logic elements - many are values that need to be saved (save_info) while in DC_IDLE state to be used later in other states
@@ -201,25 +201,25 @@ module L1_dcache
       if (reset_in)
          norm_ccl <= 'd0;
       else if (save_info)                                                  // see state DC_IDLE
-         norm_ccl <= cache_mem [set_way];    
-      
-      if (reset_in)     
-         DC_State <= DC_IDLE;    
-      else     
-         DC_State <= Next_DC_State;    
-      
-      if (reset_in)     
-         dcf_ff      <= FALSE;      
+         norm_ccl <= cache_mem [set_way];
+
+      if (reset_in)
+         DC_State <= DC_IDLE;
+      else
+         DC_State <= Next_DC_State;
+
+      if (reset_in)
+         dcf_ff      <= FALSE;
       else if (save_info)                                                  // see state DC_IDLE
-         dcf_ff      <= dc_flush;      
-      
-      if (reset_in | clr_bc_ff)     
-         bc_ff       <= FALSE;      
+         dcf_ff      <= dc_flush;
+
+      if (reset_in | clr_bc_ff)
+         bc_ff       <= FALSE;
       else if (set_bc_ff)                                                  // see state DC_IDLE
-         bc_ff       <= TRUE;    
-      
-      if (save_tmp_cl)     
-      begin    
+         bc_ff       <= TRUE;
+
+      if (save_tmp_cl)
+      begin
          tmp_cache_line <= cache_mem [set_way];                            // save current cache line if needed for later use
          tmp_cache_tag  <= cache_tag [set_way];                            // save tag that corresponds to tmp_cache_line
       end
@@ -276,20 +276,20 @@ module L1_dcache
    begin
       ecf      = FALSE;                                                    // empty cache flag = FALSE
       ecf_num  = 1'd0;                                                     // ecf_num not used if ecf == FALSE
-      
+
       hit      = FALSE;                                                    // set default values
       hit_num  = 1'd0;                                                     // not used if hit == FALSE
-      
+
       for (h = 0; h < NUM_WAYS; h++)                                       // look at each WAY
-      begin    
-         hw = h;     
+      begin
+         hw = h;
          if (!cache_valid [{set,hw}])                                      // This WAY has never been used
-         begin    
-            ecf      = TRUE;     
+         begin
+            ecf      = TRUE;
             ecf_num  = h;                                                  // choose any unused WAY
-         end      
-         else if (cache_tag [{set,hw}] == tag)     
-         begin    
+         end
+         else if (cache_tag [{set,hw}] == tag)
+         begin
             hit      = TRUE;                                               // cache hit - hit is only valid, and only used, during DC_IDLE state because tag is only valid then
             hit_num  = h;
          end
@@ -315,9 +315,9 @@ module L1_dcache
    always_comb
    begin
       if (hit)                                                             // highest priority is to use the "hit" WAY
-         way = hit_num;    
+         way = hit_num;
       else if (ecf)                                                        // then pick an unused WAY
-         way = ecf_num;    
+         way = ecf_num;
       else                                                                 // and finally pick the WAY with lru number 0
          way = lru_num;
    end
@@ -336,9 +336,9 @@ module L1_dcache
          pw = p;
          if (lru [{set,pw}] > val)
             next_lru[p] = lru [{set,pw}] - 1'd1;                           // Any WAY with a priority higher than val will be decremented
-         else if (lru [{set,pw}] == val)     
+         else if (lru [{set,pw}] == val)
             next_lru[p] = NUM_WAYS-1;                                      // The WAY that holds val will become the MRU
-         else     
+         else
             next_lru[p] = lru [{set,pw}];                                  // Otherwise WAYS with priority less than val wil not change
       end
    end
@@ -356,7 +356,7 @@ module L1_dcache
                   lru [s*NUM_WAYS + w] <= w;                               // each SET of WAYS initializes with values from 0 to NUM_WAYS-1
                else if (update_lru && (s == set))                          // update LRU values for each WAY in the current working set (set)
                   lru [s*NUM_WAYS + w] <= next_lru[w];                     // see above logic for next_lru[]
-               else     
+               else
                   lru [s*NUM_WAYS + w] <= lru [s*NUM_WAYS + w];            // default is no change
             end
          end
@@ -366,9 +366,9 @@ module L1_dcache
    // Cache FSM control logic
    always_comb
    begin
-      L1DC_intf.ack        = FALSE;
-      L1DC_intf.ack_data   = '0;
-      L1DC_intf.ack_fault  = FALSE;
+      L1DC_bus.ack        = FALSE;
+      L1DC_bus.ack_data   = '0;
+      L1DC_bus.ack_fault  = FALSE;
 
       Next_DC_State        = DC_State;                                     // default value
       save_info            = FALSE;
@@ -395,51 +395,51 @@ module L1_dcache
       begin
          case(DC_State)
             DC_IDLE:                                                       // bc_ff MUST be FALSE in this state
-            begin    
-               if (L1DC_intf.req)                                          // request from L/S Process block for a cache line of data AND INV_state has recovered from any I$ Invalidation request
-               begin    
+            begin
+               if (L1DC_bus.req)                                          // request from L/S Process block for a cache line of data AND INV_state has recovered from any I$ Invalidation request
+               begin
                   save_info   = TRUE;                                      // set, way, etc.. need to be updated
                   if (inv_flag)                                            // hold off read/write access if an invalidate is occurring
                       Next_DC_State  = WR_INV_CL_2_ARB;                    // WRITE HIT: need to write cache line out to System Memory & notify L1 I$
                   else if (hit)                                            // did this R/W request result in a hit (data valid bit set and tag match) or a miss
-                  begin    
+                  begin
                      update_lru  = TRUE;                                   // update lru for read/write hit access
                      if (rd)                                               // Read Hit
-                     begin    
+                     begin
                         if (!bc_flag)                                      // check for access crossing a cache line boundary
-                        begin    
-                           L1DC_intf.ack  = TRUE;                          // no boundary crossing for this READ HIT so send data out
+                        begin
+                           L1DC_bus.ack  = TRUE;                          // no boundary crossing for this READ HIT so send data out
                            case (sz)                                       // size in bytes -> 1 = 8 bit, 2 = 16 bit, 4 = 32 bit Load/Store
-                              1: L1DC_intf.ack_data = zx ? {{24{1'b0}},current_cache_line[cla*8 +: 8]}  : {{24{current_cache_line[cla*8 + 7]}}, current_cache_line[cla*8 +: 8]};
-                              2: L1DC_intf.ack_data = zx ? {{16{1'b0}},current_cache_line[cla*8 +: 16]} : {{16{current_cache_line[cla*8 + 15]}},current_cache_line[cla*8 +: 16]};
-                              4: L1DC_intf.ack_data = current_cache_line[cla*8 +: 32];
+                              1: L1DC_bus.ack_data = zx ? {{24{1'b0}},current_cache_line[cla*8 +: 8]}  : {{24{current_cache_line[cla*8 + 7]}}, current_cache_line[cla*8 +: 8]};
+                              2: L1DC_bus.ack_data = zx ? {{16{1'b0}},current_cache_line[cla*8 +: 16]} : {{16{current_cache_line[cla*8 + 15]}},current_cache_line[cla*8 +: 16]};
+                              4: L1DC_bus.ack_data = current_cache_line[cla*8 +: 32];
                            endcase                                         //!!! WARNING: cla*8 +: N could wrap into another cache_line !!!
                         end
                         else
                         begin
                            set_bc_ff      = TRUE;                          // next state will have set,tag = bc_set,bc_tag
                            Next_DC_State  = DC_BC;                         // RD HIT with Boundary crossing: read the 2nd cache line needed due to boundary crossing
-                        end      
-                     end      
+                        end
+                     end
                      else                                                  // Write Hit
-                     begin    
+                     begin
                         wr_cpu_data       = TRUE;                          // write CPU data into current cache line (i.e. cache_mem[set_way])
-                        if (!bc_flag)     
-                           L1DC_intf.ack  = TRUE;                          // WR HIT: remain in IDLE and acknowledge access
-                        else     
-                        begin    
+                        if (!bc_flag)
+                           L1DC_bus.ack  = TRUE;                          // WR HIT: remain in IDLE and acknowledge access
+                        else
+                        begin
                            set_bc_ff      = TRUE;                          // next state will have set,tag = bc_set,bc_tag
                            Next_DC_State  = DC_BC;                         // WR HIT: write to next cache line due to boundary crossing
-                        end      
-                     end      
-                  end      
+                        end
+                     end
+                  end
                   else                                                     // Cache Miss occurred - pass R/W info to the Arbiter/System Memory
                      Next_DC_State        = REQ_CL_FROM_ARB;               // READ MISS: WR MISS:
                end
             end
 
             WR_INV_CL_2_ARB:                                               // WR HIT: WR MISS: Write cache line to Arbiter/System Memory
-            begin    
+            begin
                arb_bus.req_data.rw        = 1'b0;                          // This is a write to the Arbiter/System Memory
                arb_bus.req_data.rw_addr   = {tag,set};                     // pass address where the cache line goes in the Arbiter/System Memory. This is a cache line address
                arb_bus.req_data.wr_data   = cache_mem [set_way];           // pass the currently found(determined by "hit") cache line to the Arbiter/System Memory
@@ -457,7 +457,7 @@ module L1_dcache
                inv_req_out = TRUE;
                if (inv_ack_in)
                begin
-                  L1DC_intf.ack           = TRUE;                          // Let CPU know the invalidate request cycle process is completed
+                  L1DC_bus.ack           = TRUE;                          // Let CPU know the invalidate request cycle process is completed
                   Next_DC_State           = DC_IDLE;
                end
             end
@@ -467,43 +467,43 @@ module L1_dcache
                // set,tag = bc_set, bc_tag - bc_ff MUST be TRUE during this state
 
                if (hit)                                                    // may not be a hit for the 2nd cache line
-               begin    
+               begin
                   clr_bc_ff         = TRUE;                                // In next state the set,tag will be from norm_set, norm_tag
                   if (rd)                                                  // RD Hit can complete
-                  begin    
+                  begin
                      case (sz)                                             // size in bytes -> 1 = 8 bit, 2 = 16 bit, 4 = 32 bit Load/Store
-                        1: L1DC_intf.ack_data = zx ? {{24{1'b0}},current_cache_line[cla*8 +:  8]} : {{24{current_cache_line[cla*8 +  7]}}, current_cache_line[cla*8 +: 8]};
-                        2: L1DC_intf.ack_data = zx ? {{16{1'b0}},current_cache_line[cla*8 +: 16]} : {{16{current_cache_line[cla*8 + 15]}}, current_cache_line[cla*8 +: 16]};
-                        4: L1DC_intf.ack_data = current_cache_line[cla*8 +: 32];
+                        1: L1DC_bus.ack_data = zx ? {{24{1'b0}},current_cache_line[cla*8 +:  8]} : {{24{current_cache_line[cla*8 +  7]}}, current_cache_line[cla*8 +: 8]};
+                        2: L1DC_bus.ack_data = zx ? {{16{1'b0}},current_cache_line[cla*8 +: 16]} : {{16{current_cache_line[cla*8 + 15]}}, current_cache_line[cla*8 +: 16]};
+                        4: L1DC_bus.ack_data = current_cache_line[cla*8 +: 32];
                      endcase
-                     L1DC_intf.ack  = TRUE;                                // WR Hits are acknowledged
+                     L1DC_bus.ack  = TRUE;                                // WR Hits are acknowledged
                      update_lru     = TRUE;                                // WR access to current cache line
                      Next_DC_State  = DC_IDLE;                             // WR HIT: return to IDLE
-                  end      
+                  end
                   else                                                     // WR Hit can complete
-                  begin    
+                  begin
                      wr_cpu_data    = TRUE;                                // Write boundary crossing cache line
                      Next_DC_State  = DC_NORM;                             // WR HIT: both cache lines need to be written to cache mem
-                  end      
-               end      
+                  end
+               end
                else                                                        // RD/WR Miss: 2nd cache line wasn't a hit - must get it from memory
                   Next_DC_State     = REQ_CL_FROM_ARB;                     // READ MISS: WR MISS: for 2nd cache line (boundary crossing cache line)
-            end      
-      
+            end
+
             DC_NORM:                                                       // bc_ff MUST be FALSE during this state
-            begin    
+            begin
                wr_cpu_data    = TRUE;                                      // This will write normal (1st) cache line to cache mem because bc_ff is FALSE in this state
                update_lru     = TRUE;                                      // WR access to current cache line
-      
+
                Next_DC_State  = DC_IDLE;                                   // WR HIT: return to IDLE
-            end      
-      
+            end
+
             REQ_CL_FROM_ARB:                                               // READ MISS: WR MISS: Read Cache Line Request to Arbiter/System Memory
-            begin    
+            begin
                arb_bus.req_data.rw        = 1'b1;                          // This must be a read
                arb_bus.req_data.rw_addr   = {tag,set};                     // pass cache line address to the Arbiter/System Memory
-               arb_bus.req_valid          = TRUE;     
-      
+               arb_bus.req_valid          = TRUE;
+
                if (arb_req_xfer)                                           // Wait for acknowledge from Arbiter/System Memory
                begin
                   save_tmp_cl             = TRUE;
@@ -519,79 +519,79 @@ module L1_dcache
                   wr_arb_data             = TRUE;                          // this will write data from arbiter into cache
 //                  update_lru  = TRUE;  will be done on a state after this one
                   if (wr)                                                  // was the original cpu request a write to cache?
-                  begin    
+                  begin
                      if (dirty)                                            // is current cache line dirty?
                         Next_DC_State     = WR_TMP_CL_2_ARB;               // WR MISS DIRTY: ...then write the tmp_cache_line to Arbiter/System Memory.
-                     else     
+                     else
                         Next_DC_State     = CPU_DATA_2_CL;                 // WR MISS CLEAN: .. next write cpu data into new cache line
-                  end      
-                  else // READ MISS    
+                  end
+                  else // READ MISS
                      Next_DC_State        = CL_2_CPU;                      // RD MISS DIRTY: RD MISS CLEAN: now return read data to the CPU
                end
             end
 
 //- this state could be eliminated if the cpu write data could be merged with the new arb data and the result written to the current cache line during state WR_ARB_CL_2_CL
             CPU_DATA_2_CL:                                                 // WR MISS CLEAN: System Memory placed into unused cache memory can now be updated with CPU data
-            begin    
+            begin
                wr_cpu_data                = TRUE;                          // save cpu data into current cache line and also set the cache dirty bit (if this was a cpu write)
-               update_lru                 = TRUE;     
-      
-               if (bc_flag & !bc_ff)      
-               begin    
+               update_lru                 = TRUE;
+
+               if (bc_flag & !bc_ff)
+               begin
                   set_bc_ff               = TRUE;                          // need 2nd cache line because WRITE access straddles cache lines
-                  Next_DC_State           = REQ_CL_FROM_ARB;      
-               end      
-               else // (!bc_flag | bc_ff)    
-               begin    
-                  L1DC_intf.ack           = !inv_flag;      
+                  Next_DC_State           = REQ_CL_FROM_ARB;
+               end
+               else // (!bc_flag | bc_ff)
+               begin
+                  L1DC_bus.ack           = !inv_flag;
                   clr_bc_ff               = TRUE;                          // In next state the set,tag will be from norm_set, norm_tag
-                  if (inv_flag)     
+                  if (inv_flag)
                      Next_DC_State        = WR_INV_CL_2_ARB;               // WR MISS CLEAN: need to write cache line out to System Memory & notify L1 I$
-                  else     
+                  else
                      Next_DC_State        = DC_IDLE;                       // WR MISS CLEAN: return to IDLE
-               end      
-            end      
-      
+               end
+            end
+
             WR_TMP_CL_2_ARB:                                               // WR MISS DIRTY: RD MISS DIRTY: Write tmp_cache_line to Arbiter/System Memory
-            begin    
+            begin
                arb_bus.req_data.rw        = 1'b0;                          // This is a write to the Arbiter/System Memory
                arb_bus.req_data.rw_addr   = {tmp_cache_tag,set};           // pass address where tmp_cache_line goes in the Arbiter/System Memory
                arb_bus.req_data.wr_data   = tmp_cache_line;                // pass tmp_cache_line to the Arbiter/System Memory
-               arb_bus.req_valid          = TRUE;     
-      
+               arb_bus.req_valid          = TRUE;
+
                if (arb_req_xfer)                                           // Wait for Arbiter/System Memory to accept the R/W transfer request
-               begin    
+               begin
                   wr_cpu_data             = wr;                            // Also, IF this is a cpu write access then save cpu data into current cache line and also set the cache dirty bit
-                  update_lru              = wr;    
-      
-                  L1DC_intf.ack           = wr;                            // Only set if this was from a WR MISS DIRTY. L1DC_intf.ack = TRUE in state CL_2_CPU in a RD MISS DIRTY just prior to this state
-                  if (inv_flag & wr)      
+                  update_lru              = wr;
+
+                  L1DC_bus.ack           = wr;                            // Only set if this was from a WR MISS DIRTY. L1DC_bus.ack = TRUE in state CL_2_CPU in a RD MISS DIRTY just prior to this state
+                  if (inv_flag & wr)
                      Next_DC_State        = WR_INV_CL_2_ARB;               // WR MISS DIRTY: need to write cache line out to System Memory & notify L1 I$
-                  else     
+                  else
                      Next_DC_State        = DC_IDLE;                       // done
                end
             end
 
             // This state must have rd (READ) and hit == FALSE (i.e. MISS)
             CL_2_CPU:                                                      // RD MISS CLEAN: RD MISS DIRTY:
-            begin    
+            begin
                update_lru  = TRUE;                                         // update lru
-               if (dirty)     
+               if (dirty)
                   Next_DC_State           = WR_TMP_CL_2_ARB;               // RD MISS DIRTY: now save tmp_cache_line
-               else if (bc_flag & !bc_ff)    
-               begin    
-                  set_bc_ff               = TRUE;     
+               else if (bc_flag & !bc_ff)
+               begin
+                  set_bc_ff               = TRUE;
                   Next_DC_State           = REQ_CL_CHK;                    // RD MISS CLEAN: need 2nd cache line
-               end      
-               else // !bc_flag | bc_ff -  time to finish      
-               begin    
+               end
+               else // !bc_flag | bc_ff -  time to finish
+               begin
                   clr_bc_ff               = TRUE;                          // In next state the set,tag will be from norm_set, norm_tag
-                  L1DC_intf.ack           = TRUE;                          // dc_req_out is already TRUE in order to get here.  CPU required to take data on THIS clock cycle if it wants it
-                  L1DC_intf.ack_fault     = FALSE;                         // dc_req_out is already TRUE in order to get here.  CPU required to take data on THIS clock cycle if it wants it
+                  L1DC_bus.ack           = TRUE;                          // dc_req_out is already TRUE in order to get here.  CPU required to take data on THIS clock cycle if it wants it
+                  L1DC_bus.ack_fault     = FALSE;                         // dc_req_out is already TRUE in order to get here.  CPU required to take data on THIS clock cycle if it wants it
                   case (sz)                                                // size in bytes -> 1 = 8 bit, 2 = 16 bit, 4 = 32 bit Load/Store
-                     1: L1DC_intf.ack_data = zx ? {{24{1'b0}},current_cache_line[cla*8 +: 8]}  : {{24{current_cache_line[cla*8 + 7]}}, current_cache_line[cla*8 +: 8]};
-                     2: L1DC_intf.ack_data = zx ? {{16{1'b0}},current_cache_line[cla*8 +: 16]} : {{16{current_cache_line[cla*8 + 15]}},current_cache_line[cla*8 +: 16]};
-                     4: L1DC_intf.ack_data = current_cache_line[cla*8 +: 32];
+                     1: L1DC_bus.ack_data = zx ? {{24{1'b0}},current_cache_line[cla*8 +: 8]}  : {{24{current_cache_line[cla*8 + 7]}}, current_cache_line[cla*8 +: 8]};
+                     2: L1DC_bus.ack_data = zx ? {{16{1'b0}},current_cache_line[cla*8 +: 16]} : {{16{current_cache_line[cla*8 + 15]}},current_cache_line[cla*8 +: 16]};
+                     4: L1DC_bus.ack_data = current_cache_line[cla*8 +: 32];
                   endcase                                                  //!!! WARNING: cla*8 +: N could wrap into another cache_line !!!
                   Next_DC_State           = DC_IDLE;                       // RD MISS CLEAN: return to IDLE
                end
