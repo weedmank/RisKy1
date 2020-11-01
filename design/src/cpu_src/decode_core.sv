@@ -793,7 +793,7 @@ module decode_core
          if (i[6:2] == 5'b11011)                                                                                        //  PC = PC + sext(imm), R[rd] = PC + 4;
             cntrl_sigs =            '{1'b0,  1'b0,  1'b0, 1'b0,  1'b0,  1'b1,  BR_INSTR ,  BS_PC,  BS_IMM, B_JAL,  1'b0, j_imm    };        // JAL      32'b???????_?????_?????_???_?????_1101111
 
-         // ************************************************************************** SYS, BR, CSR instructions
+         // ************************************************************************** SYS, RET, CSR instructions
          if (i[6:2] == 5'b11100)
          begin
             // number of bits         1      1      1     1      1      1      4           2       2       4       1     32
