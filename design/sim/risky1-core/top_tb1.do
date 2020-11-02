@@ -91,6 +91,7 @@ vlog  -sv -hazards +define+ext_M+ext_N+ext_S+ext_U+SIM_DEBUG                    
 vlog  -sv -hazards +define+ext_M+ext_N+ext_S+ext_U+SIM_DEBUG                                                   ../../src/sva/gpr_asserts.sv
 vlog  -sv -hazards +define+ext_M+ext_N+ext_S+ext_U+SIM_DEBUG                                                   ../../src/sva/mem_asserts.sv
 vlog  -sv -hazards +define+ext_M+ext_N+ext_S+ext_U+SIM_DEBUG                                                   ../../src/sva/wb_asserts.sv
+vlog  -sv -hazards +define+ext_M+ext_N+ext_S+ext_U+SIM_DEBUG                                                   ../../src/sva/pipe_asserts.sv
                         
 view assertions
 view structure

@@ -94,7 +94,7 @@ add wave -noupdate -group DEC /top_tb1/RK1/DEC/rd_pipe_in
 add wave -noupdate -group DEC /top_tb1/RK1/DEC/rd_pipe_out
 add wave -noupdate -group DEC /top_tb1/RK1/DEC/wr_pipe_out
 add wave -noupdate -group DEC /top_tb1/RK1/DEC/full
-add wave -noupdate -group DEC -radix hexadecimal -childformat {{/top_tb1/RK1/DEC/dec_out.ipd -radix hexadecimal} {/top_tb1/RK1/DEC/dec_out.predicted_addr -radix hexadecimal} {/top_tb1/RK1/DEC/dec_out.Rs1_rd -radix hexadecimal} {/top_tb1/RK1/DEC/dec_out.Rs2_rd -radix hexadecimal} {/top_tb1/RK1/DEC/dec_out.Rd_wr -radix hexadecimal} {/top_tb1/RK1/DEC/dec_out.i_type -radix hexadecimal} {/top_tb1/RK1/DEC/dec_out.sel_x -radix hexadecimal} {/top_tb1/RK1/DEC/dec_out.sel_y -radix hexadecimal} {/top_tb1/RK1/DEC/dec_out.op -radix hexadecimal} {/top_tb1/RK1/DEC/dec_out.ci -radix hexadecimal} {/top_tb1/RK1/DEC/dec_out.imm -radix hexadecimal} {/top_tb1/RK1/DEC/dec_out.funct3 -radix hexadecimal} {/top_tb1/RK1/DEC/dec_out.Rs2_addr -radix hexadecimal} {/top_tb1/RK1/DEC/dec_out.Rs1_addr -radix hexadecimal} {/top_tb1/RK1/DEC/dec_out.Rd_addr -radix hexadecimal}} -subitemconfig {/top_tb1/RK1/DEC/dec_out.ipd {-radix hexadecimal} /top_tb1/RK1/DEC/dec_out.predicted_addr {-radix hexadecimal} /top_tb1/RK1/DEC/dec_out.Rs1_rd {-radix hexadecimal} /top_tb1/RK1/DEC/dec_out.Rs2_rd {-radix hexadecimal} /top_tb1/RK1/DEC/dec_out.Rd_wr {-radix hexadecimal} /top_tb1/RK1/DEC/dec_out.i_type {-radix hexadecimal} /top_tb1/RK1/DEC/dec_out.sel_x {-radix hexadecimal} /top_tb1/RK1/DEC/dec_out.sel_y {-radix hexadecimal} /top_tb1/RK1/DEC/dec_out.op {-radix hexadecimal} /top_tb1/RK1/DEC/dec_out.ci {-radix hexadecimal} /top_tb1/RK1/DEC/dec_out.imm {-radix hexadecimal} /top_tb1/RK1/DEC/dec_out.funct3 {-radix hexadecimal} /top_tb1/RK1/DEC/dec_out.Rs2_addr {-radix hexadecimal} /top_tb1/RK1/DEC/dec_out.Rs1_addr {-radix hexadecimal} /top_tb1/RK1/DEC/dec_out.Rd_addr {-radix hexadecimal}} /top_tb1/RK1/DEC/dec_out
+add wave -noupdate -group DEC -radix hexadecimal -childformat {{/top_tb1/RK1/DEC/dec_out.ipd -radix hexadecimal} {/top_tb1/RK1/DEC/dec_out.predicted_addr -radix hexadecimal} {/top_tb1/RK1/DEC/dec_out.Rs1_rd -radix hexadecimal} {/top_tb1/RK1/DEC/dec_out.Rs2_rd -radix hexadecimal} {/top_tb1/RK1/DEC/dec_out.Rd_wr -radix hexadecimal} {/top_tb1/RK1/DEC/dec_out.i_type -radix hexadecimal} {/top_tb1/RK1/DEC/dec_out.sel_x -radix hexadecimal} {/top_tb1/RK1/DEC/dec_out.sel_y -radix hexadecimal} {/top_tb1/RK1/DEC/dec_out.op -radix hexadecimal} {/top_tb1/RK1/DEC/dec_out.ci -radix hexadecimal} {/top_tb1/RK1/DEC/dec_out.imm -radix hexadecimal} {/top_tb1/RK1/DEC/dec_out.funct3 -radix hexadecimal} {/top_tb1/RK1/DEC/dec_out.Rs2_addr -radix hexadecimal} {/top_tb1/RK1/DEC/dec_out.Rs1_addr -radix hexadecimal} {/top_tb1/RK1/DEC/dec_out.Rd_addr -radix hexadecimal}} -subitemconfig {/top_tb1/RK1/DEC/dec_out.ipd {-height 15 -radix hexadecimal} /top_tb1/RK1/DEC/dec_out.predicted_addr {-height 15 -radix hexadecimal} /top_tb1/RK1/DEC/dec_out.Rs1_rd {-height 15 -radix hexadecimal} /top_tb1/RK1/DEC/dec_out.Rs2_rd {-height 15 -radix hexadecimal} /top_tb1/RK1/DEC/dec_out.Rd_wr {-height 15 -radix hexadecimal} /top_tb1/RK1/DEC/dec_out.i_type {-height 15 -radix hexadecimal} /top_tb1/RK1/DEC/dec_out.sel_x {-height 15 -radix hexadecimal} /top_tb1/RK1/DEC/dec_out.sel_y {-height 15 -radix hexadecimal} /top_tb1/RK1/DEC/dec_out.op {-height 15 -radix hexadecimal} /top_tb1/RK1/DEC/dec_out.ci {-height 15 -radix hexadecimal} /top_tb1/RK1/DEC/dec_out.imm {-height 15 -radix hexadecimal} /top_tb1/RK1/DEC/dec_out.funct3 {-height 15 -radix hexadecimal} /top_tb1/RK1/DEC/dec_out.Rs2_addr {-height 15 -radix hexadecimal} /top_tb1/RK1/DEC/dec_out.Rs1_addr {-height 15 -radix hexadecimal} /top_tb1/RK1/DEC/dec_out.Rd_addr {-height 15 -radix hexadecimal}} /top_tb1/RK1/DEC/dec_out
 add wave -noupdate -group D2E_bus -radix hexadecimal /top_tb1/RK1/D2E_bus/data
 add wave -noupdate -group D2E_bus /top_tb1/RK1/D2E_bus/valid
 add wave -noupdate -group D2E_bus /top_tb1/RK1/D2E_bus/rdy
@@ -105,7 +105,7 @@ add wave -noupdate -expand -group EXE /top_tb1/RK1/EXE/pipe_flush
 add wave -noupdate -expand -group EXE /top_tb1/RK1/EXE/rld_pc_flag
 add wave -noupdate -expand -group EXE -radix hexadecimal /top_tb1/RK1/EXE/rld_pc_addr
 add wave -noupdate -expand -group EXE -radix unsigned /top_tb1/RK1/EXE/mode
-add wave -noupdate -expand -group EXE -radix hexadecimal -childformat {{/top_tb1/RK1/EXE/fwd_mem_gpr.Rd_addr -radix hexadecimal} {/top_tb1/RK1/EXE/fwd_mem_gpr.Rd_data -radix hexadecimal}} -subitemconfig {/top_tb1/RK1/EXE/fwd_mem_gpr.Rd_addr {-radix hexadecimal} /top_tb1/RK1/EXE/fwd_mem_gpr.Rd_data {-radix hexadecimal}} /top_tb1/RK1/EXE/fwd_mem_gpr
+add wave -noupdate -expand -group EXE -radix hexadecimal -childformat {{/top_tb1/RK1/EXE/fwd_mem_gpr.valid -radix hexadecimal} {/top_tb1/RK1/EXE/fwd_mem_gpr.Rd_wr -radix hexadecimal} {/top_tb1/RK1/EXE/fwd_mem_gpr.Rd_addr -radix hexadecimal} {/top_tb1/RK1/EXE/fwd_mem_gpr.Rd_data -radix hexadecimal}} -subitemconfig {/top_tb1/RK1/EXE/fwd_mem_gpr.valid {-height 15 -radix hexadecimal} /top_tb1/RK1/EXE/fwd_mem_gpr.Rd_wr {-height 15 -radix hexadecimal} /top_tb1/RK1/EXE/fwd_mem_gpr.Rd_addr {-height 15 -radix hexadecimal} /top_tb1/RK1/EXE/fwd_mem_gpr.Rd_data {-height 15 -radix hexadecimal}} /top_tb1/RK1/EXE/fwd_mem_gpr
 add wave -noupdate -expand -group EXE -radix hexadecimal /top_tb1/RK1/EXE/fwd_wb_gpr
 add wave -noupdate -expand -group EXE -radix hexadecimal /top_tb1/RK1/EXE/gpr
 add wave -noupdate -expand -group EXE /top_tb1/RK1/EXE/rd_pipe_in
@@ -146,7 +146,7 @@ add wave -noupdate -expand -group EXE /top_tb1/RK1/EXE/ci
 add wave -noupdate -expand -group EXE /top_tb1/RK1/EXE/mret
 add wave -noupdate -expand -group EXE /top_tb1/RK1/EXE/sret
 add wave -noupdate -expand -group EXE /top_tb1/RK1/EXE/uret
-add wave -noupdate -group E2M_bus -radix hexadecimal -childformat {{/top_tb1/RK1/E2M_bus/data.ipd -radix hexadecimal} {/top_tb1/RK1/E2M_bus/data.ls_addr -radix hexadecimal} {/top_tb1/RK1/E2M_bus/data.st_data -radix hexadecimal} {/top_tb1/RK1/E2M_bus/data.size -radix hexadecimal} {/top_tb1/RK1/E2M_bus/data.zero_ext -radix hexadecimal} {/top_tb1/RK1/E2M_bus/data.inv_flag -radix hexadecimal} {/top_tb1/RK1/E2M_bus/data.is_ld -radix hexadecimal} {/top_tb1/RK1/E2M_bus/data.is_st -radix hexadecimal} {/top_tb1/RK1/E2M_bus/data.mis -radix hexadecimal} {/top_tb1/RK1/E2M_bus/data.mispre -radix hexadecimal} {/top_tb1/RK1/E2M_bus/data.ci -radix hexadecimal} {/top_tb1/RK1/E2M_bus/data.predicted_addr -radix hexadecimal} {/top_tb1/RK1/E2M_bus/data.br_pc -radix hexadecimal} {/top_tb1/RK1/E2M_bus/data.i_type -radix hexadecimal} {/top_tb1/RK1/E2M_bus/data.op_type -radix hexadecimal} {/top_tb1/RK1/E2M_bus/data.Rd_wr -radix hexadecimal} {/top_tb1/RK1/E2M_bus/data.Rd_addr -radix hexadecimal} {/top_tb1/RK1/E2M_bus/data.Rd_data -radix hexadecimal}} -subitemconfig {/top_tb1/RK1/E2M_bus/data.ipd {-radix hexadecimal} /top_tb1/RK1/E2M_bus/data.ls_addr {-radix hexadecimal} /top_tb1/RK1/E2M_bus/data.st_data {-radix hexadecimal} /top_tb1/RK1/E2M_bus/data.size {-radix hexadecimal} /top_tb1/RK1/E2M_bus/data.zero_ext {-radix hexadecimal} /top_tb1/RK1/E2M_bus/data.inv_flag {-radix hexadecimal} /top_tb1/RK1/E2M_bus/data.is_ld {-radix hexadecimal} /top_tb1/RK1/E2M_bus/data.is_st {-radix hexadecimal} /top_tb1/RK1/E2M_bus/data.mis {-radix hexadecimal} /top_tb1/RK1/E2M_bus/data.mispre {-radix hexadecimal} /top_tb1/RK1/E2M_bus/data.ci {-radix hexadecimal} /top_tb1/RK1/E2M_bus/data.predicted_addr {-radix hexadecimal} /top_tb1/RK1/E2M_bus/data.br_pc {-radix hexadecimal} /top_tb1/RK1/E2M_bus/data.i_type {-radix hexadecimal} /top_tb1/RK1/E2M_bus/data.op_type {-radix hexadecimal} /top_tb1/RK1/E2M_bus/data.Rd_wr {-radix hexadecimal} /top_tb1/RK1/E2M_bus/data.Rd_addr {-radix hexadecimal} /top_tb1/RK1/E2M_bus/data.Rd_data {-radix hexadecimal}} /top_tb1/RK1/E2M_bus/data
+add wave -noupdate -group E2M_bus -radix hexadecimal -childformat {{/top_tb1/RK1/E2M_bus/data.ipd -radix hexadecimal} {/top_tb1/RK1/E2M_bus/data.ls_addr -radix hexadecimal} {/top_tb1/RK1/E2M_bus/data.st_data -radix hexadecimal} {/top_tb1/RK1/E2M_bus/data.size -radix hexadecimal} {/top_tb1/RK1/E2M_bus/data.zero_ext -radix hexadecimal} {/top_tb1/RK1/E2M_bus/data.inv_flag -radix hexadecimal} {/top_tb1/RK1/E2M_bus/data.is_ld -radix hexadecimal} {/top_tb1/RK1/E2M_bus/data.is_st -radix hexadecimal} {/top_tb1/RK1/E2M_bus/data.mis -radix hexadecimal} {/top_tb1/RK1/E2M_bus/data.mispre -radix hexadecimal} {/top_tb1/RK1/E2M_bus/data.ci -radix hexadecimal} {/top_tb1/RK1/E2M_bus/data.predicted_addr -radix hexadecimal} {/top_tb1/RK1/E2M_bus/data.br_pc -radix hexadecimal} {/top_tb1/RK1/E2M_bus/data.i_type -radix hexadecimal} {/top_tb1/RK1/E2M_bus/data.op_type -radix hexadecimal} {/top_tb1/RK1/E2M_bus/data.Rd_wr -radix hexadecimal} {/top_tb1/RK1/E2M_bus/data.Rd_addr -radix hexadecimal} {/top_tb1/RK1/E2M_bus/data.Rd_data -radix hexadecimal}} -subitemconfig {/top_tb1/RK1/E2M_bus/data.ipd {-height 15 -radix hexadecimal} /top_tb1/RK1/E2M_bus/data.ls_addr {-height 15 -radix hexadecimal} /top_tb1/RK1/E2M_bus/data.st_data {-height 15 -radix hexadecimal} /top_tb1/RK1/E2M_bus/data.size {-height 15 -radix hexadecimal} /top_tb1/RK1/E2M_bus/data.zero_ext {-height 15 -radix hexadecimal} /top_tb1/RK1/E2M_bus/data.inv_flag {-height 15 -radix hexadecimal} /top_tb1/RK1/E2M_bus/data.is_ld {-height 15 -radix hexadecimal} /top_tb1/RK1/E2M_bus/data.is_st {-height 15 -radix hexadecimal} /top_tb1/RK1/E2M_bus/data.mis {-height 15 -radix hexadecimal} /top_tb1/RK1/E2M_bus/data.mispre {-height 15 -radix hexadecimal} /top_tb1/RK1/E2M_bus/data.ci {-height 15 -radix hexadecimal} /top_tb1/RK1/E2M_bus/data.predicted_addr {-height 15 -radix hexadecimal} /top_tb1/RK1/E2M_bus/data.br_pc {-height 15 -radix hexadecimal} /top_tb1/RK1/E2M_bus/data.i_type {-height 15 -radix hexadecimal} /top_tb1/RK1/E2M_bus/data.op_type {-height 15 -radix hexadecimal} /top_tb1/RK1/E2M_bus/data.Rd_wr {-height 15 -radix hexadecimal} /top_tb1/RK1/E2M_bus/data.Rd_addr {-height 15 -radix hexadecimal} /top_tb1/RK1/E2M_bus/data.Rd_data {-height 15 -radix hexadecimal}} /top_tb1/RK1/E2M_bus/data
 add wave -noupdate -group E2M_bus -radix hexadecimal /top_tb1/RK1/E2M_bus/valid
 add wave -noupdate -group E2M_bus -radix hexadecimal /top_tb1/RK1/E2M_bus/rdy
 add wave -noupdate -group MEM -radix hexadecimal /top_tb1/RK1/MEM/clk_in
@@ -350,24 +350,24 @@ add wave -noupdate -group L1_dc -radix hexadecimal /top_tb1/L1_dc/lw
 add wave -noupdate -group L1_dc -radix hexadecimal /top_tb1/L1_dc/p
 add wave -noupdate -group L1_dc -radix hexadecimal /top_tb1/L1_dc/pw
 add wave -noupdate -group L1_dc -radix hexadecimal /top_tb1/L1_dc/val
-add wave -noupdate -expand -group DC_arb_bus /top_tb1/DC_arb_bus/req_data
-add wave -noupdate -expand -group DC_arb_bus /top_tb1/DC_arb_bus/req_valid
-add wave -noupdate -expand -group DC_arb_bus /top_tb1/DC_arb_bus/req_rdy
-add wave -noupdate -expand -group DC_arb_bus /top_tb1/DC_arb_bus/ack_data
-add wave -noupdate -expand -group DC_arb_bus /top_tb1/DC_arb_bus/ack_valid
-add wave -noupdate -expand -group DC_arb_bus /top_tb1/DC_arb_bus/ack_rdy
-add wave -noupdate -expand -group {Cache Arbiter} /top_tb1/carb/clk_in
-add wave -noupdate -expand -group {Cache Arbiter} /top_tb1/carb/reset_in
-add wave -noupdate -expand -group {Cache Arbiter} /top_tb1/carb/arb_state
-add wave -noupdate -expand -group {Cache Arbiter} /top_tb1/carb/next_arb_state
-add wave -noupdate -expand -group {Cache Arbiter} /top_tb1/carb/wr_data
-add wave -noupdate -expand -group {Cache Arbiter} -radix hexadecimal /top_tb1/carb/rd_data
-add wave -noupdate -expand -group {Cache Arbiter} /top_tb1/carb/rw_addr
-add wave -noupdate -expand -group {Cache Arbiter} /top_tb1/carb/rw
-add wave -noupdate -expand -group {Cache Arbiter} /top_tb1/carb/save_ic_info
-add wave -noupdate -expand -group {Cache Arbiter} /top_tb1/carb/save_dc_info
-add wave -noupdate -expand -group {Cache Arbiter} /top_tb1/carb/save_rd_data
-add wave -noupdate -expand -group {Cache Arbiter} /top_tb1/carb/is_ic_cycle
+add wave -noupdate -group DC_arb_bus /top_tb1/DC_arb_bus/req_data
+add wave -noupdate -group DC_arb_bus /top_tb1/DC_arb_bus/req_valid
+add wave -noupdate -group DC_arb_bus /top_tb1/DC_arb_bus/req_rdy
+add wave -noupdate -group DC_arb_bus /top_tb1/DC_arb_bus/ack_data
+add wave -noupdate -group DC_arb_bus /top_tb1/DC_arb_bus/ack_valid
+add wave -noupdate -group DC_arb_bus /top_tb1/DC_arb_bus/ack_rdy
+add wave -noupdate -group {Cache Arbiter} /top_tb1/carb/clk_in
+add wave -noupdate -group {Cache Arbiter} /top_tb1/carb/reset_in
+add wave -noupdate -group {Cache Arbiter} /top_tb1/carb/arb_state
+add wave -noupdate -group {Cache Arbiter} /top_tb1/carb/next_arb_state
+add wave -noupdate -group {Cache Arbiter} /top_tb1/carb/wr_data
+add wave -noupdate -group {Cache Arbiter} -radix hexadecimal /top_tb1/carb/rd_data
+add wave -noupdate -group {Cache Arbiter} /top_tb1/carb/rw_addr
+add wave -noupdate -group {Cache Arbiter} /top_tb1/carb/rw
+add wave -noupdate -group {Cache Arbiter} /top_tb1/carb/save_ic_info
+add wave -noupdate -group {Cache Arbiter} /top_tb1/carb/save_dc_info
+add wave -noupdate -group {Cache Arbiter} /top_tb1/carb/save_rd_data
+add wave -noupdate -group {Cache Arbiter} /top_tb1/carb/is_ic_cycle
 add wave -noupdate -group sysmem_bus /top_tb1/sysmem_bus/req_rw
 add wave -noupdate -group sysmem_bus /top_tb1/sysmem_bus/req_addr
 add wave -noupdate -group sysmem_bus -radix hexadecimal /top_tb1/sysmem_bus/req_wr_data
@@ -376,16 +376,16 @@ add wave -noupdate -group sysmem_bus /top_tb1/sysmem_bus/req_rdy
 add wave -noupdate -group sysmem_bus -radix hexadecimal /top_tb1/sysmem_bus/ack_rd_data
 add wave -noupdate -group sysmem_bus /top_tb1/sysmem_bus/ack_valid
 add wave -noupdate -group sysmem_bus /top_tb1/sysmem_bus/ack_rdy
-add wave -noupdate -expand -group {Sys Mem} /top_tb1/sm/clk_in
-add wave -noupdate -expand -group {Sys Mem} /top_tb1/sm/reset_in
-add wave -noupdate -expand -group {Sys Mem} /top_tb1/sm/sys_mem
-add wave -noupdate -expand -group {Sys Mem} /top_tb1/sm/b4
-add wave -noupdate -expand -group {Sys Mem} /top_tb1/sm/k
-add wave -noupdate -expand -group {Sys Mem} /top_tb1/sm/bp
-add wave -noupdate -expand -group {Sys Mem} /top_tb1/sm/ndx
-add wave -noupdate -expand -group {Sys Mem} /top_tb1/sm/p
-add wave -noupdate -expand -group {Sys Mem} /top_tb1/sm/wr_data
-add wave -noupdate -expand -group {Sys Mem} -radix hexadecimal /top_tb1/sm/b_addr
+add wave -noupdate -group {Sys Mem} /top_tb1/sm/clk_in
+add wave -noupdate -group {Sys Mem} /top_tb1/sm/reset_in
+add wave -noupdate -group {Sys Mem} /top_tb1/sm/sys_mem
+add wave -noupdate -group {Sys Mem} /top_tb1/sm/b4
+add wave -noupdate -group {Sys Mem} /top_tb1/sm/k
+add wave -noupdate -group {Sys Mem} /top_tb1/sm/bp
+add wave -noupdate -group {Sys Mem} /top_tb1/sm/ndx
+add wave -noupdate -group {Sys Mem} /top_tb1/sm/p
+add wave -noupdate -group {Sys Mem} /top_tb1/sm/wr_data
+add wave -noupdate -group {Sys Mem} -radix hexadecimal /top_tb1/sm/b_addr
 TreeUpdate [SetDefaultTree]
 WaveRestoreCursors {{Cursor 1} {1485514 ps} 0}
 quietly wave cursor active 1
@@ -403,4 +403,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits ps
 update
-WaveRestoreZoom {0 ps} {1563450 ps}
+WaveRestoreZoom {0 ps} {261837 ps}

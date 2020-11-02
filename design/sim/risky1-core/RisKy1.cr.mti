@@ -6,17 +6,6 @@ Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 
 Top level modules:
 	mem_asserts
 
-} {} {}} C:/Risky1/src/cpu_src/vedic_mult16x16.v {1 {vlog -work work -stats=none C:/RisKy1/src/cpu_src/vedic_mult16x16.v
-Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
--- Compiling module vedic_mult16x16
--- Compiling module vedic_mult8
--- Compiling module vedic_mult4
--- Compiling module vedic_mult2
--- Compiling module ha
-
-Top level modules:
-	vedic_mult16x16
-
 } {} {}} C:/RisKy1/design/src/cpu_src/br_fu.sv {1 {vlog -work work -sv +incdir+../../src/includes -stats=none C:/RisKy1/design/src/cpu_src/br_fu.sv
 Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
 -- Compiling package br_fu_sv_unit
@@ -28,6 +17,17 @@ Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 
 
 Top level modules:
 	br_fu
+
+} {} {}} C:/Risky1/src/cpu_src/vedic_mult16x16.v {1 {vlog -work work -stats=none C:/RisKy1/src/cpu_src/vedic_mult16x16.v
+Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
+-- Compiling module vedic_mult16x16
+-- Compiling module vedic_mult8
+-- Compiling module vedic_mult4
+-- Compiling module vedic_mult2
+-- Compiling module ha
+
+Top level modules:
+	vedic_mult16x16
 
 } {} {}} C:/RisKy1/design/src/cpu_src/pipe.sv {1 {vlog -work work -sv +incdir+../../src/includes -stats=none C:/RisKy1/design/src/cpu_src/pipe.sv
 Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
@@ -84,14 +84,6 @@ Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 
 Top level modules:
 	mem_asserts
 
-} {} {}} C:/RisKy1/src/cpu_src/mem.sv {1 {vlog -work work -sv +incdir+../../src/includes -stats=none C:/RisKy1/src/cpu_src/mem.sv
-Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
--- Compiling package mem_sv_unit
--- Compiling module mem
-
-Top level modules:
-	mem
-
 } {} {}} C:/RisKy1/design/src/cpu_src/csr_lo_cnt.sv {1 {vlog -work work -sv +incdir+../../src/includes -stats=none C:/RisKy1/design/src/cpu_src/csr_lo_cnt.sv
 Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
 -- Compiling package csr_lo_cnt_sv_unit
@@ -101,6 +93,14 @@ Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 
 
 Top level modules:
 	csr_lo_cnt
+
+} {} {}} C:/RisKy1/src/cpu_src/mem.sv {1 {vlog -work work -sv +incdir+../../src/includes -stats=none C:/RisKy1/src/cpu_src/mem.sv
+Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
+-- Compiling package mem_sv_unit
+-- Compiling module mem
+
+Top level modules:
+	mem
 
 } {} {}} C:/RisKy1/design/src/pkg/cpu_params_pkg.sv {1 {vlog -work work -sv +incdir+../../src/includes -stats=none C:/RisKy1/design/src/pkg/cpu_params_pkg.sv
 Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
@@ -534,18 +534,6 @@ These features are only supported in Questasim.
 Top level modules:
 	csr_asserts
 
-} {} {}} C:/RisKy1/design/src/cpu_src/mem.sv {1 {vlog -work work -sv +incdir+../../src/includes -stats=none C:/RisKy1/design/src/cpu_src/mem.sv
-Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
--- Compiling package mem_sv_unit
--- Importing package functions_pkg
--- Importing package logic_params_pkg
--- Importing package cpu_params_pkg
--- Importing package cpu_structs_pkg
--- Compiling module mem
-
-Top level modules:
-	mem
-
 } {} {}} C:/RisKy1/src/sva/gpr_asserts.sv {2 {vlog -work work -sv +incdir+../../src/includes -stats=none C:/RisKy1/src/sva/gpr_asserts.sv
 Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
 -- Compiling package gpr_asserts_sv_unit
@@ -563,21 +551,17 @@ These features are only supported in Questasim.
 Top level modules:
 	gpr_asserts
 
-} {} {}} C:/RisKy1/src/cpu_src/ls_fu.sv {1 {vlog -work work -sv +incdir+../../src/includes -stats=none C:/RisKy1/src/cpu_src/ls_fu.sv
+} {} {}} C:/RisKy1/design/src/cpu_src/mem.sv {1 {vlog -work work -sv +incdir+../../src/includes -stats=none C:/RisKy1/design/src/cpu_src/mem.sv
 Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
--- Compiling package ls_fu_sv_unit
--- Compiling module ls_fu
+-- Compiling package mem_sv_unit
+-- Importing package functions_pkg
+-- Importing package logic_params_pkg
+-- Importing package cpu_params_pkg
+-- Importing package cpu_structs_pkg
+-- Compiling module mem
 
 Top level modules:
-	ls_fu
-
-} {} {}} C:/RisKy1/src/models/L1_dcache.sv {1 {vlog -work work -sv +incdir+../../src/includes -stats=none C:/RisKy1/src/models/L1_dcache.sv
-Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
--- Compiling package L1_dcache_sv_unit
--- Compiling module L1_dcache
-
-Top level modules:
-	L1_dcache
+	mem
 
 } {} {}} C:/RisKy1/design/src/cpu_src/cpu_intf.sv {1 {vlog -work work -sv -stats=none C:/RisKy1/design/src/cpu_src/cpu_intf.sv
 Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
@@ -595,12 +579,29 @@ Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 
 -- Compiling interface CSRFU_intf
 -- Compiling interface DCORE_intf
 -- Compiling interface RBUS_intf
+-- Compiling interface FBUS_intf
 -- Compiling interface L1IC_intf
 -- Compiling interface L1DC_intf
 -- Compiling interface CSR_MEM_intf
 
 Top level modules:
 	--none--
+
+} {} {}} C:/RisKy1/src/models/L1_dcache.sv {1 {vlog -work work -sv +incdir+../../src/includes -stats=none C:/RisKy1/src/models/L1_dcache.sv
+Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
+-- Compiling package L1_dcache_sv_unit
+-- Compiling module L1_dcache
+
+Top level modules:
+	L1_dcache
+
+} {} {}} C:/RisKy1/src/cpu_src/ls_fu.sv {1 {vlog -work work -sv +incdir+../../src/includes -stats=none C:/RisKy1/src/cpu_src/ls_fu.sv
+Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
+-- Compiling package ls_fu_sv_unit
+-- Compiling module ls_fu
+
+Top level modules:
+	ls_fu
 
 } {} {}} C:/RisKy1/design/src/peripherals/L1_icache.sv {1 {vlog -work work -sv -stats=none C:/RisKy1/design/src/peripherals/L1_icache.sv
 Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
@@ -614,9 +615,6 @@ Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 
 Top level modules:
 	L1_icache
 
-} {} {}} C:/RisKy1/src/cpu_src/spfp_fu.sv {1 {vlog -work work -sv +incdir+../../src/includes -stats=none C:/RisKy1/src/cpu_src/spfp_fu.sv
-Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
-
 } {} {}} C:/RisKy1/design/src/cpu_src/csr_std_wr.sv {1 {vlog -work work -sv +incdir+../../src/includes -stats=none C:/RisKy1/design/src/cpu_src/csr_std_wr.sv
 Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
 -- Compiling package csr_std_wr_sv_unit
@@ -627,13 +625,8 @@ Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 
 Top level modules:
 	csr_std_wr
 
-} {} {}} C:/Risky1/src/cpu_src/decode_core.sv {1 {vlog -work work -sv +incdir+../../src/includes -stats=none C:/RisKy1/src/cpu_src/decode_core.sv
+} {} {}} C:/RisKy1/src/cpu_src/spfp_fu.sv {1 {vlog -work work -sv +incdir+../../src/includes -stats=none C:/RisKy1/src/cpu_src/spfp_fu.sv
 Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
--- Compiling package decode_core_sv_unit
--- Compiling module decode_core
-
-Top level modules:
-	decode_core
 
 } {} {}} C:/RisKy1/src/cpu_src/irq.sv {1 {vlog -work work -sv +incdir+../../src/includes -stats=none C:/RisKy1/src/cpu_src/irq.sv
 Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
@@ -643,6 +636,14 @@ Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 
 Top level modules:
 	irq
 
+} {} {}} C:/Risky1/src/cpu_src/decode_core.sv {1 {vlog -work work -sv +incdir+../../src/includes -stats=none C:/RisKy1/src/cpu_src/decode_core.sv
+Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
+-- Compiling package decode_core_sv_unit
+-- Compiling module decode_core
+
+Top level modules:
+	decode_core
+
 } {} {}} C:/RisKy1/src/models/L1_icache.sv {1 {vlog -work work -sv +incdir+../../src/includes -stats=none C:/RisKy1/src/models/L1_icache.sv
 Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
 -- Compiling package L1_icache_sv_unit
@@ -650,14 +651,6 @@ Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 
 
 Top level modules:
 	L1_icache
-
-} {} {}} C:/RisKy1/src/debug/disasm_RV.sv {1 {vlog -work work -sv +incdir+../../src/includes -stats=none C:/RisKy1/src/debug/disasm_RV.sv
-Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
--- Compiling package disasm_RV_sv_unit
--- Compiling module disasm
-
-Top level modules:
-	disasm
 
 } {} {}} C:/RisKy1/design/src/sva/csr_asserts.sv {2 {vlog -work work -sv +incdir+../../src/includes -stats=none C:/RisKy1/design/src/sva/csr_asserts.sv
 Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
@@ -680,6 +673,14 @@ These features are only supported in Questasim.
 Top level modules:
 	csr_asserts
 
+} {} {}} C:/RisKy1/src/debug/disasm_RV.sv {1 {vlog -work work -sv +incdir+../../src/includes -stats=none C:/RisKy1/src/debug/disasm_RV.sv
+Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
+-- Compiling package disasm_RV_sv_unit
+-- Compiling module disasm
+
+Top level modules:
+	disasm
+
 } {} {}} C:/RisKy1/design/src/sva/gpr_asserts.sv {2 {vlog -work work -sv +incdir+../../src/includes -stats=none C:/RisKy1/design/src/sva/gpr_asserts.sv
 Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
 -- Compiling package gpr_asserts_sv_unit
@@ -699,14 +700,6 @@ These features are only supported in Questasim.
 Top level modules:
 	gpr_asserts
 
-} {} {}} C:/RisKy1/src/cpu_src/wb.sv {1 {vlog -work work -sv +incdir+../../src/includes -stats=none C:/RisKy1/src/cpu_src/wb.sv
-Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
--- Compiling package wb_sv_unit
--- Compiling module wb
-
-Top level modules:
-	wb
-
 } {} {}} C:/RisKy1/src/cpu_src/idr_fu.sv {1 {vlog -work work -sv +incdir+../../src/includes -stats=none C:/RisKy1/src/cpu_src/idr_fu.sv
 Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
 -- Compiling package idr_fu_sv_unit
@@ -714,6 +707,14 @@ Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 
 
 Top level modules:
 	idr_fu
+
+} {} {}} C:/RisKy1/src/cpu_src/wb.sv {1 {vlog -work work -sv +incdir+../../src/includes -stats=none C:/RisKy1/src/cpu_src/wb.sv
+Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
+-- Compiling package wb_sv_unit
+-- Compiling module wb
+
+Top level modules:
+	wb
 
 } {} {}} C:/RisKy1/design/src/cpu_src/fpr.sv {1 {vlog -work work -sv +incdir+../../src/includes -stats=none C:/RisKy1/design/src/cpu_src/fpr.sv
 Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
@@ -740,18 +741,6 @@ Top level modules:
 } {} {}} C:/RisKy1/design/src/cpu_src/spfp_fu.sv {1 {vlog -work work -sv +incdir+../../src/includes -stats=none C:/RisKy1/design/src/cpu_src/spfp_fu.sv
 Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
 
-} {} {}} C:/RisKy1/design/src/cpu_src/decode_core.sv {1 {vlog -work work -sv +incdir+../../src/includes -stats=none C:/RisKy1/design/src/cpu_src/decode_core.sv
-Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
--- Compiling package decode_core_sv_unit
--- Importing package functions_pkg
--- Importing package logic_params_pkg
--- Importing package cpu_params_pkg
--- Importing package cpu_structs_pkg
--- Compiling module decode_core
-
-Top level modules:
-	decode_core
-
 } {} {}} C:/RisKy1/design/src/peripherals/peripheral_intf.sv {1 {vlog -work work -sv -stats=none C:/RisKy1/design/src/peripherals/peripheral_intf.sv
 Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
 -- Compiling package peripheral_intf_sv_unit
@@ -764,5 +753,17 @@ Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 
 
 Top level modules:
 	--none--
+
+} {} {}} C:/RisKy1/design/src/cpu_src/decode_core.sv {1 {vlog -work work -sv +incdir+../../src/includes -stats=none C:/RisKy1/design/src/cpu_src/decode_core.sv
+Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
+-- Compiling package decode_core_sv_unit
+-- Importing package functions_pkg
+-- Importing package logic_params_pkg
+-- Importing package cpu_params_pkg
+-- Importing package cpu_structs_pkg
+-- Compiling module decode_core
+
+Top level modules:
+	decode_core
 
 } {} {}}
