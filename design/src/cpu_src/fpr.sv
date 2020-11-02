@@ -21,10 +21,9 @@ module fpr
    input    logic                            clk_in,
    input    logic                            reset_in,
 
-   output   logic   [MAX_FPR-1:0] [FLEN-1:0] fpr,              // MAX_FPR General Purpose registers
-   input    logic                            fpr_Fd_wr,
-   input    logic              [FPR_ASZ-1:0] fpr_Fd_addr,
-   input    logic                 [FLEN-1:0] fpr_Fd_data
+   output   logic   [MAX_FPR-1:0] [FLEN-1:0] fpr,                 // MAX_FPR General Purpose registers
+
+   FBUS_intf.slave                           fpr_bus
 );
 
    // For RISC-V ISA RV32IM, F0 - F15 are 32-bit R/W registers
@@ -36,8 +35,8 @@ module fpr
       begin
          if (reset_in)
             fpr[k] <= 1'd0;
-         else if (fpr_Fd_wr & (fpr_Fd_addr == k))              // register Fd must match loop count to know which one to write to
-            fpr[k] <= fpr_Fd_data;
+         else if (fpr_bus.Fd_wr & (fpr_bus.Fd_addr == k))         // register Fd must match loop count to know which one to write to
+            fpr[k] <= fpr_bus.Fd_data;
       end
    end
    endgenerate

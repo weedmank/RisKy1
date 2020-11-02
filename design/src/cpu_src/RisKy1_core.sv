@@ -319,9 +319,8 @@ module RisKy1_core
    `ifdef ext_F
    // FPR signals
    logic      [MAX_FPR-1:0] [FLEN-1:0] fpr;                                   // MAX_FPR Floating Point Registers
-   logic                               fpr_Fd_wr;                             // 1 = write to destination register
-   logic                 [FPR_ASZ-1:0] fpr_Fd_addr;                           // Destination Register to write
-   logic                    [FLEN-1:0] fpr_Fd_data;                           // data that will be written to the destination register
+
+   FBUS_intf                           fpr_bus();
    `endif
 
    logic                               cpu_halt;
@@ -474,16 +473,14 @@ module RisKy1_core
       .M2W_bus(M2W_bus),
 
       `ifdef ext_F
-      // forwarding data
+      // FPR forwarding data
       .fwd_wb_fpr(fwd_wb_fpr),                                                // Output:  WB stage register forwarding info
 
       // interface to FPR
-      .fpr_Fd_wr(fpr_Fd_wr),                                                  // Output: 1 = write to destination register
-      .fpr_Fd_addr(fpr_Fd_addr),                                              // Output: Destination Register to write (i.e 0 - 31)
-      .fpr_Fd_data(fpr_Fd_data),                                              // Output: data that will be written to the destination register
+      .fpr_bus(fpr_bus)
       `endif
 
-      // forwarding data
+      // GPR forwarding data
       .fwd_wb_gpr(fwd_wb_gpr),                                                // Output:  WB stage register forwarding info
 
       // interface to GPR
@@ -508,9 +505,8 @@ module RisKy1_core
       .clk_in(clk_in), .reset_in(reset_in),                                   // Inputs:  system clock and reset
 
       .fpr(fpr),                                                              // Output:  MAX_FPR General Purpose registers - all registers can be read at anytime
-      .fpr_Fd_wr(fpr_Fd_wr),                                                  // Input:   1 = write to destination register
-      .fpr_Fd_addr(fpr_Fd_addr),                                              // Input:   Destination Register to write
-      .fpr_Fd_data(fpr_Fd_data)                                               // Input:   data that will be written to the destination register
+      
+      .fpr_bus(fpr_bus)
    );
    `endif
 

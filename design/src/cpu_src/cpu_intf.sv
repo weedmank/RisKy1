@@ -245,6 +245,17 @@ interface RBUS_intf;
 
 endinterface: RBUS_intf
 
+// ------------------------ fpr interface ------------------------
+interface FBUS_intf;
+      logic                   Fd_wr;         // 1 = write to destination register
+      logic     [GPR_ASZ-1:0] Fd_addr;       // Destination Register to write
+      logic         [RSZ-1:0] Fd_data;       // data that will be written to the destination register
+
+      modport master (output Fd_wr, Fd_addr, Fd_data);
+      modport slave  (input  Fd_wr, Fd_addr, Fd_data);
+
+endinterface: FBUS_intf
+
 // ------------------------ L1 Instruction & Data Cache Interfaces ------------------------
 interface L1IC_intf;
       logic                   req;           // Output: Request            - Fetch unit is requesting a cache line of data from the I $

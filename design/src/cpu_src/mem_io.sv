@@ -48,7 +48,7 @@ module mem_io
    `endif
 
    // External I/O accesses
-   output   logic                      io_req,          // Output:  I/O Request
+   output   logic                      io_req,              // Output:  I/O Request
    output   logic          [PC_SZ-1:0] io_addr,             // Output:  I/O Address
    output   logic                      io_rd,               // Output:  I/O Read signal
    output   logic                      io_wr,               // Output:  I/O Write signal

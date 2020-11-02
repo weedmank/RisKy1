@@ -35,9 +35,7 @@ module wb
    output   FWD_FPR                       fwd_wb_fpr,
 
    // interface to FPR
-   output   logic                         fpr_Fd_wr,                                            // 1 = write to destination register
-   output   logic           [FPR_ASZ-1:0] fpr_Fd_addr,                                          // Destination Register to write
-   output   logic              [FLEN-1:0] fpr_Fd_data,                                          // data that will be written to the destination register
+   FBUS_intf.master                       fpr_bus,
    `endif
 
    // interface to forwarding signals
@@ -76,9 +74,9 @@ module wb
    assign fwd_wb_fpr.Fd_addr  = M2W_bus.data.Rd_addr;                                           // Rd_aadr and Rd_data can be shared from execute.sv as only Fd_wr and Rd_wr are mutually exclusive
    assign fwd_wb_fpr.Fd_data  = M2W_bus.data.Rd_data;
 
-   assign fpr_Fd_wr           = xfer_in & M2W_bus.data.Fd_wr;                                   // when to write
-   assign fpr_Fd_addr         = M2W_bus.data.Rd_addr;                                           // Which destination register
-   assign fpr_Fd_data         = M2W_bus.data.Rd_data;                                           // data for destination register
+   assign fpr_bus.Fd_wr       = xfer_in & M2W_bus.data.Fd_wr;                                   // when to write
+   assign fpr_bus.Fd_addr     = M2W_bus.data.Rd_addr;                                           // Which destination register
+   assign fpr_bus.Fd_data     = M2W_bus.data.Rd_data;                                           // data for destination register
    `endif
 
    assign M2W_bus.rdy         = !reset_in & !cpu_halt;                                          // always ready to process results

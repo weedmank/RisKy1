@@ -35,12 +35,10 @@ module pipe    // simple buffer of Flip Flops between two stages
    output      logic    valid_out
 );
 
-   logic       empty;
    logic       full;
 
-   assign full = !empty;
-   assign full_out = full & !read_in; // just one item means full, but only if data is not going to be read this cycle
-   assign valid_out = !empty;
+   assign full_out   = full & !read_in; // just one item means full, but only if data is not going to be read this cycle
+   assign valid_out  = full;
 
    always_ff @(posedge clk_in)
    begin
@@ -50,10 +48,10 @@ module pipe    // simple buffer of Flip Flops between two stages
          data_out <= data_in;
 
       if (reset_in)
-         empty <= TRUE;
-      else if (write_in)   // reset will override this
-         empty <= FALSE;
-      else if (read_in)    // reset will override this
-         empty <= TRUE;
+         full <= FALSE;
+      else if (write_in)
+         full <= TRUE;
+      else if (read_in)
+         full <= FALSE;
    end
 endmodule

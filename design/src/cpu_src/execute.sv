@@ -129,14 +129,14 @@ module execute
 
    // fu_done goes high whenever an instruction finishes execution.
    // Most instructions are executed in Functional Units and a few are not
-   assign fu_done =  alu_fu_done | br_fu_done |
+   assign fu_done =  alu_fu_done  | br_fu_done |
    `ifdef ext_M
-                     im_fu_done | idr_fu_done |
+                     im_fu_done   | idr_fu_done |
    `endif
    `ifdef ext_F
                      spfp_fu_done |
    `endif
-                     csr_fu_done | ls_fu_done | hint_done | sys_done | ill_done;
+                     csr_fu_done  | ls_fu_done | hint_done | sys_done | ill_done;
 
    // control logic for interface to Decode stage and Memory stage
    assign D2E_bus.rdy   = !full & !reset_in & !cpu_halt & fu_done;
@@ -483,12 +483,11 @@ module execute
          exe_dout.op_type        = op_type;
          exe_dout.predicted_addr = predicted_addr;
          exe_dout.br_pc          = br_pc;
-
-
-         unique case(i_type)                                           // select which functional unit output data is the appropriate one and save it
+         
+         unique case(i_type)                                                        // select which functional unit output data is the appropriate one and save it
             ALU_INSTR:
             begin
-               exe_dout.Rd_wr    = Rd_wr;                                           // Writeback stage needs to know whether to write to destination register Rd
+               exe_dout.Rd_wr    = Rd_wr & (Rd_addr != 0);                          // Writeback stage needs to know whether to write to destination register Rd
                exe_dout.Rd_addr  = Rd_addr;
                exe_dout.Rd_data  = afu_bus.Rd_data;                                 // Data may be written into Rd register
             end
@@ -609,7 +608,7 @@ module execute
                      end
                      else
                      begin
-                        exe_dout.Rd_wr       = Rd_wr;                               // Writeback stage needs to know whether to write to destination register Rd for this jump
+                        exe_dout.Rd_wr       = Rd_wr & (Rd_addr != 0);              // Writeback stage needs to know whether to write to destination register Rd
                         exe_dout.Rd_addr     = Rd_addr;
                         exe_dout.Rd_data     = brfu_bus.no_br_pc;                   // address of instruction immediately after this branch instruction
                      end
@@ -629,7 +628,7 @@ module execute
                      end
                      else
                      begin
-                        exe_dout.Rd_wr       = Rd_wr;                               // Writeback stage needs to know whether to write to destination register Rd for this jump
+                        exe_dout.Rd_wr       = Rd_wr & (Rd_addr != 0);              // Writeback stage needs to know whether to write to destination register Rd for this jump
                         exe_dout.Rd_addr     = Rd_addr;
                         exe_dout.Rd_data     = brfu_bus.no_br_pc;                   // address of instruction immediately after this branch instruction
                      end
@@ -640,14 +639,14 @@ module execute
             `ifdef ext_M
             IM_INSTR:
             begin
-               exe_dout.Rd_wr       = Rd_wr;                                        // Writeback stage needs to know whether to write to destination register Rd
+               exe_dout.Rd_wr       = Rd_wr & (Rd_addr != 0);                       // Writeback stage needs to know whether to write to destination register Rd
                exe_dout.Rd_addr     = Rd_addr;
                exe_dout.Rd_data     = imfu_bus.Rd_data;
             end
 
             IDR_INSTR:
             begin
-               exe_dout.Rd_wr       = Rd_wr;                                        // Writeback stage needs to know whether to write to destination register Rd
+               exe_dout.Rd_wr       = Rd_wr & (Rd_addr != 0);                       // Writeback stage needs to know whether to write to destination register Rd
                exe_dout.Rd_addr     = Rd_addr;
 
                if (op_type inside {REM, REMU})
@@ -722,7 +721,7 @@ module execute
                end
                else
                begin
-                  exe_dout.Rd_wr       = Rd_wr;                                     // Writeback stage needs to know whether to write to destination register Rd
+                  exe_dout.Rd_wr       = Rd_wr & (Rd_addr != 0);                    // Writeback stage needs to know whether to write to destination register Rd
                   exe_dout.Rd_addr     = Rd_addr;
                   exe_dout.Rd_data     = csrfu_bus.Rd_data;                         // value used to update Rd in WB stage
                end
@@ -732,7 +731,7 @@ module execute
             begin
                // Load exceptions can only be done once Load finishes in MEM stage
                // Note: exe_dout.Rd_data cannot be determined here - it is determined in mem.sv where it gets loaded from memory and passed on to Write Back Stage.
-               exe_dout.Rd_wr       = Rd_wr;                                        // Writeback stage needs to know whether to write to destination register Rd
+               exe_dout.Rd_wr       = Rd_wr & (Rd_addr != 0);                       // Writeback stage needs to know whether to write to destination register Rd
                exe_dout.Rd_addr     = Rd_addr;
                exe_dout.is_ld       = TRUE;
                exe_dout.ls_addr     = lsfu_bus.ls_addr;
