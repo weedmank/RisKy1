@@ -43,11 +43,13 @@ module gpr_asserts
    always @(negedge clk_in)
    begin
       GPR_RD_WR_RESET:
-      assert (!(gpr_bus.Rd_wr & reset_in))                     else $fatal("gpr_bus.Rd_wr should not be asserted during reset");
+      assert (!(gpr_bus.Rd_wr & reset_in))                                 else $fatal("gpr_bus.Rd_wr should not be asserted during reset");
       GPR_RD_WR_RD_ADDR_UNKNOWN:
-      assert (!(gpr_bus.Rd_wr & $isunknown(gpr_bus.Rd_addr)))  else $fatal("gpr_bus.Rd_addr (i.e. 0x%0x) is UNKNOWN during assertion of gpr_bus.Rd_wr",gpr_bus.Rd_addr);
+      assert (!(gpr_bus.Rd_wr & $isunknown(gpr_bus.Rd_addr) & !reset_in))  else $fatal("gpr_bus.Rd_addr (i.e. 0x%0x) is UNKNOWN during assertion of gpr_bus.Rd_wr",gpr_bus.Rd_addr);
       GPR_RD_WR_RD_DATA_UNKNOWN:
-      assert (!(gpr_bus.Rd_wr & $isunknown(gpr_bus.Rd_data)))  else $fatal("gpr_bus.Rd_data (i.e. 0x%0x) is UNKNOWN during assertion of gpr_bus.Rd_wr",gpr_bus.Rd_data);
+      assert (!(gpr_bus.Rd_wr & $isunknown(gpr_bus.Rd_data) & !reset_in))  else $fatal("gpr_bus.Rd_data (i.e. 0x%0x) is UNKNOWN during assertion of gpr_bus.Rd_wr",gpr_bus.Rd_data);
+      GPR_R0_WR:
+      assert (!(gpr_bus.Rd_wr & (gpr_bus.Rd_addr == 0) & !reset_in))       else $warning("gpr_bus.Rd_addr is 0 when gpr_bus.Rd_wr is TRUE! Warning: If this changes R0 to be non-zero, then CPU operation failure will occur");
    end
 
    // All GPR registers should have 0 values in 1st clock cycle after reset falls

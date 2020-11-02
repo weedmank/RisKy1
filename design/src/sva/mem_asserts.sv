@@ -62,30 +62,46 @@ module mem_asserts
          assert (!(E2M_bus.valid & !(E2M_bus.data.Rd_addr inside {[0:31]})))  else $fatal("mem_asserts: GPR register address range not between 0 and 31");
 
          // when MIO_bus.req is asserted, .rw, .rw_addr, .wr_data, .size, .zer_ext should all be KNOWN values
-         MEM_MEM_IO_RD_UNKNOWN:
+         MEM_IO_RD_UNKNOWN:
          assert (!(MIO_bus.req & $isunknown(MIO_bus.req_data.rd)) )           else $fatal ("mem_asserts: MIO_bus.req_data.rd is unknown during MIO_bus.req assertion");
-         MEM_MEM_IO_WR_UNKNOWN:
+         MEM_IO_WR_UNKNOWN:
          assert (!(MIO_bus.req & $isunknown(MIO_bus.req_data.wr)) )           else $fatal ("mem_asserts: MIO_bus.req_data.wr is unknown during MIO_bus.req assertion");
-         MEM_MEM_IO_RW_ADDR_UNKNOWN:
+         MEM_IO_RW_ADDR_UNKNOWN:
          assert (!(MIO_bus.req & $isunknown(MIO_bus.req_data.rw_addr)) )      else $fatal ("mem_asserts: MIO_bus.req_data.rw_addr is unknown during MIO_bus.req assertion");
-         MEM_MEM_IO_WR_DATA_UNKNOWN:
+         MEM_IO_WR_DATA_UNKNOWN:
          assert (!(MIO_bus.req & $isunknown(MIO_bus.req_data.wr_data)) )      else $fatal ("mem_asserts: MIO_bus.req_data.wr_data is unknown during MIO_bus.req assertion");
-         MEM_MEM_IO_SIZE_UNKNOWN:
+         MEM_IO_SIZE_UNKNOWN:
          assert (!(MIO_bus.req & $isunknown(MIO_bus.req_data.size)) )         else $fatal ("mem_asserts: MIO_bus.req_data.size is unknown during MIO_bus.req assertion");
-         MEM_MEM_IO_ZERO_EXT_UNKNOWN:
+         MEM_IO_ZERO_EXT_UNKNOWN:
          assert (!(MIO_bus.req & $isunknown(MIO_bus.req_data.zero_ext)) )     else $fatal ("mem_asserts: MIO_bus.req_data.zero_ext is unknown during MIO_bus.req assertion");
 
+         FWD_MEM_GPR_RD_WR:
+         assert (!(fwd_mem_gpr.valid & $isunknown(fwd_mem_gpr.Rd_wr)) )       else $fatal ("mem_asserts: fwd_mem_gpr.Rd_wr is unknown when fwd_mem_gpr.valid == TRUE");
+         FWD_MEM_GPR_RD_ADDR:
+         assert (!(fwd_mem_gpr.valid & $isunknown(fwd_mem_gpr.Rd_addr)) )     else $fatal ("mem_asserts: fwd_mem_gpr.Rd_addr is unknown when fwd_mem_gpr.valid == TRUE");
+         FWD_MEM_GPR_RD_DATA:
+         assert (!(fwd_mem_gpr.valid & $isunknown(fwd_mem_gpr.Rd_data)) )     else $fatal ("mem_asserts: fwd_mem_gpr.Rd_data is unknown when fwd_mem_gpr.valid == TRUE");
+
+         `ifdef ext_F
+         FWD_MEM_FPR_RD_WR:
+         assert (!(fwd_mem_gpr.valid & $isunknown(fwd_mem_fpr.Rd_wr)) )       else $fatal ("mem_asserts: fwd_mem_fpr.Rd_wr is unknown when fwd_mem_fpr.valid == TRUE");
+         FWD_MEM_FPR_RD_ADDR:
+         assert (!(fwd_mem_gpr.valid & $isunknown(fwd_mem_fpr.Rd_addr)) )     else $fatal ("mem_asserts: fwd_mem_fpr.Rd_addr is unknown when fwd_mem_fpr.valid == TRUE");
+         FWD_MEM_FPR_RD_DATA:
+         assert (!(fwd_mem_gpr.valid & $isunknown(fwd_mem_fpr.Rd_data)) )     else $fatal ("mem_asserts: fwd_mem_fpr.Rd_data is unknown when fwd_mem_fpr.valid == TRUE");
+         `endif
+         
          // when MIO_bus.req is asserted, MIO_bus.req_data.size needs to be specific values
-         MEM_MEM_IO_REQ_SIZE:
+         MEM_IO_REQ_SIZE:
          assert (!(MIO_bus.req & !(MIO_bus.req_data.size inside {0,1,2,4})) ) else $fatal ("mem_asserts: MIO_bus.req_data.size has invalid value of %d", MIO_bus.req_data.size);
 
          // when rd_pipe_in is asserted, .Rd_wr, .Rd_addr and .Rd_data must be KNOWN
          MEM_RD_WR:
-         assert (!(rd_pipe_in & $isunknown(mem_dout.Rd_wr)) )                    else $fatal ("mem_asserts: mem_dout.Rd_wr (i.e %d) is unknown during rd_pipe_in", mem_dout.Rd_wr);
+         assert (!(rd_pipe_in & $isunknown(mem_dout.Rd_wr)) )                 else $fatal ("mem_asserts: mem_dout.Rd_wr (i.e %d) is unknown during rd_pipe_in", mem_dout.Rd_wr);
          MEM_RD_ADDR:
-         assert (!(rd_pipe_in & $isunknown(mem_dout.Rd_addr)) )                  else $fatal ("mem_asserts: mem_dout.Rd_addr (i.e %d) is unknown during rd_pipe_in", mem_dout.Rd_addr);
+         assert (!(rd_pipe_in & $isunknown(mem_dout.Rd_addr)) )               else $fatal ("mem_asserts: mem_dout.Rd_addr (i.e %d) is unknown during rd_pipe_in", mem_dout.Rd_addr);
          MEM_RD_DATA:
-         assert (!(rd_pipe_in & $isunknown(mem_dout.Rd_data)) )                  else $fatal ("mem_asserts: mem_dout.Rd_data (i.e 0x%0x) is unknown during rd_pipe_in", mem_dout.Rd_data);
+         assert (!(rd_pipe_in & $isunknown(mem_dout.Rd_data)) )               else $fatal ("mem_asserts: mem_dout.Rd_data (i.e 0x%0x) is unknown during rd_pipe_in", mem_dout.Rd_data);
 
          // when mem_dout.Rd_wr is asserted, .Rd_addr must be in range
          MEM_RD_WR_RD_ADDR_RANGE:

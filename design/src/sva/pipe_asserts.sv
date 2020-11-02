@@ -28,12 +28,11 @@ module pipe_asserts    // simple buffer of Flip Flops between two stages
 
    input       logic    write_in,
    input       T        data_in,
-//   input      logic    full_out,
-   input      logic    empty,
+   input       logic    full_out,
 
    input       logic    read_in,
-//   input      T        data_out,
-   input      logic    valid_out
+   input       T        data_out,
+   input       logic    valid_out
 );
 
 
@@ -51,10 +50,10 @@ module pipe_asserts    // simple buffer of Flip Flops between two stages
       PIPE_VALID_WHILE_RESET:
       assert (!(reset_in & valid_out))             else $error("pipe: valid_out should not occur during assertion of reset");
       PIPE_VALID_WHILE_EMPTY:
-      assert (!(empty & valid_out))                else $error("pipe: valid_out should not occur when pipe is empty");
+      assert (!(!full_out & valid_out))            else $error("pipe: valid_out should not occur when pipe is empty");
 
       // when pipe is full and read_in is FALSE, no write_in should occur
       PIPE_FULL_WRITE_NO_READ:
-      assert (!(write_in & !empty & !read_in))     else $error("pipe: write_in should not occur when pipe is full and no data is being read out of it!");
+      assert (!(write_in & full_out & !read_in))   else $error("pipe: write_in should not occur when pipe is full and no data is being read out of it!");
    end
 endmodule
