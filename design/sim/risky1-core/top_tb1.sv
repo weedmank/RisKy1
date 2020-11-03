@@ -38,6 +38,26 @@ module  top_tb1 ();
       `DelayClockCycles(50);
       reset    = 1'b0;
       $display("Reset completed, Simulation started.");
+      
+      `ifdef M_MODE_ONLY
+         $display("RisKy1 is M Mode Only");
+      `else
+         `ifdef ext_S
+            $display("RisKy1 with Supervisor support");
+         `endif
+         `ifdef ext_U
+            $display("RisKy1 with User support");
+         `endif
+      `endif
+      `ifdef ext_N
+         $display("RisKy also supports Interrupts");
+      `endif
+      `ifdef ext_M
+         $display("RV32i with extension M support");
+      `endif
+      `ifdef ext_C
+         $display("RV32i with extension C support");
+      `endif
 
 
       clock_cycle = 0;
