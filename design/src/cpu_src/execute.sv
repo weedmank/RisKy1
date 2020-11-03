@@ -501,46 +501,26 @@ module execute
                // A B_xRET instruction will pop the relevant lower-privilege interrupt enable and privilege mode stack.
                // In addition to manipulating the privilege stack as described in Section 3.1.6.1, B_xRET sets the pc
                // to the value stored in the x epc register.  see riscv-privileged-20190608-1.pdf p 40
-               // -------------- MRET --------------
+               // -------------- URET,SRET,MRET --------------
                case(op_type)
                   `ifdef ext_U
                   B_URET:                                                           // URET
                   begin // "OK to use in all modes though maybe technically nonsensical in S or M mode"
-                     `ifdef ext_C                                                   // if no Compressed extension support then ialign is 0 and thus no misalignment can occur
-                     if (ialign & brfu_bus.mis)
+                     if (predicted_addr != uepc)
                      begin
-                        exe_dout.mis         = brfu_bus.mis;                        // Misaligned Address Trap
-                        exe_dout.br_pc       = br_pc;                               // Exception Trap info for use in MEM stage
+                        exe_dout.mispre   = TRUE;
+   
+                        rld_pc_flag       = TRUE;
+                        rld_pc_addr       = uepc;                                   // reload PC and flush pipeline
                      end
-                     else
-                     `endif
-
-                     begin
-                        if (predicted_addr != uepc)
-                        begin
-                           exe_dout.mispre   = TRUE;
-
-                           rld_pc_flag       = TRUE;
-                           rld_pc_addr       = uepc;                                // reload PC and flush pipeline
-                        end
-                        uret  = TRUE;                                               // notify csr.sv
-                     end
+                     uret  = TRUE;                                                  // notify csr.sv
                   end
                   `endif // ext_U
 
                   `ifdef ext_S
                   B_SRET:                                                           // SRET
                   begin
-                     `ifdef ext_C                                                   // if no Compressed extension support then ialign is 0 and thus no misalignment can occur
-                     if (ialign & brfu_bus.mis)
-                     begin
-                        exe_dout.mis   = brfu_bus.mis;                              // Misaligned Address Trap
-                        exe_dout.br_pc = br_pc;                                     // Exception Trap info for use in MEM stage
-                     end
-                     else
-                     `endif
-
-                     if (mode >= S_MODE) // || TSR == 1  see riscv-privileged-20190608-1.pdf p 40 ----- OK to use in Machine or Supervisor mode
+                     if (mode >= S_MODE)
                      begin
                         if (predicted_addr != sepc)
                         begin
@@ -556,15 +536,6 @@ module execute
 
                   B_MRET:                                                           // MRET
                   begin
-                     `ifdef ext_C                                                   // if no Compressed extension support then ialign is 0 and thus no misalignment can occur
-                     if (ialign & brfu_bus.mis)                                     // misalign cannot occur for ialign = 0 (32 bit alignment) because mepc[1:0] == 2'b00 see csr_wr_mach.svh and br_fu.sc
-                     begin
-                        exe_dout.mis   = brfu_bus.mis;                              // Misaligned Address Trap
-                        exe_dout.br_pc = br_pc;                                     // Exception Trap info for use in MEM stage
-                     end
-                     else
-                     `endif
-
                      if (mode == M_MODE)                                            // OK to use if in Machine mode
                      begin
                         if (predicted_addr != mepc)

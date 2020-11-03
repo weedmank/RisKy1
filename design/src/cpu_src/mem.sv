@@ -293,20 +293,7 @@ module mem
                   `ifdef ext_U
                   B_URET:                                                           // URET
                   begin // "OK to use in all modes though maybe technically nonsensical in S or M mode"
-                     if (mis)
-                     begin
-                        rld_pc_flag             = TRUE;                             // flush pipeline and reload new fetch address
-                        rld_pc_addr             = trap_pc;
-
-                        exception.pc            = ipd.pc;                           // save address of current instruction
-                        exception.tval          = br_pc;                            // misaligned branch address - saved in Rd_data in EXE stage
-                        exception.cause         = 0;                                // 0 = Instruction Address Misaligned
-                        exception.flag          = TRUE;                             // control signal to save exception.pc, exception.tval and exception.cause in csr.sv
-
-                        current_events.e_flag   = TRUE;
-                        current_events.e_cause  = exception.cause;
-                     end
-                     else if (mispre)
+                     if (mispre)
                         current_events.mispredict = TRUE;                           // can't be covered using e_flag... becuase this is not an exception
 
                      current_events.ret_cnt[BXX_RET] = 1'b1;                        // number of BXX instructions retiring this clock cycle
@@ -316,20 +303,7 @@ module mem
                   `ifdef ext_S
                   B_SRET:                                                           // SRET
                   begin
-                     if (mis)
-                     begin
-                        rld_pc_flag             = TRUE;                             // flush pipeline and reload new fetch address
-                        rld_pc_addr             = trap_pc;
-
-                        exception.pc            = ipd.pc;                           // save address of current instruction
-                        exception.tval          = br_pc;                            // misaligned branch address
-                        exception.cause         = 0;                                // 0 = Instruction Address Misaligned
-                        exception.flag          = TRUE;                             // control signal to save exception.pc, exception.tval and exception.cause in csr.sv
-
-                        current_events.e_flag   = TRUE;
-                        current_events.e_cause  = exception.cause;
-                     end
-                     else if (mode < S_MODE) // || TSR == 1  see riscv-privileged-20190608-1.pdf p 40
+                     if (mode < S_MODE)
                      begin
                         rld_pc_flag             = TRUE;
                         rld_pc_addr             = trap_pc;
@@ -351,20 +325,7 @@ module mem
 
                   B_MRET:                                                           // MRET
                   begin
-                     if (mis)                                                       // misalign cannot occur for ialign = 0 (32 bit alignment) because mepc[1:0] == 2'b00 see csr_wr_mach.svh and br_fu.sc
-                     begin
-                        rld_pc_flag             = TRUE;                             // flush pipeline and reload new fetch address
-                        rld_pc_addr             = trap_pc;
-
-                        exception.pc            = ipd.pc;                           // save address of current instruction
-                        exception.tval          = br_pc;                            // misaligned branch address
-                        exception.cause         = 0;                                // 0 = Instruction Address Misaligned
-                        exception.flag          = TRUE;                             // control signal to save exception.pc, exception.tval and exception.cause in csr.sv
-
-                        current_events.e_flag   = TRUE;
-                        current_events.e_cause  = exception.cause;
-                     end
-                     else if (mode < M_MODE)                                        // Illegal to use in Supervisor or User modes
+                     if (mode < M_MODE)                                             // Illegal to use in Supervisor or User modes
                      begin
                         rld_pc_flag             = TRUE;                             // flush pipeline and reload new fetch address
                         rld_pc_addr             = trap_pc;                          // Trap Vector Base Address - from csr.sv
