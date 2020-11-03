@@ -85,12 +85,17 @@ module RisKy1_core // Verilog style - for use in Vivado
    input    wire                       clk_in,
    input    wire                       reset_in,
 
+   `ifdef ext_N
+   input    wire                       ext_irq,                               // Input:  Machine mode External Interrupt
+   `endif
+
    // L1 Instruction cache interface signals
    output   wire                       ic_req,                                // Output: Request            - Fetch unit is requesting a cache line of data from the I $
    output   wire           [PC_SZ-1:0] ic_addr,                               // Output: Request address    - Memory address that Fetch unit wants to get a cache line of data from
-   output   wire                       ic_flush,                              // Output: signal requesting to flush the Instruction Cache
    input    wire                       ic_ack,                                // Input:  Ackknowledge       - I$ is ackknowledging it has data (ic_rd_data_in) for the Fetch unit
    input    wire        [CL_LEN*8-1:0] ic_ack_data,                           // Input:  Acknowledge data   - this contains CL_LEN bytes of data => CL_LEN/4 instructions
+
+   output   wire                       ic_flush,                              // Output: signal requesting to flush the Instruction Cache
 
    // L1 Data cache interface signals
    output   wire                       dc_req,                                // Output: Request - must remain high until ack
@@ -101,16 +106,13 @@ module RisKy1_core // Verilog style - for use in Vivado
    output   wire                 [2:0] dc_size,                               // Output: Request - size in bytes -> 1 = 8 bit, 2 = 16 bit, 4 = 32 bit Load/Store
    output   wire                       dc_zero_ext,                           // Output: Request - 1 = Zero Extend
    output   wire                       dc_inv_flag,                           // Output: Request - invalidate flag
-   output   wire                       dc_flush,                              // Output: Request - Output: signal requesting to flush the Data Cache
    input    wire                       dc_ack,
    input    wire             [RSZ-1:0] dc_ack_data,
 
+   output   wire                       dc_flush,                              // Output: Request - Output: signal requesting to flush the Data Cache
+
    `ifdef SIM_DEBUG
    output   wire                       sim_stop,
-   `endif
-
-   `ifdef ext_N
-   input    wire                       ext_irq,                               // Input:  Machine mode External Interrupt
    `endif
 
    // External I/O accesses

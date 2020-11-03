@@ -288,7 +288,7 @@ module mem
                // A B_xRET instruction will pop the relevant lower-privilege interrupt enable and privilege mode stack.
                // In addition to manipulating the privilege stack as described in Section 3.1.6.1, B_xRET sets the pc
                // to the value stored in the x epc register.  see riscv-privileged-20190608-1.pdf p 40
-               // -------------- MRET --------------
+               // -------------- xRET --------------
                case(op_type)
                   `ifdef ext_U
                   B_URET:                                                           // URET
