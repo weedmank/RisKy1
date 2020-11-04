@@ -347,7 +347,9 @@ module mem
                   // -------------- Bxx --------------
                   B_ADD:
                   begin
-                     if (mis)                                                       // not TRUE for 16 bit instructions
+                     // With the addition of the C extension, no instructions can raise instruction-address-misaligned exceptions. p. 95
+                     `ifndef ext_C
+                     if (mis)
                      begin
                         rld_pc_flag             = TRUE;                             // flush pipeline and reload new fetch address
                         rld_pc_addr             = trap_pc;
@@ -360,7 +362,9 @@ module mem
                         current_events.e_flag   = TRUE;
                         current_events.e_cause  = exception.cause;
                      end
-                     else if (predicted_addr != br_pc)
+                     else
+                     `endif
+                     if (predicted_addr != br_pc)
                         current_events.mispredict = TRUE;                           // can't be covered using e_flag... becuase this is not an exception
 
                      current_events.ret_cnt[BXX_RET] = 1'b1;                        // number of BXX instructions retiring this clock cycle
@@ -369,7 +373,9 @@ module mem
                   // -------------- JAL --------------
                   B_JAL:
                   begin
-                     if (mis)                                                       // not TRUE for 16 bit instructions
+                     // With the addition of the C extension, no instructions can raise instruction-address-misaligned exceptions. p. 95
+                     `ifndef ext_C
+                     if (mis)
                      begin
                         rld_pc_flag             = TRUE;                             // flush pipeline and reload new fetch address
                         rld_pc_addr             = trap_pc;
@@ -382,7 +388,9 @@ module mem
                         current_events.e_flag   = TRUE;
                         current_events.e_cause  = exception.cause;
                      end
-                     else if (predicted_addr != br_pc)
+                     else
+                     `endif
+                     if (predicted_addr != br_pc)
                         current_events.mispredict = TRUE;                           // can't be covered using e_flag... becuase this is not an exception
                      else
                      begin
@@ -397,6 +405,8 @@ module mem
                   // -------------- JALR --------------
                   B_JALR:
                   begin
+                     // With the addition of the C extension, no instructions can raise instruction-address-misaligned exceptions. p. 95
+                     `ifndef ext_C
                      if (mis)                                                       // not TRUE for 16 bit instructions
                      begin
                         rld_pc_flag             = TRUE;                             // flush pipeline and reload new fetch address
@@ -410,7 +420,9 @@ module mem
                         current_events.e_flag   = TRUE;
                         current_events.e_cause  = exception.cause;
                      end
-                     else if (predicted_addr != br_pc)
+                     else
+                     `endif
+                     if (predicted_addr != br_pc)
                         current_events.mispredict = TRUE;                           // can't be covered using e_flag... becuase this is not an exception
                      else
                      begin

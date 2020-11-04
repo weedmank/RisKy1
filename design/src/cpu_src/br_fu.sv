@@ -155,9 +155,9 @@ module br_fu
    assign brfu_bus.no_br_pc   = no_br_pc;  // address of instruction following a Bxx, JAL, or JALR - see p 15,16
    assign brfu_bus.br_pc      = br_pc;
 
-   `ifdef ext_C // With the addition of the C extension, no instructions can raise instruction-address-misaligned exceptions. p95
+   `ifdef ext_C                        // With the addition of the C extension, no instructions can raise instruction-address-misaligned exceptions. p95
    assign brfu_bus.mis        = FALSE;
-   `else
+   `else                               // only 32 bit instructions
    assign brfu_bus.mis        = (br_pc[1:0] != 2'b00);
    `endif
 

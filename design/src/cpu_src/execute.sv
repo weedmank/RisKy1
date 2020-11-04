@@ -552,12 +552,16 @@ module execute
                   // -------------- Bxx --------------
                   B_ADD:
                   begin
+                     // With the addition of the C extension, no instructions can raise instruction-address-misaligned exceptions. p. 95
+                     `ifndef ext_C
                      if (brfu_bus.mis)
                      begin
                         exe_dout.mis   = brfu_bus.mis;                              // Misaligned Addresses Trap
                         exe_dout.br_pc = br_pc;                                     // Exception Trap info for use in MEM stage
                      end
-                     else if (predicted_addr != br_pc)
+                     else
+                     `endif
+                     if (predicted_addr != br_pc)
                      begin
                         rld_pc_flag          = TRUE;
                         rld_pc_addr          = br_pc;
@@ -567,12 +571,16 @@ module execute
                   // -------------- JAL --------------
                   B_JAL:
                   begin
+                     // With the addition of the C extension, no instructions can raise instruction-address-misaligned exceptions. p. 95
+                     `ifndef ext_C
                      if (brfu_bus.mis)
                      begin
                         exe_dout.mis         = brfu_bus.mis;
                         exe_dout.br_pc       = br_pc;
                      end
-                     else if (predicted_addr != br_pc)
+                     else 
+                     `endif
+                     if (predicted_addr != br_pc)
                      begin
                         rld_pc_flag          = TRUE;
                         rld_pc_addr          = br_pc;
@@ -588,11 +596,15 @@ module execute
                   // -------------- JALR --------------
                   B_JALR:
                   begin
+                     // With the addition of the C extension, no instructions can raise instruction-address-misaligned exceptions. p. 95
+                     `ifndef ext_C
                      if (brfu_bus.mis)
                      begin
                         exe_dout.mis         = brfu_bus.mis;
                      end
-                     else if (predicted_addr != br_pc)
+                     else
+                     `endif
+                     if (predicted_addr != br_pc)
                      begin
                         rld_pc_flag          = TRUE;
                         rld_pc_addr          = br_pc;
