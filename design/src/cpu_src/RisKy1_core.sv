@@ -14,9 +14,6 @@
 // ----------------------------------------------------------------------------------------------------
 `timescale 1ns/100ps
 
-//`define VIVADO // need to figure out how to add these defines into Vivado project - these MUST be commented out if not using Vivado!!!!!
-//`define ext_M
-
 import functions_pkg::*;
 import logic_params_pkg::*;
 import cpu_params_pkg::*;
