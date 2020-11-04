@@ -347,7 +347,7 @@ module mem
                   // -------------- Bxx --------------
                   B_ADD:
                   begin
-                     if (mis)
+                     if (mis)                                                       // not TRUE for 16 bit instructions
                      begin
                         rld_pc_flag             = TRUE;                             // flush pipeline and reload new fetch address
                         rld_pc_addr             = trap_pc;
@@ -369,7 +369,7 @@ module mem
                   // -------------- JAL --------------
                   B_JAL:
                   begin
-                     if (mis)
+                     if (mis)                                                       // not TRUE for 16 bit instructions
                      begin
                         rld_pc_flag             = TRUE;                             // flush pipeline and reload new fetch address
                         rld_pc_addr             = trap_pc;
@@ -397,7 +397,7 @@ module mem
                   // -------------- JALR --------------
                   B_JALR:
                   begin
-                     if (mis)
+                     if (mis)                                                       // not TRUE for 16 bit instructions
                      begin
                         rld_pc_flag             = TRUE;                             // flush pipeline and reload new fetch address
                         rld_pc_addr             = trap_pc;
