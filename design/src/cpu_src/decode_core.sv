@@ -260,7 +260,7 @@ module decode_core
                   //                           Fs1_rd Fs2_rd Fd_wr Rs1_rd Rs2_rd Rd_wr  i_type      sel_x   sel_y   op      ci    imm
                   begin
                      // C.LUI is only valid when rd̸={x0, x2}, and when the immediate is not equal to zero. The code points with nzimm=0 are reserved;
-                     // the remaining code points with rd=x0 are HINTs; and the remaining code points with rd=x2 correspond to the C.ADDI16SP instruction.
+                     // the remaining code points with rd=x0 are HINTs; and the remaining code points with rd=x2 correspond to the C.ADDI16SP instruction. p 104
                      if (Rd_addr == 2)
                      begin
                         Rs1_addr = 2;
@@ -395,12 +395,12 @@ module decode_core
                   `endif
 
                   2: // Quadrant 2:2
-                  if (Rd_addr != 0)          // C.LWSP is only valid when rd̸=x0;
+                  if (Rd_addr != 0)          // C.LWSP is only valid when rd̸=x0; p.99
                   begin
                      Rs1_addr = 2;           // SP is X2
                      cntrl_sigs  =           '{1'b0,  1'b0,  1'b0, 1'b1,  1'b0,  1'b1,  LD_INSTR,   AM_RS1, AM_IMM, A_ADD,  1'b1, c_lwsp_imm   };    // C.LWSP
                   end
-               // else                       // " the code points with rd=x0 are reserved."
+               // else                       // " the code points with rd=x0 are reserved." p.99
 
                   `ifdef ext_F
                   3: // Quadrant 2:3
@@ -507,6 +507,8 @@ module decode_core
          // ************************************************************************** FENCE type ins tructions
          if (i[6:2] == 5'b00011)
          begin
+            // NOTE: pred=0 or succ=0 - reserved for future standard use
+
             // number of bits         1      1      1     1      1      1      4           2       2       4       1     32
             //                        Fs1_rd Fs2_rd Fd_wr Rs1_rd Rs2_rd Rd_wr  i_type      sel_x   sel_y   op      ci    imm
             case (funct3)
@@ -517,21 +519,27 @@ module decode_core
          `endif
 
          // ************************************************************************** Arithmetic Immediate type instructions
+         // This HINT encoding has been chosen so that simple implementations can ignore HINTs altogether,
+         // and instead execute a HINT as a regular computational instruction that happens not to
+         // mutate the architectural state. For example, ADD is a HINT if the destination register is x0; the
+         // five-bit rs1 and rs2 fields encode arguments to the HINT. However, a simple implementation can
+         // simply execute the HINT as an ADD of rs1 and rs2 that writes x0, which has no architecturally
+         // visible effect. p. 29
+
          if (i[6:2] == 5'b00100)
          begin
             case(funct3)
                // number of bits      1      1      1     1      1      1      4           2       2       4       1     32
                //                     Fs1_rd Fs2_rd Fd_wr Rs1_rd Rs2_rd Rd_wr  i_type      sel_x   sel_y   op      ci    imm
                0:
-               `ifdef H_ADDI
-               if ((Rd_addr == 0) & ((Rs1_addr != 0) || ((i_imm != 0))))
-                  cntrl_sigs =      '{1'b0,  1'b0,  1'b0, 1'b0,  1'b0,  1'b0,  HINT_INSTR, 2'd0,   2'd0,   4'd0,   1'b0, HINT_ADDI};         // ADDI  HINT
-               else
-               `endif
-               if ((Rd_addr == 0) & (Rs1_addr == 0) & (i_imm == 0))
-                  cntrl_sigs =      '{1'b0,  1'b0,  1'b0, 1'b0,  1'b0,  1'b0,  ALU_INSTR,  AM_RS1, AM_IMM, A_ADD,  1'b0, i_imm    };         // NOP - addi x0, x0, 0
-               else
+               if (Rd_addr != 0)
                   cntrl_sigs =      '{1'b0,  1'b0,  1'b0, 1'b1,  1'b0,  1'b1,  ALU_INSTR,  AM_RS1, AM_IMM, A_ADD,  1'b0, i_imm    };         // ADDI     32'b???????_?????_?????_000_?????_0010011
+               else if ((Rs1_addr == 0) & (i_imm == 0))
+                  cntrl_sigs =      '{1'b0,  1'b0,  1'b0, 1'b0,  1'b0,  1'b0,  ALU_INSTR,  AM_RS1, AM_IMM, A_ADD,  1'b0, i_imm    };         // NOP - addi x0, x0, 0
+               `ifdef H_ADDI
+               else
+                  cntrl_sigs =      '{1'b0,  1'b0,  1'b0, 1'b0,  1'b0,  1'b0,  HINT_INSTR, 2'd0,   2'd0,   4'd0,   1'b0, HINT_ADDI};         // ADDI  HINT
+               `endif
                1:
                if (i[31:25] == 7'b0000000)
                begin
@@ -645,6 +653,13 @@ module decode_core
          `endif // ext_A
 
          // ************************************************************************** Arithmetic Register type instructions
+         // This HINT encoding has been chosen so that simple implementations can ignore HINTs altogether,
+         // and instead execute a HINT as a regular computational instruction that happens not to
+         // mutate the architectural state. For example, ADD is a HINT if the destination register is x0; the
+         // five-bit rs1 and rs2 fields encode arguments to the HINT. However, a simple implementation can
+         // simply execute the HINT as an ADD of rs1 and rs2 that writes x0, which has no architecturally
+         // visible effect. p. 29
+
          if (i[6:2] == 5'b01100)
          begin
             if (i[31:25] == 7'b0000000)
