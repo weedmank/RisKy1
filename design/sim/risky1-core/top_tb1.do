@@ -38,6 +38,7 @@ vlog  -sv -hazards +define+ext_M+ext_N+ext_S+ext_U+SIM_DEBUG                    
 vlog  -sv -hazards +define+ext_M+ext_N+ext_S+ext_U+SIM_DEBUG                     +incdir+../../src/includes    ../../src/pkg/functions_pkg.sv
 vlog  -sv -hazards +define+ext_M+ext_N+ext_S+ext_U+SIM_DEBUG                     +incdir+../../src/includes    ../../src/pkg/cpu_params_pkg.sv
 vlog  -sv -hazards +define+ext_M+ext_N+ext_S+ext_U+SIM_DEBUG                     +incdir+../../src/includes    ../../src/pkg/cpu_structs_pkg.sv
+vlog  -sv -hazards +define+ext_M+ext_N+ext_S+ext_U+SIM_DEBUG                                                   ../../src/emu/RV_EMU_params_pkg.sv
 
 # Interfaces                        
 vlog  -sv -hazards +define+ext_M+ext_N+ext_S+ext_U+SIM_DEBUG                                                   ../../src/cpu_src/cpu_intf.sv
@@ -70,6 +71,7 @@ vlog  -sv -hazards +define+ext_M+ext_N+ext_S+ext_U+SIM_DEBUG  +cover            
 vlog  -sv -hazards +define+ext_M+ext_N+ext_S+ext_U+SIM_DEBUG  +cover                                           ../../src/cpu_src/vedic_mult16x16.v
 vlog  -sv -hazards +define+ext_M+ext_N+ext_S+ext_U+SIM_DEBUG  +cover                                           ../../src/cpu_src/vedic_mult32x32.v
 vlog  -sv -hazards +define+ext_M+ext_N+ext_S+ext_U+SIM_DEBUG  +cover                                           ../../src/cpu_src/wb.sv
+vlog  -sv -hazards +define+ext_M+ext_N+ext_S+ext_U+SIM_DEBUG  +cover                                           ../../src/emu/RV_EMU_core.svp
 
 
 # no +define+ to be used with caches
@@ -92,6 +94,7 @@ vlog  -sv -hazards +define+ext_M+ext_N+ext_S+ext_U+SIM_DEBUG                    
 vlog  -sv -hazards +define+ext_M+ext_N+ext_S+ext_U+SIM_DEBUG                                                   ../../src/sva/mem_asserts.sv
 vlog  -sv -hazards +define+ext_M+ext_N+ext_S+ext_U+SIM_DEBUG                                                   ../../src/sva/wb_asserts.sv
 vlog  -sv -hazards +define+ext_M+ext_N+ext_S+ext_U+SIM_DEBUG                                                   ../../src/sva/pipe_asserts.sv
+vlog  -sv -hazards +define+ext_M+ext_N+ext_S+ext_U+SIM_DEBUG                                                   ../../src/sva/RV_EMU_asserts.svp
                         
 view assertions
 view structure
