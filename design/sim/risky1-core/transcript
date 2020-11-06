@@ -1,38 +1,41 @@
+# Compile of RV_EMU_asserts.svp was successful with warnings.
+# Compile of RV_EMU_asserts.svp was successful with warnings.
+# Compile of RV_EMU_core.svp was successful.
 do top_tb1.do
 # Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
 # ** Warning: (vlog-13288) Multiple macros defined in +define+ command line switch.
-# Start time: 11:04:37 on Nov 02,2020
+# Start time: 11:12:18 on Nov 06,2020
 # vlog -reportprogress 300 -sv -hazards "+define+ext_M+ext_N+ext_S+ext_U+SIM_DEBUG" "+incdir+../../src/includes" ../../src/pkg/logic_params_pkg.sv 
 # -- Compiling package logic_params_pkg
 # 
 # Top level modules:
 # 	--none--
-# End time: 11:04:38 on Nov 02,2020, Elapsed time: 0:00:01
+# End time: 11:12:18 on Nov 06,2020, Elapsed time: 0:00:00
 # Errors: 0, Warnings: 1
 # Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
 # ** Warning: (vlog-13288) Multiple macros defined in +define+ command line switch.
-# Start time: 11:04:38 on Nov 02,2020
+# Start time: 11:12:18 on Nov 06,2020
 # vlog -reportprogress 300 -sv -hazards "+define+ext_M+ext_N+ext_S+ext_U+SIM_DEBUG" "+incdir+../../src/includes" ../../src/pkg/functions_pkg.sv 
 # -- Compiling package functions_pkg
 # 
 # Top level modules:
 # 	--none--
-# End time: 11:04:38 on Nov 02,2020, Elapsed time: 0:00:00
+# End time: 11:12:19 on Nov 06,2020, Elapsed time: 0:00:01
 # Errors: 0, Warnings: 1
 # Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
 # ** Warning: (vlog-13288) Multiple macros defined in +define+ command line switch.
-# Start time: 11:04:38 on Nov 02,2020
+# Start time: 11:12:19 on Nov 06,2020
 # vlog -reportprogress 300 -sv -hazards "+define+ext_M+ext_N+ext_S+ext_U+SIM_DEBUG" "+incdir+../../src/includes" ../../src/pkg/cpu_params_pkg.sv 
 # -- Compiling package cpu_params_pkg
 # -- Importing package functions_pkg
 # 
 # Top level modules:
 # 	--none--
-# End time: 11:04:39 on Nov 02,2020, Elapsed time: 0:00:01
+# End time: 11:12:20 on Nov 06,2020, Elapsed time: 0:00:01
 # Errors: 0, Warnings: 1
 # Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
 # ** Warning: (vlog-13288) Multiple macros defined in +define+ command line switch.
-# Start time: 11:04:39 on Nov 02,2020
+# Start time: 11:12:20 on Nov 06,2020
 # vlog -reportprogress 300 -sv -hazards "+define+ext_M+ext_N+ext_S+ext_U+SIM_DEBUG" "+incdir+../../src/includes" ../../src/pkg/cpu_structs_pkg.sv 
 # -- Compiling package cpu_structs_pkg
 # -- Importing package cpu_params_pkg
@@ -40,11 +43,24 @@ do top_tb1.do
 # 
 # Top level modules:
 # 	--none--
-# End time: 11:04:40 on Nov 02,2020, Elapsed time: 0:00:01
+# End time: 11:12:21 on Nov 06,2020, Elapsed time: 0:00:01
 # Errors: 0, Warnings: 1
 # Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
 # ** Warning: (vlog-13288) Multiple macros defined in +define+ command line switch.
-# Start time: 11:04:40 on Nov 02,2020
+# Start time: 11:12:21 on Nov 06,2020
+# vlog -reportprogress 300 -sv -hazards "+define+ext_M+ext_N+ext_S+ext_U+SIM_DEBUG" ../../src/emu/RV_EMU_params_pkg.sv 
+# -- Compiling package RV_EMU_params_pkg
+# -- Importing package cpu_params_pkg
+# -- Importing package functions_pkg
+# -- Importing package cpu_structs_pkg
+# 
+# Top level modules:
+# 	--none--
+# End time: 11:12:21 on Nov 06,2020, Elapsed time: 0:00:00
+# Errors: 0, Warnings: 1
+# Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
+# ** Warning: (vlog-13288) Multiple macros defined in +define+ command line switch.
+# Start time: 11:12:22 on Nov 06,2020
 # vlog -reportprogress 300 -sv -hazards "+define+ext_M+ext_N+ext_S+ext_U+SIM_DEBUG" ../../src/cpu_src/cpu_intf.sv 
 # -- Compiling package cpu_intf_sv_unit
 # -- Importing package cpu_params_pkg
@@ -69,11 +85,11 @@ do top_tb1.do
 # 
 # Top level modules:
 # 	--none--
-# End time: 11:04:40 on Nov 02,2020, Elapsed time: 0:00:00
+# End time: 11:12:23 on Nov 06,2020, Elapsed time: 0:00:01
 # Errors: 0, Warnings: 1
 # Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
 # ** Warning: (vlog-13288) Multiple macros defined in +define+ command line switch.
-# Start time: 11:04:40 on Nov 02,2020
+# Start time: 11:12:23 on Nov 06,2020
 # vlog -reportprogress 300 -sv "+define+ext_M+ext_N+ext_S+ext_U+SIM_DEBUG" ../../src/debug/disasm_RV.sv 
 # -- Compiling package disasm_RV_sv_unit
 # -- Importing package functions_pkg
@@ -84,11 +100,11 @@ do top_tb1.do
 # 
 # Top level modules:
 # 	disasm
-# End time: 11:04:41 on Nov 02,2020, Elapsed time: 0:00:01
+# End time: 11:12:24 on Nov 06,2020, Elapsed time: 0:00:01
 # Errors: 0, Warnings: 1
 # Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
 # ** Warning: (vlog-13288) Multiple macros defined in +define+ command line switch.
-# Start time: 11:04:41 on Nov 02,2020
+# Start time: 11:12:24 on Nov 06,2020
 # vlog -reportprogress 300 -sv -hazards "+define+ext_M+ext_N+ext_S+ext_U+SIM_DEBUG" "+cover" ../../src/cpu_src/alu_fu.sv 
 # -- Compiling package alu_fu_sv_unit
 # -- Importing package functions_pkg
@@ -99,11 +115,11 @@ do top_tb1.do
 # 
 # Top level modules:
 # 	alu_fu
-# End time: 11:04:41 on Nov 02,2020, Elapsed time: 0:00:00
+# End time: 11:12:24 on Nov 06,2020, Elapsed time: 0:00:00
 # Errors: 0, Warnings: 1
 # Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
 # ** Warning: (vlog-13288) Multiple macros defined in +define+ command line switch.
-# Start time: 11:04:41 on Nov 02,2020
+# Start time: 11:12:24 on Nov 06,2020
 # vlog -reportprogress 300 -sv -hazards "+define+ext_M+ext_N+ext_S+ext_U+SIM_DEBUG" "+cover" ../../src/cpu_src/br_fu.sv 
 # -- Compiling package br_fu_sv_unit
 # -- Importing package functions_pkg
@@ -114,11 +130,11 @@ do top_tb1.do
 # 
 # Top level modules:
 # 	br_fu
-# End time: 11:04:42 on Nov 02,2020, Elapsed time: 0:00:01
+# End time: 11:12:25 on Nov 06,2020, Elapsed time: 0:00:01
 # Errors: 0, Warnings: 1
 # Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
 # ** Warning: (vlog-13288) Multiple macros defined in +define+ command line switch.
-# Start time: 11:04:42 on Nov 02,2020
+# Start time: 11:12:25 on Nov 06,2020
 # vlog -reportprogress 300 -sv -hazards "+define+ext_M+ext_N+ext_S+ext_U+SIM_DEBUG" "+cover" "+incdir+../../src/includes" ../../src/cpu_src/csr_fu.sv 
 # -- Compiling package csr_fu_sv_unit
 # -- Importing package functions_pkg
@@ -129,11 +145,11 @@ do top_tb1.do
 # 
 # Top level modules:
 # 	csr_fu
-# End time: 11:04:43 on Nov 02,2020, Elapsed time: 0:00:01
+# End time: 11:12:26 on Nov 06,2020, Elapsed time: 0:00:01
 # Errors: 0, Warnings: 1
 # Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
 # ** Warning: (vlog-13288) Multiple macros defined in +define+ command line switch.
-# Start time: 11:04:43 on Nov 02,2020
+# Start time: 11:12:26 on Nov 06,2020
 # vlog -reportprogress 300 -sv -hazards "+define+ext_M+ext_N+ext_S+ext_U+SIM_DEBUG" "+cover" ../../src/cpu_src/csr_lo_cnt.sv 
 # -- Compiling package csr_lo_cnt_sv_unit
 # -- Importing package functions_pkg
@@ -142,11 +158,11 @@ do top_tb1.do
 # 
 # Top level modules:
 # 	csr_lo_cnt
-# End time: 11:04:43 on Nov 02,2020, Elapsed time: 0:00:00
+# End time: 11:12:26 on Nov 06,2020, Elapsed time: 0:00:00
 # Errors: 0, Warnings: 1
 # Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
 # ** Warning: (vlog-13288) Multiple macros defined in +define+ command line switch.
-# Start time: 11:04:43 on Nov 02,2020
+# Start time: 11:12:26 on Nov 06,2020
 # vlog -reportprogress 300 -sv -hazards "+define+ext_M+ext_N+ext_S+ext_U+SIM_DEBUG" "+cover" ../../src/cpu_src/csr_std_wr.sv 
 # -- Compiling package csr_std_wr_sv_unit
 # -- Importing package functions_pkg
@@ -155,11 +171,11 @@ do top_tb1.do
 # 
 # Top level modules:
 # 	csr_std_wr
-# End time: 11:04:44 on Nov 02,2020, Elapsed time: 0:00:01
+# End time: 11:12:27 on Nov 06,2020, Elapsed time: 0:00:01
 # Errors: 0, Warnings: 1
 # Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
 # ** Warning: (vlog-13288) Multiple macros defined in +define+ command line switch.
-# Start time: 11:04:44 on Nov 02,2020
+# Start time: 11:12:27 on Nov 06,2020
 # vlog -reportprogress 300 -sv -hazards "+define+ext_M+ext_N+ext_S+ext_U+SIM_DEBUG" "+cover" ../../src/cpu_src/decode.sv 
 # -- Compiling package decode_sv_unit
 # -- Importing package functions_pkg
@@ -170,11 +186,11 @@ do top_tb1.do
 # 
 # Top level modules:
 # 	decode
-# End time: 11:04:44 on Nov 02,2020, Elapsed time: 0:00:00
+# End time: 11:12:28 on Nov 06,2020, Elapsed time: 0:00:01
 # Errors: 0, Warnings: 1
 # Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
 # ** Warning: (vlog-13288) Multiple macros defined in +define+ command line switch.
-# Start time: 11:04:44 on Nov 02,2020
+# Start time: 11:12:28 on Nov 06,2020
 # vlog -reportprogress 300 -sv -hazards "+define+ext_M+ext_N+ext_S+ext_U+SIM_DEBUG" "+cover" ../../src/cpu_src/decode_core.sv 
 # -- Compiling package decode_core_sv_unit
 # -- Importing package functions_pkg
@@ -185,11 +201,11 @@ do top_tb1.do
 # 
 # Top level modules:
 # 	decode_core
-# End time: 11:04:45 on Nov 02,2020, Elapsed time: 0:00:01
+# End time: 11:12:29 on Nov 06,2020, Elapsed time: 0:00:01
 # Errors: 0, Warnings: 1
 # Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
 # ** Warning: (vlog-13288) Multiple macros defined in +define+ command line switch.
-# Start time: 11:04:45 on Nov 02,2020
+# Start time: 11:12:29 on Nov 06,2020
 # vlog -reportprogress 300 -sv -hazards "+define+ext_M+ext_N+ext_S+ext_U+SIM_DEBUG" "+cover" ../../src/cpu_src/execute.sv 
 # -- Compiling package execute_sv_unit
 # -- Importing package functions_pkg
@@ -200,11 +216,11 @@ do top_tb1.do
 # 
 # Top level modules:
 # 	execute
-# End time: 11:04:45 on Nov 02,2020, Elapsed time: 0:00:00
+# End time: 11:12:29 on Nov 06,2020, Elapsed time: 0:00:00
 # Errors: 0, Warnings: 1
 # Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
 # ** Warning: (vlog-13288) Multiple macros defined in +define+ command line switch.
-# Start time: 11:04:45 on Nov 02,2020
+# Start time: 11:12:29 on Nov 06,2020
 # vlog -reportprogress 300 -sv -hazards "+define+ext_M+ext_N+ext_S+ext_U+SIM_DEBUG" "+cover" ../../src/cpu_src/fetch.sv 
 # -- Compiling package fetch_sv_unit
 # -- Importing package functions_pkg
@@ -216,11 +232,11 @@ do top_tb1.do
 # 
 # Top level modules:
 # 	fetch
-# End time: 11:04:46 on Nov 02,2020, Elapsed time: 0:00:01
+# End time: 11:12:30 on Nov 06,2020, Elapsed time: 0:00:01
 # Errors: 0, Warnings: 1
 # Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
 # ** Warning: (vlog-13288) Multiple macros defined in +define+ command line switch.
-# Start time: 11:04:46 on Nov 02,2020
+# Start time: 11:12:30 on Nov 06,2020
 # vlog -reportprogress 300 -sv -hazards "+define+ext_M+ext_N+ext_S+ext_U+SIM_DEBUG" "+cover" ../../src/cpu_src/fpr.sv 
 # -- Compiling package fpr_sv_unit
 # -- Importing package functions_pkg
@@ -229,11 +245,11 @@ do top_tb1.do
 # 
 # Top level modules:
 # 	fpr
-# End time: 11:04:46 on Nov 02,2020, Elapsed time: 0:00:00
+# End time: 11:12:31 on Nov 06,2020, Elapsed time: 0:00:01
 # Errors: 0, Warnings: 1
 # Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
 # ** Warning: (vlog-13288) Multiple macros defined in +define+ command line switch.
-# Start time: 11:04:47 on Nov 02,2020
+# Start time: 11:12:31 on Nov 06,2020
 # vlog -reportprogress 300 -sv -hazards "+define+ext_M+ext_N+ext_S+ext_U+SIM_DEBUG" "+cover" ../../src/cpu_src/gpr.sv 
 # -- Compiling package gpr_sv_unit
 # -- Importing package functions_pkg
@@ -242,11 +258,11 @@ do top_tb1.do
 # 
 # Top level modules:
 # 	gpr
-# End time: 11:04:47 on Nov 02,2020, Elapsed time: 0:00:00
+# End time: 11:12:31 on Nov 06,2020, Elapsed time: 0:00:00
 # Errors: 0, Warnings: 1
 # Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
 # ** Warning: (vlog-13288) Multiple macros defined in +define+ command line switch.
-# Start time: 11:04:47 on Nov 02,2020
+# Start time: 11:12:32 on Nov 06,2020
 # vlog -reportprogress 300 -sv -hazards "+define+ext_M+ext_N+ext_S+ext_U+SIM_DEBUG" "+cover" ../../src/cpu_src/idr_fu.sv 
 # -- Compiling package idr_fu_sv_unit
 # -- Importing package functions_pkg
@@ -257,11 +273,11 @@ do top_tb1.do
 # 
 # Top level modules:
 # 	idr_fu
-# End time: 11:04:48 on Nov 02,2020, Elapsed time: 0:00:01
+# End time: 11:12:33 on Nov 06,2020, Elapsed time: 0:00:01
 # Errors: 0, Warnings: 1
 # Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
 # ** Warning: (vlog-13288) Multiple macros defined in +define+ command line switch.
-# Start time: 11:04:48 on Nov 02,2020
+# Start time: 11:12:33 on Nov 06,2020
 # vlog -reportprogress 300 -sv -hazards "+define+ext_M+ext_N+ext_S+ext_U+SIM_DEBUG" "+cover" ../../src/cpu_src/im_fu.sv 
 # -- Compiling package im_fu_sv_unit
 # -- Importing package functions_pkg
@@ -272,11 +288,11 @@ do top_tb1.do
 # 
 # Top level modules:
 # 	im_fu
-# End time: 11:04:48 on Nov 02,2020, Elapsed time: 0:00:00
+# End time: 11:12:34 on Nov 06,2020, Elapsed time: 0:00:01
 # Errors: 0, Warnings: 1
 # Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
 # ** Warning: (vlog-13288) Multiple macros defined in +define+ command line switch.
-# Start time: 11:04:48 on Nov 02,2020
+# Start time: 11:12:34 on Nov 06,2020
 # vlog -reportprogress 300 -sv -hazards "+define+ext_M+ext_N+ext_S+ext_U+SIM_DEBUG" "+cover" ../../src/cpu_src/irq.sv 
 # -- Compiling package irq_sv_unit
 # -- Importing package functions_pkg
@@ -286,11 +302,11 @@ do top_tb1.do
 # 
 # Top level modules:
 # 	irq
-# End time: 11:04:49 on Nov 02,2020, Elapsed time: 0:00:01
+# End time: 11:12:34 on Nov 06,2020, Elapsed time: 0:00:00
 # Errors: 0, Warnings: 1
 # Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
 # ** Warning: (vlog-13288) Multiple macros defined in +define+ command line switch.
-# Start time: 11:04:54 on Nov 02,2020
+# Start time: 11:12:34 on Nov 06,2020
 # vlog -reportprogress 300 -sv -hazards "+define+ext_M+ext_N+ext_S+ext_U+SIM_DEBUG" "+cover" ../../src/cpu_src/ls_fu.sv 
 # -- Compiling package ls_fu_sv_unit
 # -- Importing package functions_pkg
@@ -301,11 +317,11 @@ do top_tb1.do
 # 
 # Top level modules:
 # 	ls_fu
-# End time: 11:04:54 on Nov 02,2020, Elapsed time: 0:00:00
+# End time: 11:12:35 on Nov 06,2020, Elapsed time: 0:00:01
 # Errors: 0, Warnings: 1
 # Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
 # ** Warning: (vlog-13288) Multiple macros defined in +define+ command line switch.
-# Start time: 11:04:54 on Nov 02,2020
+# Start time: 11:12:35 on Nov 06,2020
 # vlog -reportprogress 300 -sv -hazards "+define+ext_M+ext_N+ext_S+ext_U+SIM_DEBUG" "+cover" ../../src/cpu_src/mem.sv 
 # -- Compiling package mem_sv_unit
 # -- Importing package functions_pkg
@@ -316,11 +332,11 @@ do top_tb1.do
 # 
 # Top level modules:
 # 	mem
-# End time: 11:04:55 on Nov 02,2020, Elapsed time: 0:00:01
+# End time: 11:12:36 on Nov 06,2020, Elapsed time: 0:00:01
 # Errors: 0, Warnings: 1
 # Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
 # ** Warning: (vlog-13288) Multiple macros defined in +define+ command line switch.
-# Start time: 11:04:55 on Nov 02,2020
+# Start time: 11:12:36 on Nov 06,2020
 # vlog -reportprogress 300 -sv -hazards "+define+ext_M+ext_N+ext_S+ext_U+SIM_DEBUG" "+cover" ../../src/cpu_src/mem_io.sv 
 # -- Compiling package mem_io_sv_unit
 # -- Importing package functions_pkg
@@ -331,11 +347,11 @@ do top_tb1.do
 # 
 # Top level modules:
 # 	mem_io
-# End time: 11:04:55 on Nov 02,2020, Elapsed time: 0:00:00
+# End time: 11:12:37 on Nov 06,2020, Elapsed time: 0:00:01
 # Errors: 0, Warnings: 1
 # Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
 # ** Warning: (vlog-13288) Multiple macros defined in +define+ command line switch.
-# Start time: 11:04:55 on Nov 02,2020
+# Start time: 11:12:37 on Nov 06,2020
 # vlog -reportprogress 300 -sv -hazards "+define+ext_M+ext_N+ext_S+ext_U+SIM_DEBUG" "+cover" ../../src/cpu_src/pipe.sv 
 # -- Compiling package pipe_sv_unit
 # -- Importing package functions_pkg
@@ -346,11 +362,11 @@ do top_tb1.do
 # 
 # Top level modules:
 # 	pipe
-# End time: 11:04:56 on Nov 02,2020, Elapsed time: 0:00:01
+# End time: 11:12:37 on Nov 06,2020, Elapsed time: 0:00:00
 # Errors: 0, Warnings: 1
 # Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
 # ** Warning: (vlog-13288) Multiple macros defined in +define+ command line switch.
-# Start time: 11:04:56 on Nov 02,2020
+# Start time: 11:12:37 on Nov 06,2020
 # vlog -reportprogress 300 -sv -hazards "+define+ext_M+ext_N+ext_S+ext_U+SIM_DEBUG" "+cover" ../../src/cpu_src/RisKy1_core.sv 
 # -- Compiling package RisKy1_core_sv_unit
 # -- Importing package functions_pkg
@@ -361,11 +377,11 @@ do top_tb1.do
 # 
 # Top level modules:
 # 	RisKy1_core
-# End time: 11:04:56 on Nov 02,2020, Elapsed time: 0:00:00
+# End time: 11:12:38 on Nov 06,2020, Elapsed time: 0:00:01
 # Errors: 0, Warnings: 1
 # Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
 # ** Warning: (vlog-13288) Multiple macros defined in +define+ command line switch.
-# Start time: 11:04:56 on Nov 02,2020
+# Start time: 11:12:38 on Nov 06,2020
 # vlog -reportprogress 300 -sv -hazards "+define+ext_M+ext_N+ext_S+ext_U+SIM_DEBUG" "+cover" ../../src/cpu_src/sdiv_N_by_N.sv 
 # -- Compiling package sdiv_N_by_N_sv_unit
 # -- Importing package functions_pkg
@@ -375,17 +391,17 @@ do top_tb1.do
 # 
 # Top level modules:
 # 	sdiv_N_by_N
-# End time: 11:04:57 on Nov 02,2020, Elapsed time: 0:00:01
+# End time: 11:12:39 on Nov 06,2020, Elapsed time: 0:00:01
 # Errors: 0, Warnings: 1
 # Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
 # ** Warning: (vlog-13288) Multiple macros defined in +define+ command line switch.
-# Start time: 11:04:57 on Nov 02,2020
+# Start time: 11:12:39 on Nov 06,2020
 # vlog -reportprogress 300 -sv -hazards "+define+ext_M+ext_N+ext_S+ext_U+SIM_DEBUG" "+cover" ../../src/cpu_src/spfp_fu.sv 
-# End time: 11:04:58 on Nov 02,2020, Elapsed time: 0:00:01
+# End time: 11:12:39 on Nov 06,2020, Elapsed time: 0:00:00
 # Errors: 0, Warnings: 1
 # Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
 # ** Warning: (vlog-13288) Multiple macros defined in +define+ command line switch.
-# Start time: 11:04:58 on Nov 02,2020
+# Start time: 11:12:39 on Nov 06,2020
 # vlog -reportprogress 300 -sv -hazards "+define+ext_M+ext_N+ext_S+ext_U+SIM_DEBUG" "+cover" ../../src/cpu_src/vedic_mult16x16.v 
 # -- Compiling module vedic_mult16x16
 # -- Compiling module vedic_mult8
@@ -395,21 +411,21 @@ do top_tb1.do
 # 
 # Top level modules:
 # 	vedic_mult16x16
-# End time: 11:04:58 on Nov 02,2020, Elapsed time: 0:00:00
+# End time: 11:12:40 on Nov 06,2020, Elapsed time: 0:00:01
 # Errors: 0, Warnings: 1
 # Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
 # ** Warning: (vlog-13288) Multiple macros defined in +define+ command line switch.
-# Start time: 11:04:58 on Nov 02,2020
+# Start time: 11:12:40 on Nov 06,2020
 # vlog -reportprogress 300 -sv -hazards "+define+ext_M+ext_N+ext_S+ext_U+SIM_DEBUG" "+cover" ../../src/cpu_src/vedic_mult32x32.v 
 # -- Compiling module vedic_mult32x32
 # 
 # Top level modules:
 # 	vedic_mult32x32
-# End time: 11:04:59 on Nov 02,2020, Elapsed time: 0:00:01
+# End time: 11:12:41 on Nov 06,2020, Elapsed time: 0:00:01
 # Errors: 0, Warnings: 1
 # Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
 # ** Warning: (vlog-13288) Multiple macros defined in +define+ command line switch.
-# Start time: 11:04:59 on Nov 02,2020
+# Start time: 11:12:41 on Nov 06,2020
 # vlog -reportprogress 300 -sv -hazards "+define+ext_M+ext_N+ext_S+ext_U+SIM_DEBUG" "+cover" ../../src/cpu_src/wb.sv 
 # -- Compiling package wb_sv_unit
 # -- Importing package functions_pkg
@@ -420,11 +436,28 @@ do top_tb1.do
 # 
 # Top level modules:
 # 	wb
-# End time: 11:04:59 on Nov 02,2020, Elapsed time: 0:00:00
+# End time: 11:12:41 on Nov 06,2020, Elapsed time: 0:00:00
 # Errors: 0, Warnings: 1
 # Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
 # ** Warning: (vlog-13288) Multiple macros defined in +define+ command line switch.
-# Start time: 11:04:59 on Nov 02,2020
+# Start time: 11:12:41 on Nov 06,2020
+# vlog -reportprogress 300 -sv -hazards "+define+ext_M+ext_N+ext_S+ext_U+SIM_DEBUG" "+cover" ../../src/emu/RV_EMU_core.svp 
+# ** Warning: ../../src/emu/RV_EMU_core.svp(15): (vlog-13233) Design unit "RV_EMU_core_svp_unit" already exists and will be overwritten. Overwriting SystemVerilog $unit with different source files.
+# -- Compiling package RV_EMU_core_svp_unit
+# -- Importing package functions_pkg
+# -- Importing package logic_params_pkg
+# -- Importing package cpu_params_pkg
+# -- Importing package cpu_structs_pkg
+# -- Importing package RV_EMU_params_pkg
+# -- Compiling module RV_EMU_core
+# 
+# Top level modules:
+# 	RV_EMU_core
+# End time: 11:12:42 on Nov 06,2020, Elapsed time: 0:00:01
+# Errors: 0, Warnings: 2
+# Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
+# ** Warning: (vlog-13288) Multiple macros defined in +define+ command line switch.
+# Start time: 11:12:42 on Nov 06,2020
 # vlog -reportprogress 300 -sv -hazards "+define+ext_M+ext_N+ext_S+ext_U+SIM_DEBUG" ../../src/peripherals/peripheral_intf.sv 
 # -- Compiling package peripheral_intf_sv_unit
 # -- Importing package cpu_params_pkg
@@ -436,10 +469,10 @@ do top_tb1.do
 # 
 # Top level modules:
 # 	--none--
-# End time: 11:05:00 on Nov 02,2020, Elapsed time: 0:00:01
+# End time: 11:12:43 on Nov 06,2020, Elapsed time: 0:00:01
 # Errors: 0, Warnings: 1
 # Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
-# Start time: 11:05:00 on Nov 02,2020
+# Start time: 11:12:43 on Nov 06,2020
 # vlog -reportprogress 300 -sv -hazards ../../src/peripherals/L1_dcache.sv 
 # -- Compiling package L1_dcache_sv_unit
 # -- Importing package functions_pkg
@@ -450,10 +483,10 @@ do top_tb1.do
 # 
 # Top level modules:
 # 	L1_dcache
-# End time: 11:05:01 on Nov 02,2020, Elapsed time: 0:00:01
+# End time: 11:12:44 on Nov 06,2020, Elapsed time: 0:00:01
 # Errors: 0, Warnings: 0
 # Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
-# Start time: 11:05:01 on Nov 02,2020
+# Start time: 11:12:44 on Nov 06,2020
 # vlog -reportprogress 300 -sv -hazards ../../src/peripherals/L1_icache.sv 
 # -- Compiling package L1_icache_sv_unit
 # -- Importing package functions_pkg
@@ -464,10 +497,10 @@ do top_tb1.do
 # 
 # Top level modules:
 # 	L1_icache
-# End time: 11:05:01 on Nov 02,2020, Elapsed time: 0:00:00
+# End time: 11:12:44 on Nov 06,2020, Elapsed time: 0:00:00
 # Errors: 0, Warnings: 0
 # Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
-# Start time: 11:05:01 on Nov 02,2020
+# Start time: 11:12:44 on Nov 06,2020
 # vlog -reportprogress 300 -sv -hazards ../../src/peripherals/cache_arbiter.sv 
 # -- Compiling package cache_arbiter_sv_unit
 # -- Importing package functions_pkg
@@ -478,10 +511,10 @@ do top_tb1.do
 # 
 # Top level modules:
 # 	cache_arbiter
-# End time: 11:05:02 on Nov 02,2020, Elapsed time: 0:00:01
+# End time: 11:12:45 on Nov 06,2020, Elapsed time: 0:00:01
 # Errors: 0, Warnings: 0
 # Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
-# Start time: 11:05:02 on Nov 02,2020
+# Start time: 11:12:45 on Nov 06,2020
 # vlog -reportprogress 300 -sv -hazards "+define+TEST_FILE="instr_tests/factorial.rom"" ../../src/models/sys_mem_model.sv 
 # -- Compiling package sys_mem_model_sv_unit
 # -- Importing package functions_pkg
@@ -492,11 +525,11 @@ do top_tb1.do
 # 
 # Top level modules:
 # 	sys_mem_model
-# End time: 11:05:02 on Nov 02,2020, Elapsed time: 0:00:00
+# End time: 11:12:46 on Nov 06,2020, Elapsed time: 0:00:01
 # Errors: 0, Warnings: 0
 # Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
 # ** Warning: (vlog-13288) Multiple macros defined in +define+ command line switch.
-# Start time: 11:05:02 on Nov 02,2020
+# Start time: 11:12:46 on Nov 06,2020
 # vlog -reportprogress 300 -sv -hazards "+define+ext_M+ext_N+ext_S+ext_U+SIM_DEBUG+BIND_ASSERTS" top_tb1.sv 
 # -- Compiling package top_tb1_sv_unit
 # -- Importing package functions_pkg
@@ -507,11 +540,11 @@ do top_tb1.do
 # 
 # Top level modules:
 # 	top_tb1
-# End time: 11:05:03 on Nov 02,2020, Elapsed time: 0:00:01
+# End time: 11:12:46 on Nov 06,2020, Elapsed time: 0:00:00
 # Errors: 0, Warnings: 1
 # Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
 # ** Warning: (vlog-13288) Multiple macros defined in +define+ command line switch.
-# Start time: 11:05:03 on Nov 02,2020
+# Start time: 11:12:46 on Nov 06,2020
 # vlog -reportprogress 300 -sv -hazards "+define+ext_M+ext_N+ext_S+ext_U+SIM_DEBUG" ../../src/sva/csr_asserts.sv 
 # -- Compiling package csr_asserts_sv_unit
 # -- Importing package functions_pkg
@@ -531,11 +564,11 @@ do top_tb1.do
 # 
 # Top level modules:
 # 	csr_asserts
-# End time: 11:05:03 on Nov 02,2020, Elapsed time: 0:00:00
+# End time: 11:12:47 on Nov 06,2020, Elapsed time: 0:00:01
 # Errors: 0, Warnings: 4
 # Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
 # ** Warning: (vlog-13288) Multiple macros defined in +define+ command line switch.
-# Start time: 11:05:03 on Nov 02,2020
+# Start time: 11:12:47 on Nov 06,2020
 # vlog -reportprogress 300 -sv -hazards "+define+ext_M+ext_N+ext_S+ext_U+SIM_DEBUG" ../../src/sva/gpr_asserts.sv 
 # -- Compiling package gpr_asserts_sv_unit
 # -- Importing package functions_pkg
@@ -553,11 +586,11 @@ do top_tb1.do
 # 
 # Top level modules:
 # 	gpr_asserts
-# End time: 11:05:04 on Nov 02,2020, Elapsed time: 0:00:01
+# End time: 11:12:48 on Nov 06,2020, Elapsed time: 0:00:01
 # Errors: 0, Warnings: 4
 # Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
 # ** Warning: (vlog-13288) Multiple macros defined in +define+ command line switch.
-# Start time: 11:05:04 on Nov 02,2020
+# Start time: 11:12:48 on Nov 06,2020
 # vlog -reportprogress 300 -sv -hazards "+define+ext_M+ext_N+ext_S+ext_U+SIM_DEBUG" ../../src/sva/mem_asserts.sv 
 # -- Compiling package mem_asserts_sv_unit
 # -- Importing package functions_pkg
@@ -568,11 +601,11 @@ do top_tb1.do
 # 
 # Top level modules:
 # 	mem_asserts
-# End time: 11:05:05 on Nov 02,2020, Elapsed time: 0:00:01
+# End time: 11:12:49 on Nov 06,2020, Elapsed time: 0:00:01
 # Errors: 0, Warnings: 1
 # Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
 # ** Warning: (vlog-13288) Multiple macros defined in +define+ command line switch.
-# Start time: 11:05:05 on Nov 02,2020
+# Start time: 11:12:49 on Nov 06,2020
 # vlog -reportprogress 300 -sv -hazards "+define+ext_M+ext_N+ext_S+ext_U+SIM_DEBUG" ../../src/sva/wb_asserts.sv 
 # -- Compiling package wb_asserts_sv_unit
 # -- Importing package functions_pkg
@@ -583,11 +616,11 @@ do top_tb1.do
 # 
 # Top level modules:
 # 	wb_asserts
-# End time: 11:05:05 on Nov 02,2020, Elapsed time: 0:00:00
+# End time: 11:12:49 on Nov 06,2020, Elapsed time: 0:00:00
 # Errors: 0, Warnings: 1
 # Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
 # ** Warning: (vlog-13288) Multiple macros defined in +define+ command line switch.
-# Start time: 11:05:05 on Nov 02,2020
+# Start time: 11:12:49 on Nov 06,2020
 # vlog -reportprogress 300 -sv -hazards "+define+ext_M+ext_N+ext_S+ext_U+SIM_DEBUG" ../../src/sva/pipe_asserts.sv 
 # -- Compiling package pipe_asserts_sv_unit
 # -- Importing package functions_pkg
@@ -598,11 +631,37 @@ do top_tb1.do
 # 
 # Top level modules:
 # 	pipe_asserts
-# End time: 11:05:06 on Nov 02,2020, Elapsed time: 0:00:01
+# End time: 11:12:50 on Nov 06,2020, Elapsed time: 0:00:01
 # Errors: 0, Warnings: 1
+# Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
+# ** Warning: (vlog-13288) Multiple macros defined in +define+ command line switch.
+# Start time: 11:12:50 on Nov 06,2020
+# vlog -reportprogress 300 -sv -hazards "+define+ext_M+ext_N+ext_S+ext_U+SIM_DEBUG" ../../src/sva/RV_EMU_asserts.svp 
+# ** Warning: ../../src/sva/RV_EMU_asserts.svp(15): (vlog-13233) Design unit "RV_EMU_asserts_svp_unit" already exists and will be overwritten. Overwriting SystemVerilog $unit with different source files.
+# -- Compiling package RV_EMU_asserts_svp_unit
+# -- Importing package functions_pkg
+# -- Importing package logic_params_pkg
+# -- Importing package cpu_params_pkg
+# -- Importing package cpu_structs_pkg
+# -- Importing package RV_EMU_params_pkg
+# -- Compiling module RV32_EMU_asserts
+# ** Warning: ../../src/sva/RV_EMU_asserts.svp(48): (vlog-2186) SystemVerilog testbench feature
+# (randomization, coverage or assertion) detected in the design.
+# These features are only supported in Questasim.
+# ** Warning: ../../src/sva/RV_EMU_asserts.svp(48): (vlog-2186) SystemVerilog testbench feature
+# (randomization, coverage or assertion) detected in the design.
+# These features are only supported in Questasim.
+# ** Warning: ../../src/sva/RV_EMU_asserts.svp(48): (vlog-2186) SystemVerilog testbench feature
+# (randomization, coverage or assertion) detected in the design.
+# These features are only supported in Questasim.
+# 
+# Top level modules:
+# 	RV32_EMU_asserts
+# End time: 11:12:52 on Nov 06,2020, Elapsed time: 0:00:02
+# Errors: 0, Warnings: 5
 # .main_pane.assertions.interior.cs.body
 # vsim -assertdebug -voptargs="+acc" -t 1ps top_tb1 
-# Start time: 11:05:06 on Nov 02,2020
+# Start time: 11:12:52 on Nov 06,2020
 # Loading sv_std.std
 # Loading work.functions_pkg
 # Loading work.cpu_params_pkg
@@ -686,6 +745,11 @@ do top_tb1.do
 # Loading work.mem_io
 # Loading work.irq_sv_unit
 # Loading work.irq
+# Loading work.RV_EMU_params_pkg
+# Loading work.prop_asserts_sv_unit
+# Loading work.prop_asserts
+# Loading work.RV_EMU_core_svp_unit
+# Loading work.RV_EMU_core
 # Loading work.mem_asserts_sv_unit
 # Loading work.mem_asserts
 # Loading work.wb_asserts_sv_unit
@@ -695,11 +759,16 @@ do top_tb1.do
 # Loading work.csr_asserts_sv_unit
 # Loading work.csr_asserts
 # ** Warning: (vsim-8311) System Verilog assertions are supported only in Questasim.
+# ** Warning: Design size of 17288 statements exceeds ModelSim-Intel FPGA Starter Edition recommended capacity.
+# Expect performance to be adversely affected.
 # Reset completed, Simulation started.
+# RisKy1 with Supervisor support
+# RisKy1 with User support
+# RisKy also supports Interrupts
+# RV32i with extension M support
 # Simulation passed.
-# ** Note: $stop    : top_tb1.sv(57)
+# ** Note: $stop    : top_tb1.sv(77)
 #    Time: 1489 ns  Iteration: 1  Instance: /top_tb1
-# Break in Module top_tb1 at top_tb1.sv line 57
-write format wave -window .main_pane.wave.interior.cs.body.pw.wf C:/RisKy1/design/sim/risky1-core/wave_tb1.do
-# End time: 11:07:45 on Nov 02,2020, Elapsed time: 0:02:39
-# Errors: 0, Warnings: 2
+# Break in Module top_tb1 at top_tb1.sv line 77
+# End time: 11:13:33 on Nov 06,2020, Elapsed time: 0:00:41
+# Errors: 0, Warnings: 10
