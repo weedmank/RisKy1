@@ -1,6 +1,6 @@
 ****************************************************************************************
 
-				RisKy1 Design Folders
+				RisKy1 Models Folder
 
     RisKy1 CPU - A highly parameterized, 5 stage pipelined CPU based on RISC-V ISA
 ----------------------------------------------------------------------------------------
