@@ -46,9 +46,9 @@ FOLDER ORGANIZATION:
    
    Phys_Depth = 8192;
    
-   In the current simulation, the code being run in simulation, sets the stack pointer
-   to the end of the System Memory block (highest address) and the code is placed starting
-   at address 0 (lowest address)
+   In the risky1-core testbench simulation, the code being run in simulation sets the stack
+   pointer to the end of the System Memory block (highest address) and the code is placed
+   starting at address 0 (lowest address)
    
    If the code and stack pointer collide...well.. you know the story...
 
