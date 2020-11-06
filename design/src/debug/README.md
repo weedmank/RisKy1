@@ -15,13 +15,13 @@ FOLDER ORGANIZATION:
 
 This folder only contains one file: disasm.sv
 
-- This file is not used when creating a physical CPU. Its purpose is for simulation debugging
+- This file is not used when creating a physical CPU. Its purpose is for simulation debugging.
 - This module has two inputs as follows
    1. dm: This bit specifies the output format of the two strings that get produced by this module
       A. dm = ASSEMBLY produces a format like this:      lw rd, imm(rs1)
       B. dm = SEMANTICS tends to produce a format like:  R[rd] = i_imm(R[rs1])
    2. ipd: This structure includes both the 32-bit instruction and Program Counter
-- This module produces 2 strings. One for the disassembly of the instruction and one for the program counter
+- This module produces 2 strings. One for the disassembly of the instruction and one for the program counter.
    1. i_str: instruciton disassembly
    2. pc_str: program counter shown in hex format
    
@@ -29,7 +29,8 @@ This folder only contains one file: disasm.sv
    running in simulation. It is much easier to read a disassembly of an instruction than
    to stare and wonder what some 32-bit ASCII Hex value represents.
    
-- How this disassembler is used
+- How this disassembler is used.
+
    It is currently used in various modules such as decode.sv by instantiating inside an
    `ifdef statement.  This is due to this module is NOT synthesizable and should only be
    included when doing verification/debugging.  BGelow is an example taken from decode.sv
