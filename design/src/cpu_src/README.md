@@ -36,6 +36,8 @@ Main System Verilog files needed to create an RV32i type cpu core
    - irq.sv: External interrupt Pending signal input
 - Memory and I/O (internal and external I/O)
    - mem_io.sv
+- Other files
+   - cpu_intf.sv: SV Interface Definitions used throughout the design
 - Optional functional units
    - im_fu.sv: Integer 32x32 Multiplier Functional Unit (vedic_mult16x16.v, vedic_mult32x32.v, or mult_N_by_N.sv)
    - idr_fu.sv: Integer 32x32 Divide and Remainder functional Unit
