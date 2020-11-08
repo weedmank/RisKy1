@@ -523,7 +523,7 @@ module decode_core
          end
          `endif
 
-         // ************************************************************************** Arithmetic Immediate type instructions
+         // ************************************************************************** Integer Register-Immediate type instructions
          // This HINT encoding has been chosen so that simple implementations can ignore HINTs altogether,
          // and instead execute a HINT as a regular computational instruction that happens not to
          // mutate the architectural state. For example, ADD is a HINT if the destination register is x0; the
@@ -657,7 +657,7 @@ module decode_core
          end
          `endif // ext_A
 
-         // ************************************************************************** Arithmetic Register type instructions
+         // ************************************************************************** Integere Register-Register type instructions
          // This HINT encoding has been chosen so that simple implementations can ignore HINTs altogether,
          // and instead execute a HINT as a regular computational instruction that happens not to
          // mutate the architectural state. For example, ADD is a HINT if the destination register is x0; the
