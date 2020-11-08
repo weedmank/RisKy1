@@ -411,44 +411,6 @@ module execute
    );
 
 
-   // Interrupt Exception Code   Description - riscv_privileged.pdf p 37
-   // 1         0                User software interrupt
-   // 1         1                Supervisor software interrupt
-   // 1         2                Reserved for future standard use
-   // 1         3                Machine software interrupt
-   // 1         4                User timer interrupt
-   // 1         5                Supervisor timer interrupt
-   // 1         6                Reserved for future standard use
-   // 1         7                Machine timer interrupt
-   // 1         8                User external interrupt
-   // 1         9                Supervisor external interrupt
-   // 1         10               Reserved for future standard use
-   // 1         11               Machine external interrupt
-   // 1         12–15            Reserved for future standard use
-   // 1         ≥16              Reserved for platform use
-
-   // 0         0                Instruction address misaligned
-   // 0         1                Instruction access fault
-   // 0         2                Illegal instruction
-   // 0         3                Breakpoint
-   // 0         4                Load address misaligned
-   // 0         5                Load access fault
-   // 0         6                Store/AMO address misaligned
-   // 0         7                Store/AMO access fault
-   // 0         8                Environment call from U-mode
-   // 0         9                Environment call from S-mode
-   // 0         10               Reserved
-   // 0         11               Environment call from M-mode
-   // 0         12               Instruction page fault
-   // 0         13               Load page fault
-   // 0         14               Reserved for future standard use
-   // 0         15               Store/AMO page fault
-   // 0         16–23            Reserved for future standard use
-   // 0         24–31            Reserved for custom use
-   // 0         32–47            Reserved for future standard use
-   // 0         48–63            Reserved for custom use
-   // 0         ≥64              Reserved for future standard use
-
    // ****** Decide which Functional Unit output data will get used and passed to next stage *****
    // record of signals for WB stage verification tests BEFORE changes are made (i.e. changes to Registers, Memory, CSRs, etc..)
    always_comb
@@ -665,12 +627,13 @@ module execute
 //                  FENCEI:
 //                  begin
 //// !!!!!!!!!!!!!! NEEDS TO BE COMPLETED !!!!!!!!!!!!!!
-//                     // Flush Fetch and Decode stages
+//                     // Flush pipeline and fetch buffer
 //                  end
 //
 //                  FENCE:
 //                  begin
 //// !!!!!!!!!!!!!! NEEDS TO BE COMPLETED !!!!!!!!!!!!!!
+//                     // flush pipeline
 //                  end
 //                  `endif
 //
@@ -699,8 +662,8 @@ module execute
             begin
                if (ill_csr_access)
                begin
-                  exe_dout.mis            = TRUE;
-                  exe_dout.Rd_data        = ill_csr_addr;                           // save in Rd_data for use in mem.sv
+                  exe_dout.mis         = TRUE;
+                  exe_dout.Rd_data     = ill_csr_addr;                              // save in Rd_data for use in mem.sv
                end
                else
                begin

@@ -190,6 +190,45 @@ module mem
    `endif
 
    //-----------------------------------------------------
+   // Interrupt Code   Description - riscv_privileged.pdf p 37
+   // 0                User software interrupt
+   // 1                Supervisor software interrupt
+   // 2                Reserved for future standard use
+   // 3                Machine software interrupt
+   // 4                User timer interrupt
+   // 5                Supervisor timer interrupt
+   // 6                Reserved for future standard use
+   // 7                Machine timer interrupt
+   // 8                User external interrupt
+   // 9                Supervisor external interrupt
+   // 10               Reserved for future standard use
+   // 11               Machine external interrupt
+   // 12–15            Reserved for future standard use
+   // ≥16              Reserved for platform use
+
+   // Exception Code   Description - riscv_privileged.pdf p 37
+   // 0                Instruction address misaligned
+   // 1                Instruction access fault
+   // 2                Illegal instruction
+   // 3                Breakpoint
+   // 4                Load address misaligned
+   // 5                Load access fault
+   // 6                Store/AMO address misaligned
+   // 7                Store/AMO access fault
+   // 8                Environment call from U-mode
+   // 9                Environment call from S-mode
+   // 10               Reserved
+   // 11               Environment call from M-mode
+   // 12               Instruction page fault
+   // 13               Load page fault
+   // 14               Reserved for future standard use
+   // 15               Store/AMO page fault
+   // 16–23            Reserved for future standard use
+   // 24–31            Reserved for custom use
+   // 32–47            Reserved for future standard use
+   // 48–63            Reserved for custom use
+   // ≥64              Reserved for future standard use
+
    // ****** Exception handling also occurs here for all instructions - see data from EXE stage *****
    // Completed Load Instructions pass data on to WB stage. All exceptions occur in this MEM stage.  When an exception occurs, all instructions in this
    // stage (Memory) and previous stages (Fetch, Decode, Execute) are flushed.  See pipe_flush signal and how it affects pipe()
