@@ -201,12 +201,12 @@ module  top_tb1 ();
 
    `ifdef BIND_ASSERTS
 // Usable in Questasim
-// cmd    DUT-module-name   module-name    instance-name ...
-   bind   RK1               prop_asserts   b1 (.*);
-   bind   RK1.GPR           gpr_asserts    b2 (.*);
-   bind   RK1.WB            wb_asserts     b3 (.*);
-   bind   RK1.MEM           mem_asserts    b4 (.*);
-   bind   RK1.EXE.CSRFU     csr_asserts    b5 (.*);
+// cmd    DUT-module-name   module-name         instance-name ...
+   bind   RK1               RV32_EMU_asserts    b1 (.*);
+   bind   RK1.GPR           gpr_asserts         b2 (.*);
+   bind   RK1.WB            wb_asserts          b3 (.*);
+   bind   RK1.MEM           mem_asserts         b4 (.*);
+   bind   RK1.EXE.CSRFU     csr_asserts         b5 (.*);
 //   bind   RK1.EXE.EXE_PIPE  pipe_asserts   b6 (.*); // ** Error: (vsim-8378) Port size (1) does not match connection size (248) for implicit .name connection port 'data_in'. The port definition is at: ../../src/sva/pipe_asserts.sv(30)....
 //   bind   RK1.EXE.EXE_PIPE  pipe_asserts   b6 #( .T(type(EXE_2_MEM)) ) (.*); // Doesn't like trying to pass the type EXE_2_MEM 
    `endif
