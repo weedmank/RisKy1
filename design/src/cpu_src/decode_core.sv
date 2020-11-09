@@ -524,12 +524,12 @@ module decode_core
          `endif
 
          // ************************************************************************** Integer Register-Immediate type instructions
-         // This HINT encoding has been chosen so that simple implementations can ignore HINTs altogether,
+         // The HINT encodings shown below have been chosen so that simple implementations can ignore HINTs altogether,
          // and instead execute a HINT as a regular computational instruction that happens not to
          // mutate the architectural state. For example, ADD is a HINT if the destination register is x0; the
          // five-bit rs1 and rs2 fields encode arguments to the HINT. However, a simple implementation can
          // simply execute the HINT as an ADD of rs1 and rs2 that writes x0, which has no architecturally
-         // visible effect. p. 29
+         // visible effect. see p. 29 riscv-spec.pdf
 
          if (i[6:2] == 5'b00100)
          begin
@@ -537,14 +537,12 @@ module decode_core
                // number of bits      1      1      1     1      1      1      4           2       2       4       1     32
                //                     Fs1_rd Fs2_rd Fd_wr Rs1_rd Rs2_rd Rd_wr  i_type      sel_x   sel_y   op      ci    imm
                0:
-               if (Rd_addr != 0)
-                  cntrl_sigs =      '{1'b0,  1'b0,  1'b0, 1'b1,  1'b0,  1'b1,  ALU_INSTR,  AM_RS1, AM_IMM, A_ADD,  1'b0, i_imm    };         // ADDI     32'b???????_?????_?????_000_?????_0010011
-               else if ((Rs1_addr == 0) & (i_imm == 0))
-                  cntrl_sigs =      '{1'b0,  1'b0,  1'b0, 1'b0,  1'b0,  1'b0,  ALU_INSTR,  AM_RS1, AM_IMM, A_ADD,  1'b0, i_imm    };         // NOP - addi x0, x0, 0
                `ifdef H_ADDI
-               else
+               if (Rd_addr == 0)
                   cntrl_sigs =      '{1'b0,  1'b0,  1'b0, 1'b0,  1'b0,  1'b0,  HINT_INSTR, 2'd0,   2'd0,   4'd0,   1'b0, HINT_ADDI};         // ADDI  HINT
-               `endif
+               else
+               `endif // NOP - addi x0, x0, 0 - if ((Rs1_addr == 0) & (i_imm == 0))
+                  cntrl_sigs =      '{1'b0,  1'b0,  1'b0, 1'b1,  1'b0,  1'b1,  ALU_INSTR,  AM_RS1, AM_IMM, A_ADD,  1'b0, i_imm    };         // ADDI     32'b???????_?????_?????_000_?????_0010011
                1:
                if (i[31:25] == 7'b0000000)
                begin
