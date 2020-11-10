@@ -352,15 +352,14 @@ module decode_core
                   6: // Quadrant 1:6
                   begin
                      Rs2_addr = 0;  // br_fu.sv needs Rs1_data and Rs2_data to do compare
-                     cntrl_sigs =            '{1'b0,  1'b0,  1'b0, 1'b1,  1'b1,  1'b0,  BR_INSTR,   BS_PC,  BS_IMM, B_ADD,  1'b1, c_b_imm      };    // C.BEQZ = beq Rs1, X0, offset[8:1]
+                     cntrl_sigs =            '{1'b0,  1'b0,  1'b0, 1'b1,  1'b1,  1'b0,  BR_INSTR,   BS_PC,  BS_IMM, B_C,   1'b1, c_b_imm      };    // C.BEQZ = beq Rs1, X0, offset[8:1]
                   end
 
                   7: // Quadrant 1:7
                   begin
                      Rs2_addr = 0;  // br_fu.sv needs Rs1_data and Rs2_data to do compare
-                     cntrl_sigs =            '{1'b0,  1'b0,  1'b0, 1'b1,  1'b1,  1'b0,  BR_INSTR,   BS_PC,  BS_IMM, B_ADD,  1'b1, c_b_imm      };    // C.BNEZ = bne Rs1, X0, offset[8:1]
+                     cntrl_sigs =            '{1'b0,  1'b0,  1'b0, 1'b1,  1'b1,  1'b0,  BR_INSTR,   BS_PC,  BS_IMM, B_C,   1'b1, c_b_imm      };    // C.BNEZ = bne Rs1, X0, offset[8:1]
                   end
-
                endcase
             end
 

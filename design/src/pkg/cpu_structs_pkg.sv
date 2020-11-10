@@ -35,7 +35,7 @@ import cpu_params_pkg::*;
    typedef enum logic [3:0] {A_ADD, A_SUB, A_AND, A_OR, A_XOR, A_SLL, A_SRL, A_SRA, A_SLT, A_SLTU} ALU_OP_TYPE;
 
    // Branch instruction encodings
-   typedef enum logic [2:0] {B_ADD, B_JAL, B_JALR, B_URET, B_SRET, B_MRET} BR_OP_TYPE;
+   typedef enum logic [2:0] {B_ADD, B_JAL, B_JALR, B_URET, B_SRET, B_MRET, B_C} BR_OP_TYPE;
 
    // Integer Division/Remainder instruction encodings
    typedef enum logic [1:0] {DIV, DIVU, REM, REMU} IDR_OP_TYPE;

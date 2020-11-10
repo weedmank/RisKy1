@@ -115,6 +115,15 @@ module br_fu
                6: branch_taken = (Rs1_data < Rs2_data);                    // bltu
                7: branch_taken = (Rs1_data >= Rs2_data);                   // bgeu
             endcase
+            
+         `ifdef ext_C
+         B_C:
+            case(funct3)      // see decode_core.sv
+               6: branch_taken = (Rs1_data == 0);                          // c.beqz
+               7: branch_taken = (Rs1_data != 0);                          // c.bnez
+            endcase
+         `endif
+         
          B_JAL,B_JALR:           branch_taken = TRUE;                      // jal          -> PC = PC + sext(imm),                        R[rd] = no_br_pc;
                                                                            // jalr         -> PC = ( R[rs1] + sext(imm) ) & 0xfffffffe,   R[rd] = no_br_pc;
          B_MRET:  branch_taken = TRUE;                                     // mret
@@ -145,6 +154,14 @@ module br_fu
             endcase
          end
 
+         `ifdef ext_C
+         B_C:
+            case(funct3)      // see decode_core.sv
+               6: br_pc = branch_taken ? addxy : no_br_pc;                 // c.beqz -> PC + sext(imm)
+               7: br_pc = branch_taken ? addxy : no_br_pc;                 // c.bnez -> PC + sext(imm)
+            endcase
+         `endif
+         
          B_JAL:   br_pc = addxy;                                           // jal   -> PC = PC + sext(imm)                         R[rd] = no_br_pc;
          B_JALR:  br_pc = {addxy[PC_SZ-1:1],1'b0};                         // jalr  -> PC = ( R[rs1] + sext(imm) ) & 0xfffffffe,   R[rd] = no_br_pc;
          B_MRET:  br_pc = mepc;
