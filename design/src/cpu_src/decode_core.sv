@@ -209,10 +209,10 @@ module decode_core
 
             1: // Quadrant 1  see p. 111
             begin
-               Rd_addr  = (i[15:13] < 4) ? i[11:7] : {2'b00,i[9:7]};
-               Rs1_addr = (i[15:13] < 4) ? i[11:7] : {2'b00,i[9:7]};
-               Rs2_addr = {2'b00,i[4:2]};
-               // number of bits               1      1      1     1      1      1      4           2       2       4       1     32
+               Rd_addr     = i[15] ? {2'b00,i[9:7]} : i[11:7];
+               Rs1_addr    = i[15] ? {2'b00,i[9:7]} : i[11:7];
+               Rs2_addr    = {2'b00,i[4:2]};
+                // number of bits               1      1      1     1      1      1      4           2       2       4       1     32
                //                              Fs1_rd Fs2_rd Fd_wr Rs1_rd Rs2_rd Rd_wr  i_type      sel_x   sel_y   op      ci    imm
                case (funct3)
                   0: // Quadrant 1:0
@@ -326,7 +326,7 @@ module decode_core
                         end
                         // else                 // "the code points with shamt[5]=1 are reserved for custom extensions." p 105
 
-                        2: cntrl_sigs =      '{1'b0,  1'b0,  1'b0, 1'b1,  1'b0, !i[12], ALU_INSTR,  AM_RS1, AM_IMM, A_AND,  1'b1, c_imm        };    // C.ANDI = ANDI Rd, Rd, imm[5:0] p. 106
+                        2: cntrl_sigs =      '{1'b0,  1'b0,  1'b0, 1'b1,  1'b0,  1'b1,  ALU_INSTR,  AM_RS1, AM_IMM, A_AND,  1'b1, c_imm        };    // C.ANDI = ANDI Rd, Rd, sext(imm[5:0]) p. 106
 
                         3:
                         if (!i[12])
@@ -427,7 +427,7 @@ module decode_core
                         else                       // Rs2 != X0
                         begin                      // C.MV is only valid when rs2̸=x0; the code points with rs2=x0 correspond to the C.JR instruction
                            if (Rd_addr != 0)
-                              cntrl_sigs =   '{1'b0,  1'b0,  1'b0, 1'b1,  1'b1,  1'b1,  ALU_INSTR,  AM_RS1, AM_RS2, A_ADD,  1'b1, 32'd0        };    // C.MV = ADD Rd, R0, Rs2
+                              cntrl_sigs =   '{1'b0,  1'b0,  1'b0, 1'b1,  1'b1,  1'b1,  ALU_INSTR,  AM_IMM, AM_RS2, A_ADD,  1'b1, 32'd0        };    // C.MV = ADD Rd, R0, Rs2
                            `ifdef H_C_MV
                            else                    //  The code points with rs2̸=x0 and rd=x0 are HINTs.
                               cntrl_sigs =   '{1'b0,  1'b0,  1'b0, 1'b0,  1'b0,  1'b0,  HINT_INSTR, 2'd0,   2'd0,   4'd0,   1'b1, HINT_C_MV    };    // HINT

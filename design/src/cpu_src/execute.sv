@@ -517,6 +517,9 @@ module execute
                   end
 
                   // -------------- Bxx --------------
+                  `ifdef ext_C
+                  B_C,
+                  `endif
                   B_ADD:
                   begin
                      // With the addition of the C extension, no instructions can raise instruction-address-misaligned exceptions. p. 95
