@@ -202,7 +202,7 @@ module  top_tb1 ();
    `ifdef BIND_ASSERTS
 // Usable in Questasim
 // cmd    DUT-module-name   module-name         instance-name ...
-   bind   RK1               RV32_EMU_asserts    b1 (.*);
+   bind   RK1               RV_EMU_asserts      b1 (.*);
    bind   RK1.GPR           gpr_asserts         b2 (.*);
    bind   RK1.WB            wb_asserts          b3 (.*);
    bind   RK1.MEM           mem_asserts         b4 (.*);
