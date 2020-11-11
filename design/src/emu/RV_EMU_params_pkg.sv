@@ -8,6 +8,15 @@
 // this License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
 // CONDITIONS OF ANY KIND, either express or implied. See the License for the
 // specific language governing permissions and limitations under the License.
+// ----------------------------------------------------------------------------------------------------
+// Project       :  RV_FORMAL - Pre-commercial product to test RISC-V based CPUs
+//               :              Currently being used to test the open-source RisKy1 CPU being developed by hdlexpress.com
+// Editor        :  Notepad++
+// File          :  RV_EMU_params_pkg.sv - needed by RV_EMU_core.svp emulation model
+// Description   :  Property Assertions for RV32imc CPU (see PropCheck_top.sv where it includes these properties)
+//               :
+// Designer      :  Kirk Weedman - kirk@hdlexpress.com
+// ----------------------------------------------------------------------------------------------------
 
 package RV_EMU_params_pkg;
 import cpu_params_pkg::*;
