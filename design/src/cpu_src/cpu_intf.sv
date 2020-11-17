@@ -200,9 +200,10 @@ interface CSRFU_intf;
       logic                   sw_irq;           // Software Interrupt from clint.sv
       `endif
 
-      logic         [RSZ-1:0] Rd_data;          // value used to update Rd in WB stage
-      logic             [1:0] mode;             // Current CPU mode: Machine, Supervisor, or User
       logic       [PC_SZ-1:0] trap_pc;          // trap vector handler address.
+      logic             [1:0] mode;             // Current CPU mode: Machine, Supervisor, or User
+
+      logic         [RSZ-1:0] Rd_data;          // value used to update Rd in WB stage
       `ifdef ext_N
       logic                   interrupt_flag;   // 1 = take an interrupt trap
       logic         [RSZ-1:0] interrupt_cause;  // value specifying what type of interrupt
@@ -220,12 +221,12 @@ interface CSRFU_intf;
 
       modport master (output csr_addr, csr_valid, Rd_addr, Rs1_addr, Rs1_data, funct3, current_events, mret, `ifdef ext_S sret, `endif `ifdef ext_U uret, `endif
                              mtime, `ifdef ext_N ext_irq, time_irq, sw_irq, `endif exception,
-                      input  Rd_data, mode, trap_pc, `ifdef ext_N interrupt_flag, interrupt_cause, `endif mepc, `ifdef ext_S sepc, `endif `ifdef ext_U uepc, `endif
-                             ill_csr_access, ill_csr_addr, ialign);
+                      input  trap_pc, mode, ialign, Rd_data, `ifdef ext_N interrupt_flag, interrupt_cause, `endif mepc, `ifdef ext_S sepc, `endif `ifdef ext_U uepc, `endif
+                             ill_csr_access, ill_csr_addr);
       modport slave  (input  csr_addr, csr_valid, Rd_addr, Rs1_addr, Rs1_data, funct3, current_events, mret, `ifdef ext_S sret, `endif `ifdef ext_U uret, `endif
                              mtime, `ifdef ext_N ext_irq, time_irq, sw_irq, `endif exception,
-                      output Rd_data, mode, trap_pc, `ifdef ext_N interrupt_flag, interrupt_cause, `endif mepc, `ifdef ext_S sepc, `endif `ifdef ext_U uepc, `endif
-                             ill_csr_access, ill_csr_addr, ialign);
+                      output trap_pc, mode, ialign, Rd_data, `ifdef ext_N interrupt_flag, interrupt_cause, `endif mepc, `ifdef ext_S sepc, `endif `ifdef ext_U uepc, `endif
+                             ill_csr_access, ill_csr_addr);
 endinterface: CSRFU_intf
 
 
@@ -289,40 +290,15 @@ interface L1DC_intf;
 
 endinterface: L1DC_intf
 
-//------------------------ information shared betwee CSR Functional Unit and MEMstage ------------------------
-interface CSR_MEM_intf;
-      // Master outputs
-      `ifdef ext_N
-      logic                   interrupt_flag;   // 1 = take an interrupt trap
-      logic         [RSZ-1:0] interrupt_cause;  // value specifying what type of interrupt
-      `endif
-      logic       [PC_SZ-1:0] trap_pc;
-      logic                   ill_csr_access;   // 1 = illegal csr access
-      logic            [11:0] ill_csr_addr;
-      logic                   ialign;           // 1 = 16 bit alignment, 0 = 32 bit alignment
-      logic             [1:0] mode;
-
-      // Master inputs
+//------------------------ information shared betwee CSR Functional Unit and WB stage ------------------------
+interface EV_EXC_intf;
       EXCEPTION               exception;
       EVENTS                  current_events;   // number of retired instructions for current clock cycle
-      logic                   mret;             // MRET retiring
-      `ifdef ext_S
-      logic                   sret;             // SRET retiring
-      `endif
-      `ifdef ext_U
-      logic                   uret;             // URET retiring
-      `endif
-      logic                   ext_irq;
-      logic                   time_irq;
-      logic                   sw_irq;
-      logic                   mtime;
 
-      modport master (output `ifdef ext_N interrupt_flag, interrupt_cause, `endif trap_pc, ill_csr_access, ill_csr_addr, ialign, mode,
-                      input  exception, current_events, mret, `ifdef ext_S sret, `endif `ifdef ext_U uret, `endif `ifdef ext_N ext_irq, time_irq, sw_irq, `endif mtime);
-      modport slave  (input  `ifdef ext_N interrupt_flag, interrupt_cause, `endif trap_pc, ill_csr_access, ill_csr_addr, ialign, mode,
-                      output exception, current_events, mret, `ifdef ext_S sret, `endif `ifdef ext_U uret, `endif `ifdef ext_N ext_irq, time_irq, sw_irq, `endif mtime);
+      modport master (output exception, current_events);
+      modport slave  (input  exception, current_events);
 
-endinterface: CSR_MEM_intf
+endinterface: EV_EXC_intf
 
 //------------------------ Loads & Stores that need to be saved into the LS Queue ------------------------
 `ifdef add_LSQ
@@ -336,3 +312,19 @@ interface MEM2LSQ_intf;
 
 endinterface: MEM2LSQ_intf
 `endif
+
+// ------------------------ MEM stage External I/O bus ------------------------
+interface EIO_intf;
+      logic                      req;                                // I/O Request
+      logic          [PC_SZ-1:0] addr;                               // I/O Address
+      logic                      rd;                                 // I/O Read signal. 1 = read
+      logic                      wr;                                 // I/O Write signal. 1 = write
+      logic            [RSZ-1:0] wr_data;                            // I/O Write data that is written when io_wr == 1
+
+      logic                      ack;                                // I/O Acknowledge
+      logic                      ack_fault;                          // I/O Fault - checked during ack
+      logic            [RSZ-1:0] ack_data;                           // I/O Read data
+
+      modport master(output req, addr, rd, wr, wr_data, input  ack_data, ack, ack_fault);
+      modport slave (input  req, addr, rd, wr, wr_data, output ack_data, ack, ack_fault);
+endinterface: EIO_intf

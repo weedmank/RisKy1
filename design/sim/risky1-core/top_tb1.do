@@ -40,13 +40,13 @@ vlog  -sv -hazards +define+ext_M+ext_N+ext_S+ext_U+SIM_DEBUG                    
 vlog  -sv -hazards +define+ext_M+ext_N+ext_S+ext_U+SIM_DEBUG                     +incdir+../../src/includes    ../../src/pkg/cpu_structs_pkg.sv
 vlog  -sv -hazards +define+ext_M+ext_N+ext_S+ext_U+SIM_DEBUG                                                   ../../src/emu/RV_EMU_params_pkg.sv
 
-# Interfaces                        
+# Interfaces
 vlog  -sv -hazards +define+ext_M+ext_N+ext_S+ext_U+SIM_DEBUG                                                   ../../src/cpu_src/cpu_intf.sv
 
-# Debug Files                       
+# Debug Files
 vlog  -sv          +define+ext_M+ext_N+ext_S+ext_U+SIM_DEBUG                                                   ../../src/debug/disasm_RV.sv
-                        
-# RTL Synthesizable Files                       
+
+# RTL Synthesizable Files
 vlog  -sv -hazards +define+ext_M+ext_N+ext_S+ext_U+SIM_DEBUG  +cover                                           ../../src/cpu_src/alu_fu.sv
 vlog  -sv -hazards +define+ext_M+ext_N+ext_S+ext_U+SIM_DEBUG  +cover                                           ../../src/cpu_src/br_fu.sv
 vlog  -sv -hazards +define+ext_M+ext_N+ext_S+ext_U+SIM_DEBUG  +cover             +incdir+../../src/includes    ../../src/cpu_src/csr_fu.sv
@@ -80,22 +80,22 @@ vlog  -sv -hazards +define+ext_M+ext_N+ext_S+ext_U+SIM_DEBUG                    
 vlog  -sv -hazards                                                                                             ../../src/peripherals/L1_dcache.sv
 vlog  -sv -hazards                                                                                             ../../src/peripherals/L1_icache.sv
 vlog  -sv -hazards                                                                                             ../../src/peripherals/cache_arbiter.sv
-   
+
 # Models - non synthesizable. Note: arb_sysmem_model affectively substitutes for cache_arbiter + sys_mem_model
 vlog  -sv -hazards +define+TEST_FILE=\"instr_tests/factorial.rom\"                                             ../../src/models/sys_mem_model.sv
 
-# Top Level Simulation File - add +BIND_ASSERTS if doing assertion testing 
-vlog  -sv -hazards +define+ext_M+ext_N+ext_S+ext_U+SIM_DEBUG+BIND_ASSERTS                                      top_tb1.sv
-#vlog  -sv -hazards +define+ext_M+ext_N+ext_S+ext_U+SIM_DEBUG                                                    top_tb1.sv
+# Top Level Simulation File - add +BIND_ASSERTS if doing assertion testing
+#vlog  -sv -hazards +define+ext_M+ext_N+ext_S+ext_U+SIM_DEBUG+BIND_ASSERTS                                      top_tb1.sv
+vlog  -sv -hazards +define+ext_M+ext_N+ext_S+ext_U+SIM_DEBUG                                                   top_tb1.sv
 
-# Assertion/Property Files                      
+# Assertion/Property Files
 vlog  -sv -hazards +define+ext_M+ext_N+ext_S+ext_U+SIM_DEBUG                                                   ../../src/sva/csr_asserts.sv
 vlog  -sv -hazards +define+ext_M+ext_N+ext_S+ext_U+SIM_DEBUG                                                   ../../src/sva/gpr_asserts.sv
 vlog  -sv -hazards +define+ext_M+ext_N+ext_S+ext_U+SIM_DEBUG                                                   ../../src/sva/mem_asserts.sv
 vlog  -sv -hazards +define+ext_M+ext_N+ext_S+ext_U+SIM_DEBUG                                                   ../../src/sva/wb_asserts.sv
 vlog  -sv -hazards +define+ext_M+ext_N+ext_S+ext_U+SIM_DEBUG                                                   ../../src/sva/pipe_asserts.sv
 vlog  -sv -hazards +define+ext_M+ext_N+ext_S+ext_U+SIM_DEBUG                                                   ../../src/sva/RV_EMU_asserts.svp
-                        
+
 view assertions
 view structure
 

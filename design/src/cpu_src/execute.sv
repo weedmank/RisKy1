@@ -28,7 +28,16 @@ module execute
    input    logic                         clk_in,
    input    logic                         reset_in,
 
-   input    logic                         cpu_halt,                        // Output:  cause CPU to stop processing instructions & data
+   input    logic             [2*RSZ-1:0] mtime,                           // Input:   Memory-mapped mtime register contents
+
+   // used in CSRs
+   `ifdef ext_N
+   input    logic                         ext_irq,                         // Input:   External Interrupt
+   input    logic                         time_irq,                        // These are used in csr_fu.sv
+   input    logic                         sw_irq,
+   `endif
+
+   output   logic                         cpu_halt,                        // Output:  cause CPU to stop processing instructions & data
 
    // pipeline flush signal
    input    logic                         pipe_flush,                      // Input:   1 = Flush this segment of the pipeline
@@ -62,12 +71,12 @@ module execute
    E2M_intf.master                        E2M_bus,
 
    // signals between CSR Functional Unit (inside EXE stage) and MEM stage
-   CSR_MEM_intf.master                    CSR_MEM_bus
+   EV_EXC_intf.slave                      EV_EXC_bus
 );
 
-   logic                                  rd_pipe_in;
-   logic                                  rd_pipe_out, wr_pipe_out;
-   logic                                  full;
+   logic                                  xfer_out, xfer_in;
+   logic                                  pipe_full;
+
    EXE_2_MEM                              exe_dout;
 
    logic                    [GPR_ASZ-1:0] Rd_addr;                         // Which register to write (destination register)
@@ -144,11 +153,10 @@ module execute
                      csr_fu_done  | ls_fu_done | hint_done | sys_done | ill_done;
 
    // control logic for interface to Decode stage and Memory stage
-   assign D2E_bus.rdy   = !full & !reset_in & !cpu_halt & fu_done;
+   assign D2E_bus.rdy   = !reset_in & !cpu_halt & fu_done & (!pipe_full | xfer_out);
 
-   assign rd_pipe_in    = D2E_bus.valid & D2E_bus.rdy;                              // pop data from DEC_PIPE pipeline register..
-   assign wr_pipe_out   = rd_pipe_in;                                               // ...and write new data into EXE_PIPE registers
-   assign rd_pipe_out   = E2M_bus.valid & E2M_bus.rdy;                              // pops data from EXE_PIPE registers to next stage
+   assign xfer_in       = D2E_bus.valid & D2E_bus.rdy;                              // pop data from DEC_PIPE pipeline register..
+   assign xfer_out      = E2M_bus.valid & E2M_bus.rdy;                              // pops data from EXE_PIPE registers to next stage
 
    // use these addresses to get data from gpr[Rs1_addr], gpr[Rs2_addr]
    assign Rd_addr       = D2E_bus.data.Rd_addr;
@@ -334,15 +342,15 @@ module execute
    `endif
 
 // This group is sent from MEM stage to here
-   assign csrfu_bus.exception       = CSR_MEM_bus.exception;               // exception needs to be sent to CSR_FU from EXE stage???
-   assign csrfu_bus.current_events  = CSR_MEM_bus.current_events;          // currrent_events needs to be sent to CSR_FU from EXE stage???
+   assign csrfu_bus.exception       = EV_EXC_bus.exception;                // exception needs to be sent to CSR_FU from EXE stage???
+   assign csrfu_bus.current_events  = EV_EXC_bus.current_events;           // currrent_events needs to be sent to CSR_FU from EXE stage???
 
    `ifdef ext_N
-   assign csrfu_bus.ext_irq         = CSR_MEM_bus.ext_irq;                 // Input:   External Interrupt
-   assign csrfu_bus.time_irq        = CSR_MEM_bus.time_irq;                // Input:   Timer Interrupt from clint.sv
-   assign csrfu_bus.sw_irq          = CSR_MEM_bus.sw_irq;                  // Input:   Software Interrupt from clint.sv
+   assign csrfu_bus.ext_irq         = ext_irq;                             // Input:   External Interrupt
+   assign csrfu_bus.time_irq        = time_irq;                            // Input:   Timer Interrupt from clint.sv
+   assign csrfu_bus.sw_irq          = sw_irq;                              // Input:   Software Interrupt from clint.sv
    `endif
-   assign csrfu_bus.mtime           = CSR_MEM_bus.mtime;                   // Input:   memory mapped mtime register contents
+   assign csrfu_bus.mtime           = mtime;                               // Input:   memory mapped mtime register contents
 
    assign csr_fu_done = D2E_bus.valid & (i_type == CSR_INSTR); // This functional unit only takes 1 clock cycle
    // Control & Status Registers
@@ -352,18 +360,9 @@ module execute
       .csrfu_bus(csrfu_bus)
    );
 
-
-   `ifdef ext_N
-   assign CSR_MEM_bus.interrupt_flag   = csrfu_bus.interrupt_flag;
-   assign CSR_MEM_bus.interrupt_cause  = csrfu_bus.interrupt_cause;
-   `endif
-   assign CSR_MEM_bus.trap_pc          = csrfu_bus.trap_pc;
-   assign CSR_MEM_bus.ialign           = csrfu_bus.ialign;
-   assign CSR_MEM_bus.mode             = csrfu_bus.mode;
-
    assign ill_csr_access               = csrfu_bus.ill_csr_access;
    assign ill_csr_addr                 = csrfu_bus.ill_csr_addr;
-   assign mode                         = csrfu_bus.mode; // needed in MEM_IO logic
+   assign mode                         = csrfu_bus.mode; // needed in xRET logic
    assign mepc                         = csrfu_bus.mepc;
    `ifdef ext_S
    assign sepc                         = csrfu_bus.sepc;
@@ -416,6 +415,22 @@ module execute
    );
 
 
+   //------------------- CPU Halt Logic ------------------
+   `ifdef ext_N
+   logic    trigger_wfi;
+   
+   // Putting CPU to sleep and waking it up
+   always_ff @(posedge clk_in)
+   begin
+      if (reset_in || ext_irq)
+         cpu_halt <= FALSE;
+      else if (trigger_wfi)
+         cpu_halt <= TRUE;
+   end
+   `else
+   assign cpu_halt = FALSE;
+   `endif
+
    // ****** Decide which Functional Unit output data will get used and passed to next stage *****
    // record of signals for WB stage verification tests BEFORE changes are made (i.e. changes to Registers, Memory, CSRs, etc..)
    always_comb
@@ -437,20 +452,32 @@ module execute
       uret              = FALSE;
       `endif
 
+      `ifdef ext_N
+         trigger_wfi    = FALSE;
+      `endif
+      
       if (D2E_bus.valid)                                                            // should this instruction be processed by this stage? Default exe_dout.? values may be overriden inside this if()
       begin
-         op_type                 = D2E_bus.data.op;
-         predicted_addr          = D2E_bus.data.predicted_addr;
-         br_pc                   = brfu_bus.br_pc;
+         op_type                    = D2E_bus.data.op;
+         predicted_addr             = D2E_bus.data.predicted_addr;
+         br_pc                      = brfu_bus.br_pc;
 
-         exe_dout.ipd            = D2E_bus.data.ipd;                                // pass on to next stage
-         exe_dout.ci             = ci;                                              // 1 = compressed 16 bit instruction, 0 = 32 bit instruction
-         exe_dout.i_type         = i_type;
+         exe_dout.ipd               = D2E_bus.data.ipd;                             // pass on to next stage
+         exe_dout.ci                = ci;                                           // 1 = compressed 16 bit instruction, 0 = 32 bit instruction
+         exe_dout.i_type            = i_type;
 
-         exe_dout.op_type        = op_type;
-         exe_dout.predicted_addr = predicted_addr;
-         exe_dout.br_pc          = br_pc;
-         
+         exe_dout.op_type           = op_type;
+         exe_dout.predicted_addr    = predicted_addr;
+         exe_dout.br_pc             = br_pc;
+
+         // data needed in MEM stage from CSR logic
+         exe_dout.trap_pc           = csrfu_bus.trap_pc;                            // trap vector handler address.
+         exe_dout.mode              = csrfu_bus.mode;
+         `ifdef ext_N
+         exe_dout.interrupt_flag    = csrfu_bus.interrupt_flag;
+         exe_dout.interrupt_cause   = csrfu_bus.interrupt_cause;
+         `endif
+
          unique case(i_type)                                                        // select which functional unit output data is the appropriate one and save it
             ALU_INSTR:
             begin
@@ -476,7 +503,7 @@ module execute
                      if (predicted_addr != uepc)
                      begin
                         exe_dout.mispre   = TRUE;
-   
+
                         rld_pc_flag       = TRUE;
                         rld_pc_addr       = uepc;                                   // reload PC and flush pipeline
                      end
@@ -548,7 +575,7 @@ module execute
                         exe_dout.mis         = brfu_bus.mis;
                         exe_dout.br_pc       = br_pc;
                      end
-                     else 
+                     else
                      `endif
                      if (predicted_addr != br_pc)
                      begin
@@ -719,7 +746,8 @@ module execute
    pipe #( .T(type(EXE_2_MEM)) ) EXE_PIPE
    (
       .clk_in(clk_in),  .reset_in(reset_in | pipe_flush),
-      .write_in(wr_pipe_out),  .data_in(exe_dout),      .full_out(full),
-      .read_in(rd_pipe_out),   .data_out(E2M_bus.data), .valid_out(E2M_bus.valid)
+      .write_in(xfer_in), .data_in(exe_dout), .full_out(pipe_full),
+      .read_in(xfer_out), .data_out(E2M_bus.data)
    );
+   assign E2M_bus.valid = pipe_full;
 endmodule

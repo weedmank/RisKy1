@@ -53,10 +53,10 @@ module  top_tb1 ();
          $display("RisKy also supports Interrupts");
       `endif
       `ifdef ext_M
-         $display("RisKy RV32M support");
+         $display("RV32i with extension M support");
       `endif
       `ifdef ext_C
-         $display("RisKy RV32C support");
+         $display("RV32i with extension C support");
       `endif
 
 
@@ -174,9 +174,10 @@ module  top_tb1 ();
    //---------------------------------------------------------------------------
    EIO_intf    EIO_bus();
    
-   assign EIO_bus.ack         = TRUE;
-   assign EIO_bus.ack_fault   = TRUE;
-   assign EIO_bus.ack_data    = 32'hdeadbeef;
+// These signals need to be driven by testbench if there's not External I/O device
+//   assign EIO_bus.ack         = TRUE;
+//   assign EIO_bus.ack_fault   = TRUE;
+//   assign EIO_bus.ack_data    = 32'hdeadbeef;
 
    RisKy1_core RK1
    (  .clk_in(clk_100), .reset_in(reset),
@@ -188,7 +189,8 @@ module  top_tb1 ();
       // L1 Data Cache Interface - could also be used to interface to "RAM Blocks" in an FPGA
       .L1DC_bus(L1DC_bus),
       .dc_flush(dc_flush),
-
+      
+      
       .sim_stop(sim_stop),             // used to know when to stop a particular assembly/C program in simulation.
 
       `ifdef ext_N
@@ -199,6 +201,14 @@ module  top_tb1 ();
       .EIO_bus(EIO_bus)
    );
 
+   // Kanna's External I/O device under test
+   external_register er_io
+   (  .clk_in(clk_100), .reset_in(reset),
+      
+      .ext_intf(EIO_bus)
+   );
+   
+   
    `ifdef BIND_ASSERTS
 // Usable in Questasim
 // cmd    DUT-module-name   module-name         instance-name ...

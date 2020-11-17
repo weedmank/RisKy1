@@ -41,18 +41,16 @@ module decode
 );
 
 
-   logic       rd_pipe_in;
-   logic       rd_pipe_out, wr_pipe_out;
-   logic       full;
+   logic       xfer_out, xfer_in;
+   logic       pipe_full;
    DEC_2_EXE   dec_out;
 
    DCORE_intf  dcore_bus();
 
-   assign F2D_bus.rdy      = !full & !reset_in & !cpu_halt;
+   assign F2D_bus.rdy   = !reset_in & !cpu_halt & (!pipe_full | xfer_out);
 
-   assign rd_pipe_in       = F2D_bus.valid & F2D_bus.rdy;      // pop data from fetch pipeline register..
-   assign wr_pipe_out      = rd_pipe_in;                       // ...and write new data into DEC_PIPE registers
-   assign rd_pipe_out      = D2E_bus.valid & D2E_bus.rdy;      // pops data from DEC_PIPE registers to next stage
+   assign xfer_in       = F2D_bus.valid & F2D_bus.rdy;      // pop data from fetch pipeline register..
+   assign xfer_out      = D2E_bus.valid & D2E_bus.rdy;      // pops data from DEC_PIPE registers to next stage
 
    //------------------------------- Debugging: disassemble instruction in this stage ------------------------------------
    `ifdef SIM_DEBUG
@@ -74,11 +72,13 @@ module decode
          dec_out = dcore_bus.dec_data;
    end
 
-   // Set of Flip Flops (for pipelining) with control logic ('full' signal) sitting between Decode logic and the next stage
+   // Set of Flip Flops (for pipelining) with control logic ('pipe_full' signal) sitting between Decode logic and the next stage
    pipe #( .T(type(DEC_2_EXE)) ) DEC_PIPE
    (
       .clk_in(clk_in),  .reset_in(reset_in | pipe_flush),
-      .write_in(wr_pipe_out),  .data_in(dcore_bus.dec_data),   .full_out(full),
-      .read_in(rd_pipe_out),   .data_out(D2E_bus.data),        .valid_out(D2E_bus.valid)
+      .write_in(xfer_in), .data_in(dcore_bus.dec_data), .full_out(pipe_full),
+      .read_in(xfer_out), .data_out(D2E_bus.data)
    );
+   
+   assign D2E_bus.valid = pipe_full;
 endmodule

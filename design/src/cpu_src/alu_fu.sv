@@ -76,7 +76,7 @@ module alu_fu
    // ALU Functions
    always_comb
    begin
-      unique case(op)
+      case(op)
          A_AND:   afu_bus.Rd_data = mux_x & mux_y;
          A_OR:    afu_bus.Rd_data = mux_x | mux_y;             // see lui
          A_XOR:   afu_bus.Rd_data = mux_x ^ mux_y;

@@ -77,48 +77,48 @@ module csr_fu
 
    logic                         ialign;                 // Instruction Alignment. 1 = 16, 0 = 32
 
-   assign ialign           = csr_misa [2];               // 1 = compressed instruction (16 bit alignment), 0 = 32 bit alignment.  See csr_wr_mach.sv
+   assign ialign              = csr_misa [2];            // 1 = compressed instruction (16 bit alignment), 0 = 32 bit alignment.  See csr_wr_mach.sv
 
-   assign csr_addr         = csrfu_bus.csr_addr;
-   assign csr_valid        = csrfu_bus.csr_valid;        // valid == 1 - a CSR rad & write happens this clock cycle
+   assign csr_addr            = csrfu_bus.csr_addr;
+   assign csr_valid           = csrfu_bus.csr_valid;     // valid == 1 - a CSR rad & write happens this clock cycle
 
-   assign exception        = csrfu_bus.exception;
-   assign current_events   = csrfu_bus.current_events;
-   assign mret             = csrfu_bus.mret;
+   assign exception           = csrfu_bus.exception;
+   assign current_events      = csrfu_bus.current_events;
+   assign mret                = csrfu_bus.mret;
    `ifdef ext_S
-   assign sret             = csrfu_bus.sret;
+   assign sret                = csrfu_bus.sret;
    `endif
    `ifdef ext_U
-   assign uret             = csrfu_bus.uret;
+   assign uret                = csrfu_bus.uret;
    `endif
 
 
-   assign mtime            = csrfu_bus.mtime;
+   assign mtime               = csrfu_bus.mtime;
 
    `ifdef ext_N
-   assign ext_irq          = csrfu_bus.ext_irq;
-   assign time_irq         = csrfu_bus.time_irq;
-   assign sw_irq           = csrfu_bus.sw_irq;
+   assign ext_irq             = csrfu_bus.ext_irq;
+   assign time_irq            = csrfu_bus.time_irq;
+   assign sw_irq              = csrfu_bus.sw_irq;
    `endif
 
 
-   assign csrfu_bus.Rd_data  = csr_rd_data;              // Rd_data: value to write into register R[Rd] in WB stage
-   assign csrfu_bus.mode     = mode;
-   assign csrfu_bus.trap_pc  = trap_pc;
+   assign csrfu_bus.mode      = mode;
+   assign csrfu_bus.trap_pc   = trap_pc;
+
+   assign csrfu_bus.Rd_data   = csr_rd_data;             // Rd_data: value to write into register R[Rd] in WB stage
    `ifdef ext_N
    assign csrfu_bus.interrupt_flag  = interrupt_flag;
    assign csrfu_bus.interrupt_cause = interrupt_cause;
    `endif
-   assign csrfu_bus.mepc     = mepc;                     // csr_wr_mach.svh
+   assign csrfu_bus.mepc      = mepc;                    // csr_wr_mach.svh
    `ifdef ext_S
-   assign csrfu_bus.sepc     = sepc;                     // csr_wr_super.svh
+   assign csrfu_bus.sepc      = sepc;                    // csr_wr_super.svh
    `endif
    `ifdef ext_U
-   assign csrfu_bus.uepc     = uepc;                     // csr_wr_user.svh
+   assign csrfu_bus.uepc      = uepc;                    // csr_wr_user.svh
    `endif
    assign csrfu_bus.ill_csr_access  = ill_csr_access;
    assign csrfu_bus.ill_csr_addr    = ill_csr_addr;
-   assign csrfu_bus.ialign          = ialign;
 
    logic         [RSZ-1:0] imm_data;                     // immediate data
    logic         [RSZ-1:0] csr_wr_data;                  // write data to csr[csr_addr]

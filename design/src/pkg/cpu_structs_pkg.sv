@@ -193,6 +193,12 @@ import cpu_params_pkg::*;
       logic       [PC_SZ-1:0] br_pc;
       I_TYPE                  i_type;
       logic       [OP_SZ-1:0] op_type;
+      logic       [PC_SZ-1:0] trap_pc;          // trap vector handler address.
+      logic             [1:0] mode;
+      `ifdef ext_N
+      logic                   interrupt_flag;   // 1 = take an interrupt trap
+      logic         [RSZ-1:0] interrupt_cause;  // value specifying what type of interrupt
+      `endif
 
       // FPR information (gets pased to MEM stage which passes it to WB stage)
       `ifdef ext_F
@@ -206,8 +212,24 @@ import cpu_params_pkg::*;
 
 
    typedef struct packed {
-      `ifdef SIM_DEBUG
-      IP_Data                 ipd;              // pass instruction and program counter
+      // information to be consumed by the MEM stage
+      IP_Data                 ipd;              // pass instruction and program counter for debugging purposes
+      logic       [PC_SZ-1:0] ls_addr;
+      logic                   inv_flag;         // invalidate flag
+      logic                   mis;
+      logic                   mispre;
+      logic                   ci;               // 1 = compressed 16-bit instruction, 0 = 32 bit instruction
+      logic       [PC_SZ-1:0] predicted_addr;
+      logic       [PC_SZ-1:0] br_pc;
+      I_TYPE                  i_type;
+      logic       [OP_SZ-1:0] op_type;
+      logic       [PC_SZ-1:0] trap_pc;          // trap vector handler address.
+      logic             [1:0] mode;
+      logic                   mio_ack_fault;
+
+      `ifdef ext_N
+      logic                   interrupt_flag;   // 1 = take an interrupt trap
+      logic         [RSZ-1:0] interrupt_cause;  // value specifying what type of interrupt
       `endif
 
       // GPR/FPR information
@@ -217,9 +239,8 @@ import cpu_params_pkg::*;
       logic                   Rd_wr;            // Writeback stage needs to know whether to write to destination register Rd
       logic     [GPR_ASZ-1:0] Rd_addr;
       logic         [RSZ-1:0] Rd_data;          // This is the write back data (produced by alu_fu, br_fu, im_fu, idr_fu)
-   } MEM_2_WB;
 
-   // ---------------------------------------------------------------------------------------------------------------
+   } MEM_2_WB;
 
    // ********************************** Forwarding Info *********************************************
    typedef struct packed {
@@ -276,7 +297,7 @@ import cpu_params_pkg::*;
       logic                   mis;              // misalignment
    } MEM_LS_Data;
 
-`ifdef add_LSQ   
+`ifdef add_LSQ
    typedef struct packed {
       logic       [PC_SZ-1:0] addr;
       logic         [RSZ-1:0] data;

@@ -11,7 +11,7 @@
 // ----------------------------------------------------------------------------------------------------
 // Project       :  RisKy1 - new 5 stage pipelined RISC-V ISA based CPU tailored to the RISC-V RV32IM
 // Editor        :  Notepad++
-// File          :  pipe.sv - single word deep fifo with full/empty flag, and output valid signal
+// File          :  pipe.sv - single word deep fifo with full_out/empty flag, and output valid signal
 // Description   :  Sequential Logic: latches data into pipeline FlipFlops
 //               :  and controls transfer of data from one Stage to the next Stage
 // Designer      :  Kirk Weedman - kirk@hdlexpress.com
@@ -36,14 +36,8 @@ module pipe    // simple buffer of Flip Flops between two stages
    output      logic    full_out,
 
    input       logic    read_in,
-   output      T        data_out,
-   output      logic    valid_out
+   output      T        data_out
 );
-
-   logic       full;
-
-   assign full_out   = full & !read_in; // just one item means full, but only if data is not going to be read this cycle
-   assign valid_out  = full;
 
    always_ff @(posedge clk_in)
    begin
@@ -53,10 +47,10 @@ module pipe    // simple buffer of Flip Flops between two stages
          data_out <= data_in;
 
       if (reset_in)
-         full <= FALSE;
+         full_out <= FALSE;
       else if (write_in)
-         full <= TRUE;
+         full_out <= TRUE;
       else if (read_in)
-         full <= FALSE;
+         full_out <= FALSE;
    end
 endmodule
