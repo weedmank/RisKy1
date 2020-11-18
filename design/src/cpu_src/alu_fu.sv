@@ -87,6 +87,7 @@ module alu_fu
          A_SRA:   afu_bus.Rd_data = mux_x >>> mux_y[4:0];
          A_SLT:   afu_bus.Rd_data = ($signed(mux_x) < $signed(mux_y)) ? 'd1 : 'd0; // signed compare
          A_SLTU:  afu_bus.Rd_data = (mux_x < mux_y) ? 'd1 : 'd0; // unsigned compare
+         default: afu_bus.Rd_data = 0;
       endcase
    end
 
