@@ -360,11 +360,12 @@ module fetch
                      btype[c] = 3'b010;                                                   // 3'b010: branch type is conditional
                   5'b100_10:
                   begin
-                     if (!i[12] & (i[11:7] != 0) & (i[6:2] == 0))                         // Rs1 != 0 and Rs2 == 0
-                        btype[c] = 3'b001;                                                // C.JR - jalr x0, 0(rs1), PC = R[rs1]
-                     if ( i[12] & (i[11:7] != 0) & (i[6:2] == 0))                         // Rs1 != 0 and Rs2 == 0
-                        btype[c] = 3'b001;                                                // C.JALR = JALR R1, Rs1, 0
+                     if ((i[11:7] != 0) && (i[6:2] == 0))
+                        btype[c] = 3'b001;                                                // Either C.JR or C.JALR - both have same btype[]
+                     else
+                        btype[c] = 3'b000;
                   end
+                  default: btype[c] = 3'b000;
                endcase
             end
             else
