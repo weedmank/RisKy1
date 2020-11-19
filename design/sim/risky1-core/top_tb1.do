@@ -63,7 +63,6 @@ vlog  -sv -hazards +define+ext_M+ext_N+ext_S+ext_U+SIM_DEBUG  +cover            
 vlog  -sv -hazards +define+ext_M+ext_N+ext_S+ext_U+SIM_DEBUG  +cover                                           ../../src/cpu_src/irq.sv
 vlog  -sv -hazards +define+ext_M+ext_N+ext_S+ext_U+SIM_DEBUG  +cover                                           ../../src/cpu_src/ls_fu.sv
 vlog  -sv -hazards +define+ext_M+ext_N+ext_S+ext_U+SIM_DEBUG  +cover                                           ../../src/cpu_src/mem.sv
-vlog  -sv -hazards +define+ext_M+ext_N+ext_S+ext_U+SIM_DEBUG  +cover                                           ../../src/cpu_src/mem_io.sv
 vlog  -sv -hazards +define+ext_M+ext_N+ext_S+ext_U+SIM_DEBUG  +cover                                           ../../src/cpu_src/pipe.sv
 vlog  -sv -hazards +define+ext_M+ext_N+ext_S+ext_U+SIM_DEBUG  +cover                                           ../../src/cpu_src/RisKy1_core.sv
 vlog  -sv -hazards +define+ext_M+ext_N+ext_S+ext_U+SIM_DEBUG  +cover                                           ../../src/cpu_src/sdiv_N_by_N.sv
