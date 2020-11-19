@@ -130,7 +130,7 @@ module decode_core
    assign c_j_imm          = {{21{i[12]}},i[8],i[10:9],i[6],i[7],i[2],i[11],i[5:3],1'b0}; // see C.JAL p 102
    // c_j_imm                       11     10    9  8    7    6    5    4     3:1
 
-   assign c_addi16sp_imm   = {{23{i[12]}},i[4:3],i[5],i[2],i[6],4'b0};                    // See C.ADDI16SP
+   assign c_addi16sp_imm   = {{23{i[12]}},i[4:3],i[5],i[2],i[6],4'b0000};                 // See C.ADDI16SP
    // c_addi16sp_imm                9       8:7    6    5    4
 
    assign c_lui_imm        = {{15{i[12]}},i[6:2],12'b0};                                  // see C.LUI
@@ -266,9 +266,8 @@ module decode_core
                   begin
                      // C.LUI is only valid when rd̸={x0, x2}, and when the immediate is not equal to zero. The code points with nzimm=0 are reserved;
                      // the remaining code points with rd=x0 are HINTs; and the remaining code points with rd=x2 correspond to the C.ADDI16SP instruction. p 104
-                     if (Rd_addr == 2)
+                     if (Rd_addr == 2)       // Rs1_addr is the same as Rd_addr
                      begin
-                        Rs1_addr = 2;
                         if (c_addi16sp_imm != 0)
                            cntrl_sigs =      '{1'b0,  1'b0,  1'b0, 1'b1,  1'b0,  1'b1,  ALU_INSTR,  AM_RS1, AM_IMM, A_ADD,  1'b1, c_addi16sp_imm};   // C.ADDI16SP --> addi x2, x2, nzimm[9:4]
                      end
