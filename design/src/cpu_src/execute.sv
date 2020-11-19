@@ -560,7 +560,7 @@ module execute
                      `endif
                      if (predicted_addr != br_pc)
                      begin
-                        exe_dout.mispre   = TRUE;
+                        exe_dout.mispre      = TRUE;
 
                         rld_pc_flag          = TRUE;
                         rld_pc_addr          = br_pc;
@@ -581,7 +581,7 @@ module execute
                      `endif
                      if (predicted_addr != br_pc)
                      begin
-                        exe_dout.mispre   = TRUE;
+                        exe_dout.mispre      = TRUE;
 
                         rld_pc_flag          = TRUE;
                         rld_pc_addr          = br_pc;
@@ -607,7 +607,7 @@ module execute
                      `endif
                      if (predicted_addr != br_pc)
                      begin
-                        exe_dout.mispre   = TRUE;
+                        exe_dout.mispre      = TRUE;
 
                         rld_pc_flag          = TRUE;
                         rld_pc_addr          = br_pc;
