@@ -219,7 +219,6 @@ import cpu_params_pkg::*;
       logic                   mis;
       logic                   mispre;
       logic                   ci;               // 1 = compressed 16-bit instruction, 0 = 32 bit instruction
-      logic       [PC_SZ-1:0] predicted_addr;
       logic       [PC_SZ-1:0] br_pc;
       I_TYPE                  i_type;
       logic       [OP_SZ-1:0] op_type;

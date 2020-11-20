@@ -125,7 +125,6 @@ module execute
 
    logic       [OP_SZ-1:0] op_type;
    logic       [PC_SZ-1:0] predicted_addr;
-   logic       [PC_SZ-1:0] br_pc;
 
    logic       [PC_SZ-1:0] mepc;
    `ifdef ext_S
@@ -373,9 +372,9 @@ module execute
 
    //************************************ System Instruction & Illegal Instructions **************
    // There are no Functional Units related to these instructions so they complete in the current clock cycle
-   assign hint_done = D2E_bus.valid & (i_type == HINT_INSTR); // These instruction only take 1 clock cycle - unless logic changed
-   assign sys_done  = D2E_bus.valid & (i_type == SYS_INSTR);  // These instruction only take 1 clock cycle
-   assign ill_done  = D2E_bus.valid & (i_type == ILL_INSTR);  // This instruction only takes 1 clock cycle
+   assign hint_done = D2E_bus.valid & (i_type == HINT_INSTR); // These instruction types only take 1 clock cycle - unless logic changed
+   assign sys_done  = D2E_bus.valid & (i_type == SYS_INSTR);  // These instruction types only take 1 clock cycle
+   assign ill_done  = D2E_bus.valid & (i_type == ILL_INSTR);  // These instruction types only takes 1 clock cycle
 
 
    `ifdef ext_F
@@ -443,7 +442,6 @@ module execute
 
       op_type           = '0;
       predicted_addr    = '0;
-      br_pc             = '0;
       mret              = FALSE;
       `ifdef ext_S
       sret              = FALSE;
@@ -460,7 +458,6 @@ module execute
       begin
          op_type                    = D2E_bus.data.op;
          predicted_addr             = D2E_bus.data.predicted_addr;
-         br_pc                      = brfu_bus.br_pc;
 
          exe_dout.ipd               = D2E_bus.data.ipd;                             // pass on to next stage
          exe_dout.ci                = ci;                                           // 1 = compressed 16 bit instruction, 0 = 32 bit instruction
@@ -468,7 +465,6 @@ module execute
 
          exe_dout.op_type           = op_type;
          exe_dout.predicted_addr    = predicted_addr;
-         exe_dout.br_pc             = br_pc;
 
          // data needed in MEM stage from CSR logic
          exe_dout.trap_pc           = csrfu_bus.trap_pc;                            // trap vector handler address.
@@ -554,16 +550,16 @@ module execute
                      if (brfu_bus.mis)
                      begin
                         exe_dout.mis   = brfu_bus.mis;                              // Misaligned Addresses Trap
-                        exe_dout.br_pc = br_pc;                                     // Exception Trap info for use in MEM stage
+                        exe_dout.br_pc = brfu_bus.br_pc;                            // Exception Trap info for use in MEM stage
                      end
                      else
                      `endif
-                     if (predicted_addr != br_pc)
+                     if (predicted_addr != brfu_bus.br_pc)
                      begin
                         exe_dout.mispre      = TRUE;
 
                         rld_pc_flag          = TRUE;
-                        rld_pc_addr          = br_pc;
+                        rld_pc_addr          = brfu_bus.br_pc;
                      end
                   end
 
@@ -575,16 +571,16 @@ module execute
                      if (brfu_bus.mis)
                      begin
                         exe_dout.mis         = brfu_bus.mis;
-                        exe_dout.br_pc       = br_pc;
+                        exe_dout.br_pc       = brfu_bus.br_pc;
                      end
                      else
                      `endif
-                     if (predicted_addr != br_pc)
+                     if (predicted_addr != brfu_bus.br_pc)
                      begin
                         exe_dout.mispre      = TRUE;
 
                         rld_pc_flag          = TRUE;
-                        rld_pc_addr          = br_pc;
+                        rld_pc_addr          = brfu_bus.br_pc;
                      end
                      else
                      begin
@@ -605,12 +601,12 @@ module execute
                      end
                      else
                      `endif
-                     if (predicted_addr != br_pc)
+                     if (predicted_addr != brfu_bus.br_pc)
                      begin
                         exe_dout.mispre      = TRUE;
 
                         rld_pc_flag          = TRUE;
-                        rld_pc_addr          = br_pc;
+                        rld_pc_addr          = brfu_bus.br_pc;
                      end
                      else
                      begin

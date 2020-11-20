@@ -148,7 +148,6 @@ module mem
    assign mem_dout.mis                 = E2M_bus.data.mis;                          // misaligned, illegal CSR access...
    assign mem_dout.mispre              = E2M_bus.data.mispre;
    assign mem_dout.ci                  = E2M_bus.data.ci;
-   assign mem_dout.predicted_addr      = E2M_bus.data.predicted_addr;
    assign mem_dout.br_pc               = E2M_bus.data.br_pc;
    assign mem_dout.i_type              = E2M_bus.data.i_type;
    assign mem_dout.op_type             = E2M_bus.data.op_type;

@@ -64,7 +64,6 @@ module wb
    logic                   instr_err;
    logic                   mispre;
    logic                   ci;
-   logic       [PC_SZ-1:0] predicted_addr;
    logic       [PC_SZ-1:0] br_pc;
    logic       [PC_SZ-1:0] trap_pc;                                                 // trap vector handler address.
    logic             [1:0] mode;
@@ -94,7 +93,6 @@ module wb
    assign instr_err           = M2W_bus.data.mis;                                   // misaligned, illegal CSR access...
    assign mispre              = M2W_bus.data.mispre;
    assign ci                  = M2W_bus.data.ci;
-   assign predicted_addr      = M2W_bus.data.predicted_addr;
    assign br_pc               = M2W_bus.data.br_pc;
    assign i_type              = M2W_bus.data.i_type;                                // override default values
    assign op_type             = M2W_bus.data.op_type;
@@ -345,7 +343,7 @@ module wb
                      end
                      else
                      `endif
-                     if (predicted_addr != br_pc)
+                     if (mispre)
                         current_events.mispredict = TRUE;                           // can't be covered using e_flag... becuase this is not an exception
 
                      current_events.ret_cnt[BXX_RET] = 1'b1;                        // number of BXX instructions retiring this clock cycle
@@ -371,9 +369,9 @@ module wb
                      end
                      else
                      `endif
-                     if (predicted_addr != br_pc)
-                        current_events.mispredict = TRUE;                           // can't be covered using e_flag... becuase this is not an exception
-                     else
+//                     if (mispre)     // JAL can't mispredict
+//                        current_events.mispredict = TRUE;                           // can't be covered using e_flag... becuase this is not an exception
+//                     else
                      begin
                         wb_Rd_wr                = M2W_bus.data.Rd_wr;               // Writeback stage needs to know whether to write to destination register Rd
                         wb_Rd_addr              = M2W_bus.data.Rd_addr;             // Address of Rd register
@@ -403,7 +401,7 @@ module wb
                      end
                      else
                      `endif
-                     if (predicted_addr != br_pc)
+                     if (mispre)
                         current_events.mispredict = TRUE;                           // can't be covered using e_flag... becuase this is not an exception
                      else
                      begin
