@@ -264,11 +264,11 @@ endinterface: FBUS_intf
 
 // ------------------------ L1 Instruction & Data Cache Interfaces ------------------------
 interface L1IC_intf;
-      logic                   req;           // Output: Request            - Fetch unit is requesting a cache line of data from the I $
-      logic       [PC_SZ-1:0] addr;          // Output: Request address    - Memory address that Fetch unit wants to get a cache line of data from
-
-      logic                   ack;           // Input:  Ackknowledge       - I$ is ackknowledging it has data (ic_rd_data_in) for the Fetch unit
-      logic    [CL_LEN*8-1:0] ack_data;      // Output: Acknowledge data   - this contains CL_LEN bytes of data => CL_LEN/4 instructions
+      logic                   req;           // Fetch unit is requesting a cache line of data from the I $
+      logic       [PC_SZ-1:0] addr;          // Memory address that Fetch unit wants to get a cache line of data from
+                                                
+      logic                   ack;           // I$ is ackknowledging it has data (ic_rd_data_in) for the Fetch unit
+      logic    [CL_LEN*8-1:0] ack_data;      // this contains CL_LEN bytes of data => CL_LEN/4 instructions
       logic                   ack_fault;
 
       modport master (output addr, req, input  ack, ack_data, ack_fault);
