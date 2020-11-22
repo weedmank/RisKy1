@@ -110,7 +110,6 @@ add wave -noupdate -group EXE /top_tb1/RK1/EXE/ill_done
 add wave -noupdate -group EXE /top_tb1/RK1/EXE/fu_done
 add wave -noupdate -group EXE /top_tb1/RK1/EXE/op_type
 add wave -noupdate -group EXE -radix hexadecimal /top_tb1/RK1/EXE/predicted_addr
-add wave -noupdate -group EXE /top_tb1/RK1/EXE/br_pc
 add wave -noupdate -group EXE /top_tb1/RK1/EXE/mepc
 add wave -noupdate -group EXE /top_tb1/RK1/EXE/sepc
 add wave -noupdate -group EXE /top_tb1/RK1/EXE/uepc
@@ -324,4 +323,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits ps
 update
-WaveRestoreZoom {0 ps} {261837 ps}
+WaveRestoreZoom {0 ps} {1563450 ps}

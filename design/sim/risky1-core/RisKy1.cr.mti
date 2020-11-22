@@ -579,18 +579,6 @@ These features are only supported in Questasim.
 Top level modules:
 	csr_asserts
 
-} {} {}} C:/RisKy1/design/src/cpu_src/mem.sv {1 {vlog -work work -sv +incdir+../../src/includes -stats=none C:/RisKy1/design/src/cpu_src/mem.sv
-Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
--- Compiling package mem_sv_unit
--- Importing package functions_pkg
--- Importing package logic_params_pkg
--- Importing package cpu_params_pkg
--- Importing package cpu_structs_pkg
--- Compiling module mem
-
-Top level modules:
-	mem
-
 } {} {}} C:/RisKy1/src/sva/gpr_asserts.sv {2 {vlog -work work -sv +incdir+../../src/includes -stats=none C:/RisKy1/src/sva/gpr_asserts.sv
 Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
 -- Compiling package gpr_asserts_sv_unit
@@ -607,6 +595,34 @@ These features are only supported in Questasim.
 
 Top level modules:
 	gpr_asserts
+
+} {} {}} C:/RisKy1/design/src/cpu_src/mem.sv {1 {vlog -work work -sv +incdir+../../src/includes -stats=none C:/RisKy1/design/src/cpu_src/mem.sv
+Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
+-- Compiling package mem_sv_unit
+-- Importing package functions_pkg
+-- Importing package logic_params_pkg
+-- Importing package cpu_params_pkg
+-- Importing package cpu_structs_pkg
+-- Compiling module mem
+
+Top level modules:
+	mem
+
+} {} {}} C:/RisKy1/src/models/L1_dcache.sv {1 {vlog -work work -sv +incdir+../../src/includes -stats=none C:/RisKy1/src/models/L1_dcache.sv
+Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
+-- Compiling package L1_dcache_sv_unit
+-- Compiling module L1_dcache
+
+Top level modules:
+	L1_dcache
+
+} {} {}} C:/RisKy1/src/cpu_src/ls_fu.sv {1 {vlog -work work -sv +incdir+../../src/includes -stats=none C:/RisKy1/src/cpu_src/ls_fu.sv
+Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
+-- Compiling package ls_fu_sv_unit
+-- Compiling module ls_fu
+
+Top level modules:
+	ls_fu
 
 } {} {}} C:/RisKy1/design/src/cpu_src/cpu_intf.sv {1 {vlog -work work -sv -stats=none C:/RisKy1/design/src/cpu_src/cpu_intf.sv
 Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
@@ -632,22 +648,6 @@ Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 
 
 Top level modules:
 	--none--
-
-} {} {}} C:/RisKy1/src/models/L1_dcache.sv {1 {vlog -work work -sv +incdir+../../src/includes -stats=none C:/RisKy1/src/models/L1_dcache.sv
-Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
--- Compiling package L1_dcache_sv_unit
--- Compiling module L1_dcache
-
-Top level modules:
-	L1_dcache
-
-} {} {}} C:/RisKy1/src/cpu_src/ls_fu.sv {1 {vlog -work work -sv +incdir+../../src/includes -stats=none C:/RisKy1/src/cpu_src/ls_fu.sv
-Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
--- Compiling package ls_fu_sv_unit
--- Compiling module ls_fu
-
-Top level modules:
-	ls_fu
 
 } {} {}} C:/RisKy1/design/src/peripherals/L1_icache.sv {1 {vlog -work work -sv -stats=none C:/RisKy1/design/src/peripherals/L1_icache.sv
 Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
