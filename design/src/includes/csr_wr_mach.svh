@@ -138,7 +138,7 @@
    // In systems with only M-mode and U-mode, the medeleg and mideleg registers should only be implemented if the N extension for user-mode interrupts is implemented.
    // In systems with only M-mode, or with both M-mode and U-mode but without U-mode trap support, the medeleg and mideleg registers should not exist. seee riscv-privileged.pdf p 28
 
-   //!!! NOTE: DOn't yet know how to implement all the logic for medeleg and mideleg!!!
+   //!!! NOTE: Don't yet know how to implement all the logic for medeleg and mideleg!!!
 
    `ifdef ext_S // "In systems with S-mode, the medeleg and mideleg registers must exist,..." p. 28 riscv-privileged.pdf
       // Machine exception delegation register.

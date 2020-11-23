@@ -129,7 +129,7 @@
 
    // Machine exception program counter.
    // 12'h341 = 12'b0011_0100_0001  mepc        (read-write)
-   if (csr_addr == 12'h341) begin csr_rdata = csr_mepc;       csr_avail = TRUE; end
+   if (csr_addr == 12'h341) begin csr_rdata = csr_mepc & (ialign ? ~32'h1 : ~32'h3);  csr_avail = TRUE; end // p. 36 riscv-privileged.pdf
 
    // Machine trap cause.
    // 12'h342 = 12'b0011_0100_0010  mcause      (read-write)
