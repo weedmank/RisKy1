@@ -142,6 +142,7 @@ import functions_pkg::*;
    localparam  MAX_FPR     = 32;                                     // maximum number of CPU Single Precision Floating Point Registers
 
    localparam  EV_SEL_SZ   = bit_size(NUM_EVENTS-1);                 // Number of bits to hold values from 0 through NUM_EVENTS-1
+   localparam  EV_SEL_MASK = {EV_SEL_SZ{1'b1}};                      // EV_SEL_SZ is always >= 1
 
    localparam  GPR_ASZ     = bit_size(MAX_GPR-1);
    localparam  FPR_ASZ     = bit_size(MAX_FPR-1);
