@@ -344,7 +344,7 @@ endinterface: EIO_intf
 
 // ------------------------ Machine mode CSRs ------------------------
 interface MCSR_REG_intf;
-   MSTATUS                                mstatus;          // 12'h300
+   MSTATUS_SIGS                           mstatus;          // 12'h300
    logic                        [RSZ-1:0] misa;             // 12'h301
    `ifdef ext_S   // "In systems with S-mode, the medeleg and mideleg registers must exist,..." see p. 28 riscv-privileged.pdf, csr_wr_mach.svh
    logic                        [RSZ-1:0] medeleg;          // 12'h302
@@ -358,7 +358,7 @@ interface MCSR_REG_intf;
       `endif
    `endif
    `ifdef ext_N
-   MIE                                    mie;              // 12'h304
+   MIE_SIGS                               mie;              // 12'h304
    `endif
    logic                        [RSZ-1:0] mtvec;            // 12'h305
    logic                        [RSZ-1:0] mcounteren;       // 12'h306
@@ -372,7 +372,7 @@ interface MCSR_REG_intf;
    logic                         [RSZ-1:0] mcause;          // 12'h342
    logic                         [RSZ-1:0] mtval;           // 12'h343
    `ifdef ext_N
-   MIP                                     mip;             // 12'h344
+   MIP_SIGS                                mip;             // 12'h344
    `endif
 
    `ifdef USE_PMPCFG
@@ -497,7 +497,7 @@ interface SCSR_REG_intf;
    logic                     [RSZ-1:0] scause;           // 12'h142
    logic                     [RSZ-1:0] stval;            // 12'h143
    `ifdef ext_N
-   SIP                                 sip;              // 12'h144
+   SIP_SIGS                            sip;              // 12'h144
    `endif
    logic                     [RSZ-1:0] satp;             // 12'h180
 
@@ -521,7 +521,7 @@ interface UCSR_REG_intf;
    logic                     [RSZ-1:0] ucause;           // 12'h042
    logic                     [RSZ-1:0] utval;            // 12'h043
    `ifdef ext_N
-   UIP                                 uip;              // 12'h044
+   UIP_SIGS                            uip;              // 12'h044
    `endif
 
    modport master(output ustatus, `ifdef ext_N uie, `endif utvec, uscratch, uepc, ucause, utval `ifdef ext_N, uip `endif);
