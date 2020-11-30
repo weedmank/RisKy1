@@ -337,7 +337,7 @@ import cpu_params_pkg::*;
       logic                   WPRI;
       logic                   sie;
       logic                   uie;
-   } MSTATUS;
+   } MSTATUS_SIGS;
 
    // 12'h304 = 12'b0011_0000_0100  mie                           (read-write)
    //  31:12   11    10    9     8     7     6     5     4     3     2     1     0
@@ -357,7 +357,7 @@ import cpu_params_pkg::*;
       logic                   WPRI1;
       logic                   ssie;
       logic                   usie;
-   } MIE;
+   } MIE_SIGS;
 
    // ------------------------------ Machine Interrupt Pending bits
    // 12'h344 = 12'b0011_0100_0100  mip                           (read-write)  machine mode
@@ -377,7 +377,7 @@ import cpu_params_pkg::*;
       logic                   WPRI1;
       logic                   ssip;
       logic                   usip;
-   } MIP;
+   } MIP_SIGS;
 
 
    // ------------------------------ Supervisor Interrupt Pending bits
@@ -394,7 +394,7 @@ import cpu_params_pkg::*;
       logic             [1:0] WPRI_2;
       logic                   ssip;
       logic                   usip;
-   } SIP;
+   } SIP_SIGS;
 
    // ------------------------------ Supervisor Interrupt Pending bits
    // 12'h144 = 12'b0011_0100_0100  mip                           (read-write)  machine mode
@@ -407,7 +407,7 @@ import cpu_params_pkg::*;
       logic                   utip;
       logic             [2:0] WPRI_3;
       logic                   usip;
-   } UIP;
+   } UIP_SIGS;
 
 /*
    Register     Alias      Description                      Saved by
