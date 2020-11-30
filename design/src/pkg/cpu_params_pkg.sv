@@ -84,10 +84,30 @@ import functions_pkg::*;
    // parameters related to Memory, L1 D$ and L1 I$
    parameter   CL_LEN   = 32; // cache line length in bytes
 
-
-   parameter   M_MODE   = 2'b11;
-   parameter   S_MODE   = 2'b01;
-   parameter   U_MODE   = 2'b00;
+                        //   MXL     ZY XWVU TSRQ PONM LKJI HGFE DCBA
+   parameter MISA = 32'b0100_0000_0000_0000_0000_0001_0000_0000      /* MXLEN bits = 2'b01 = RV32, and I bit -----> RV32I */
+   `ifdef ext_A
+                  | 32'b0000_0000_0000_0000_0000_0000_0000_0001      /* A bit - Atomic Instruction support */
+   `endif
+   `ifdef ext_C
+                  | 32'b0000_0000_0000_0000_0000_0000_0000_0100      /* C bit - Compressed Instruction support */
+   `endif
+   `ifdef ext_F
+                  | 32'b0000_0000_0000_0000_0000_0000_0010_0000      /* F bit - Single Precision Floating Point support */
+   `endif
+   `ifdef ext_M
+                  | 32'b0000_0000_0000_0000_0001_0000_0000_0000      /* M bit - integer Multiply, Divide, Remainder support */
+   `endif
+   `ifdef ext_N
+                  | 32'b0000_0000_0000_0000_0010_0000_0000_0000      /* N bit - Interrupt support */
+   `endif
+   `ifdef ext_S
+                  | 32'b0000_0000_0000_0100_0000_0000_0000_0000      /* S bit - Supervisor mode support */
+   `endif
+   `ifdef ext_U
+                  | 32'b0000_0000_0001_0000_0000_0000_0000_0000      /* U bit - User mode support */
+   `endif
+   ;//                         ZY XWVU TSRQ PONM LKJI HGFE DCBA
 
 // Options to add user enabled HINTs and RESERVEs.  See decode_core.sv
 // Logic related to each specific hint will need to be decoded and added to file execute.sv
@@ -132,6 +152,16 @@ import functions_pkg::*;
    //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
    //!!!      WARNING: The localparams below are not intended to be user modified      !!!!
    //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+   parameter   M_MODE      = 2'b11;                                  // Machine Mode
+   parameter   S_MODE      = 2'b01;                                  // Supervisor Mode
+   parameter   U_MODE      = 2'b00;                                  // User Mode
+
+   `ifdef ext_C
+   parameter   is_IALIGN16 = 1'b1;                                   // 16 bit instruction alignment
+   `else
+   parameter   is_IALIGN16 = 1'b0;                                   // 32 bit instruction alignment
+   `endif
+
    localparam  XLEN        = 32;                                     // instruction word width
    localparam  CI_SZ       = 16;                                     // compressed instruction word width
    localparam  RSZ         = XLEN;                                   // General Purpose Register width

@@ -292,7 +292,16 @@ module RisKy1_core
    // interface between MEM stage and CSR Functional Unit inside EXE stage
    EV_EXC_intf                         EV_EXC_bus();
 
+   // signals shared between CSR and EXE stage
+   CSR_EXE_intf                        csr_exe_bus();
+
+   // signals shared between CSR and WB stage
+   CSR_WB_intf                         csr_wb_bus();
+
    // register forwarding signals
+   FWD_CSR                             fwd_mem_csr;
+   FWD_CSR                             fwd_wb_csr;
+
    FWD_GPR                             fwd_mem_gpr;
    FWD_GPR                             fwd_wb_gpr;
 
@@ -301,6 +310,8 @@ module RisKy1_core
    FWD_FPR                             fwd_mem_fpr;
    FWD_FPR                             fwd_wb_fpr;
    `endif
+
+   CSR_NXT_intf                        csr_nxt_bus();
 
    logic                         [1:0] mode;                                  // Current CPU mode: Machine, Supervisor, or User
 
@@ -311,7 +322,7 @@ module RisKy1_core
 
    `ifdef ext_N
    logic                               msip_wr;
-   logic                               time_irq, sw_irq;
+   logic                               timer_irq, sw_irq;
    `endif
 
    // GPR signals
@@ -380,18 +391,24 @@ module RisKy1_core
    );
 
    // 3rd Stage = Execute Stage
+   `ifdef ext_U
+   logic uret;
+   `endif
+   `ifdef ext_S
+   logic sret;
+   `endif
+   logic mret;
+
+   RCSR_intf csr_rd_bus();
+
    execute EXE
    (
       .clk_in(clk_in), .reset_in(reset_in),                                   // Inputs:  system clock and reset
 
       .cpu_halt(cpu_halt),                                                    // Input:   Cause the CPU to stop processing instructions and data
 
-      `ifdef ext_N
-      .ext_irq(ext_irq),                                                      // Input:   External Interrupt
-      .time_irq(time_irq),                                                    // Input:   Timer Interrupt from clint.sv
-      .sw_irq(sw_irq),                                                        // Input:   Software Interrupt from clint.sv
-      `endif
-      .mtime(mtime),                                                          // Input:   Memory-mapped mtime register contents
+      // signals shared between CSR and EXE stage
+      .csr_exe_bus(csr_exe_bus),
 
       // Time to flush pipeline and reload PC signal
       .pipe_flush(pipe_flush_exe),                                            // Input:   1 = flush pipeline
@@ -399,10 +416,10 @@ module RisKy1_core
       .rld_pc_flag(exe_rld_pc_flag),                                          // Output:  Cause the Fetch unit to reload the PC
       .rld_pc_addr(exe_rld_pc_addr),                                          // Output:  PC address that will need to be reloaded
 
-      .mode(mode),                                                            // Output:  Machine, Supervisor or User
-
       // interface to forwarding signals
+      .fwd_mem_csr(fwd_mem_csr),                                              // Input:   Mem stage CSR forwarding info
       .fwd_mem_gpr(fwd_mem_gpr),                                              // Input:   Mem stage register forwarding info
+      .fwd_wb_csr(fwd_wb_csr),                                                // Input:   WB stage CSR forwarding info
       .fwd_wb_gpr(fwd_wb_gpr),                                                // Input:   WB stage register forwarding info
 
       // interface to GPR
@@ -423,8 +440,10 @@ module RisKy1_core
       // interface to Memory stage
       .E2M_bus(E2M_bus),
 
-      // signals from MEM stage to CSR functional Unit which is inside the EXE stage
-      .EV_EXC_bus(EV_EXC_bus)
+      // interface to CSR in order to read CSR[addr]
+      .csr_rd_bus(csr_rd_bus),
+
+      .csr_nxt_bus(csr_nxt_bus)                                               // returns the value of CSR registers after a CSR write would occur, but does not change ANY registers
    );
 
    // 4th Stage = Memory Stage
@@ -432,9 +451,13 @@ module RisKy1_core
    (
       .clk_in(clk_in), .reset_in(reset_in),                                   // Inputs:  system clock and reset
 
+      .cpu_halt(cpu_halt),                                                    // Input:   halt CPU operation if TRUE
+
       `ifdef SIM_DEBUG
       .sim_stop(sim_stop),
       `endif
+
+      .mode(mode),
 
       // Internal I/O Write Data - in case it's a Store instruction wanting to write to the contents of the following registers
       `ifdef ext_N
@@ -452,13 +475,11 @@ module RisKy1_core
       .msip_reg(msip_reg),                                                    // Input:   contents of msip_reg register
 
       // misprediction signals
-      .pipe_flush(pipe_flush_mem),                                            // Input:  1 = flush pipeline
-
-      .cpu_halt(cpu_halt),                                                    // Output:  halt CPU operation if TRUE
+      .pipe_flush(pipe_flush_mem),                                            // Input:   1 = flush pipeline
 
       // forwarding data
+      .fwd_mem_csr(fwd_mem_csr),                                              // Output:  Mem stage CSR forwarding info
       .fwd_mem_gpr(fwd_mem_gpr),                                              // Output:  MEM stage register forwarding info
-
       `ifdef ext_F
       // forwarding data
       .fwd_mem_fpr(fwd_mem_fpr),                                              // Output:  MEM stage register forwarding info
@@ -478,15 +499,24 @@ module RisKy1_core
    );
 
    // 5th Stage = Write Back Stage
+   logic [PC_SZ-1:0] trap_pc;                                                 // trap vector handler address.
+   `ifdef ext_N
+   logic             interrupt_flag;                                          // 1 = take an interrupt trap
+   logic   [RSZ-1:0] interrupt_cause;                                         // value specifying what type of interrupt
+   `endif
+   WB_2_CSR_wr_intf  csr_wr_bus();
    wb WB
    (
-      `ifdef SIM_DEBUG
       .clk_in(clk_in),                                                        // Input:  system clock (ONLY needed for assertion testing)
-      `endif
       .reset_in(reset_in),                                                    // Input:  system reset
 
-      .cpu_halt(cpu_halt),                                                    // Input:   halt CPU operation if TRUE
+      .cpu_halt(cpu_halt),                                                    // Output:  halt CPU operation if TRUE
 
+      `ifdef ext_N
+      .ext_irq(ext_irq),                                                      // Input:   External Interrupt - this affects cpu_halt signal
+      `endif
+
+      // flush pipeline/reload PC signals
       .rld_pc_flag(wb_rld_pc_flag),                                           // Output:  1 = flush pipeline & reload PC with mem_rld_pc_addr
       .rld_ic_flag(wb_rld_ic_flag),                                           // Output:  1 = A STORE to L1 D$ also wrote to L1 I$ address space
       .rld_pc_addr(wb_rld_pc_addr),                                           // Output:  New PC when wb_rld_pc_flag == 1
@@ -494,22 +524,58 @@ module RisKy1_core
       // interface to Memory stage
       .M2W_bus(M2W_bus),
 
+      // GPR forwarding data
+      .fwd_wb_gpr(fwd_wb_gpr),                                                // Output:  WB stage register forwarding for GPR info
+      .fwd_wb_csr(fwd_wb_csr),                                                // Output:  WB stage CSR forwarding info
       `ifdef ext_F
       // FPR forwarding data
-      .fwd_wb_fpr(fwd_wb_fpr),                                                // Output:  WB stage register forwarding info
+      .fwd_wb_fpr(fwd_wb_fpr),                                                // Output:  WB stage register forwarding for FPR info
 
       // interface to FPR
       .fpr_bus(fpr_bus)
       `endif
 
-      // GPR forwarding data
-      .fwd_wb_gpr(fwd_wb_gpr),                                                // Output:  WB stage register forwarding info
-
       // interface to GPR
       .gpr_bus(gpr_bus),
 
-      // signals from MEM stage to CSR functional Unit which is inside the EXE stage
-      .EV_EXC_bus(EV_EXC_bus)
+      // interface to CSR
+      .csr_wr_bus(csr_wr_bus),
+
+      // signals shared between CSR and WB stage
+      .csr_wb_bus(csr_wb_bus),
+
+      // signals from WB stage
+      .EV_EXC_bus(EV_EXC_bus)                                                 // Output: needed by CSR
+   );
+
+   csr CSR
+   (
+      .clk_in(clk_in),
+      .reset_in,
+
+      .mode(mode),
+
+      `ifdef ext_N
+      .ext_irq(ext_irq),                                                      // Input:   External Interrupt
+      .timer_irq(timer_irq),                                                  // Input:   Timer Interrupt from clint.sv
+      `endif
+
+      // signals shared between CSR and EXE stage
+      .csr_exe_bus(csr_exe_bus),
+
+      // signals shared between CSR and EXE stage
+      .csr_wb_bus(csr_wb_bus),
+
+      // signals from WB stage
+      .EV_EXC_bus(EV_EXC_bus),                                                // Input: needed by CSR logic
+
+      .mtime(mtime),                                                          // Input: mtime counter from irq module can be read through CSRs
+
+      .csr_wr_bus(csr_wr_bus),                                                // Write port used by WB stage
+
+      .csr_rd_bus(csr_rd_bus),                                                // Read port used by CSR Functional Unit inside EXE stage
+
+      .csr_nxt_bus(csr_nxt_bus)                                               // returns the value of CSR registers after a CSR write would occur, but does not change ANY registers
    );
 
    // General Purpose Registers
@@ -550,7 +616,7 @@ module RisKy1_core
 
      `ifdef ext_N
      .msip_wr(msip_wr),
-     .time_irq(time_irq), .sw_irq(sw_irq),                                    // Outputs: Timer and Software Interrupts (1 bit each)
+     .timer_irq(timer_irq), .sw_irq(sw_irq),                                  // Outputs: Timer and Software Interrupts (1 bit each)
      `endif
 
      .mtime(mtime), .mtimecmp(mtimecmp),                                      // Outputs: 64 bit mtime & mtimecmp registers

@@ -34,7 +34,7 @@ module irq
    input       logic      [RSZ-1:0] mmr_wr_data,
    `ifdef ext_N
    input       logic                msip_wr,
-   output      logic                time_irq,
+   output      logic                timer_irq,
    output      logic                sw_irq,              // Machine mode Software Interrupt Register
    `endif
    output      logic    [RSZ*2-1:0] mtime,
@@ -43,7 +43,7 @@ module irq
 );
 
    `ifdef ext_N
-   assign time_irq   = (mtime >= mtimecmp);
+   assign timer_irq  = (mtime >= mtimecmp);
 
    assign msip_reg = {31'd0,sw_irq};                     // not currently changable/writable
    `else

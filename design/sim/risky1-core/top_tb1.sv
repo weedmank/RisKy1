@@ -40,23 +40,28 @@ module  top_tb1 ();
       $display("Reset completed, Simulation started.");
       
       `ifdef M_MODE_ONLY
-         $display("RisKy1 is M Mode Only");
+         $display("RisKy1 set for M Mode Only");
       `else
+         $display("RisKy1 set to support the following:");
+         $display("   Machine mode");
          `ifdef ext_S
-            $display("RisKy1 with Supervisor support");
+            $display("   Supervisor mode");
          `endif
          `ifdef ext_U
-            $display("RisKy1 with User support");
+            $display("   User mode");
          `endif
       `endif
       `ifdef ext_N
-         $display("RisKy also supports Interrupts");
+         $display("   Interrupts");
       `endif
       `ifdef ext_M
-         $display("RisKy RV32M support");
+         $display("   Integer Mul/Div/Rem instructions");
       `endif
       `ifdef ext_C
-         $display("RisKy RV32C support");
+         $display("   Compressed (16-bit) instructions");
+      `endif
+      `ifdef SIM_DEBUG
+         $display("   Simulation Debugging logic - non synthesizable");
       `endif
 
 

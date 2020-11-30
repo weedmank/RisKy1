@@ -193,21 +193,19 @@ import cpu_params_pkg::*;
       logic       [PC_SZ-1:0] br_pc;
       I_TYPE                  i_type;
       logic       [OP_SZ-1:0] op_type;
-      logic       [PC_SZ-1:0] trap_pc;          // trap vector handler address.
-      logic             [1:0] mode;
-      `ifdef ext_N
-      logic                   interrupt_flag;   // 1 = take an interrupt trap
-      logic         [RSZ-1:0] interrupt_cause;  // value specifying what type of interrupt
-      `endif
 
-      // FPR information (gets pased to MEM stage which passes it to WB stage)
+      // GPR/FPR information (gets pased to MEM stage which passes it to WB stage)
       `ifdef ext_F
       logic                   Fd_wr;            // WB stage needs to know whether to write to destination register Fd
       `endif
-      // GPR information (gets pased to MEM stage which passes it to WB stage)
       logic                   Rd_wr;            // WB stage needs to know whether to write to destination register Rd
       logic     [GPR_ASZ-1:0] Rd_addr;          // address of which GPR/FPR we want to Write
       logic         [RSZ-1:0] Rd_data;          // This is the write back data (produced by alu_fu, br_fu, im_fu, idr_fu, csr_fu, spfp_fu)
+      // CSR information (gets pased to MEM stage which passes it to WB stage)
+      logic                   csr_wr;           // WB stage needs to know whether to write to CSR
+      logic            [11:0] csr_addr;         // address of which CSR we want to Write
+      logic         [RSZ-1:0] csr_wr_data;      // This is the write back data (produced by csr_fu)
+      logic         [RSZ-1:0] csr_fwd_data;     // This data must used in forwarding, not csr_wr_data
    } EXE_2_MEM;
 
 
@@ -222,14 +220,7 @@ import cpu_params_pkg::*;
       logic       [PC_SZ-1:0] br_pc;
       I_TYPE                  i_type;
       logic       [OP_SZ-1:0] op_type;
-      logic       [PC_SZ-1:0] trap_pc;          // trap vector handler address.
-      logic             [1:0] mode;
       logic                   mio_ack_fault;
-
-      `ifdef ext_N
-      logic                   interrupt_flag;   // 1 = take an interrupt trap
-      logic         [RSZ-1:0] interrupt_cause;  // value specifying what type of interrupt
-      `endif
 
       // GPR/FPR information
       `ifdef ext_F
@@ -238,7 +229,11 @@ import cpu_params_pkg::*;
       logic                   Rd_wr;            // Writeback stage needs to know whether to write to destination register Rd
       logic     [GPR_ASZ-1:0] Rd_addr;
       logic         [RSZ-1:0] Rd_data;          // This is the write back data (produced by alu_fu, br_fu, im_fu, idr_fu)
-
+      // CSR information (gets pased to MEM stage which passes it to WB stage)
+      logic                   csr_wr;           // WB stage needs to know whether to write to CSR
+      logic            [11:0] csr_addr;         // address of which CSR we want to Write
+      logic         [RSZ-1:0] csr_wr_data;      // This is the write back data (produced by csr_fu)
+      logic         [RSZ-1:0] csr_fwd_data;     // This data must used in forwarding, not csr_wr_data
    } MEM_2_WB;
 
    // ********************************** Forwarding Info *********************************************
@@ -248,6 +243,13 @@ import cpu_params_pkg::*;
       logic     [GPR_ASZ-1:0] Rd_addr;
       logic         [RSZ-1:0] Rd_data;
    } FWD_GPR;
+
+   typedef struct packed {
+      logic                   valid;
+      logic                   csr_wr;
+      logic     [GPR_ASZ-1:0] csr_addr;
+      logic         [RSZ-1:0] csr_data;
+   } FWD_CSR;
 
    `ifdef ext_F
    typedef struct packed {
@@ -310,6 +312,102 @@ import cpu_params_pkg::*;
    } LSQ_Data;
 `endif
 
+   // 12'h300 = 12'b0000_0000_0000  ustatus     (read-write)  user mode
+   //  31        22   21  20   19   18   17   16:15 14:13 12:11  10:9    8    7     6     5     4      3     2     1    0
+   // {sd, 8'b0, tsr, tw, tvm, mxr, sum, mprv,   xs,   fs,  mpp, 2'b0,  spp, mpie, 1'b0, spie, upie,  mie, 1'b0,  sie, uie};
+   typedef struct packed {
+      logic                   sd;
+      logic             [7:0] WPRI_8;
+      logic                   tsr;
+      logic                   tw;
+      logic                   tvm;
+      logic                   mxr;
+      logic                   sum;
+      logic                   mprv;
+      logic             [1:0] xs;
+      logic             [1:0] fs;
+      logic             [1:0] mpp;
+      logic             [1:0] WPRI_2;
+      logic                   spp;
+      logic                   mpie;
+      logic                   WPRI_1;
+      logic                   spie;
+      logic                   upie;
+      logic                   mie;
+      logic                   WPRI;
+      logic                   sie;
+      logic                   uie;
+   } MSTATUS;
+
+   // 12'h304 = 12'b0011_0000_0100  mie                           (read-write)
+   //  31:12   11    10    9     8     7     6     5     4     3     2     1     0
+   // {20'b0, meie, WPRI, seie, ueie, mtie, WPRI, stie, utie, msie, WPRI, ssie, usie};
+   // Read Only bits of 32'hFFFF_F444;  // Note: bits 31:12, 10, 6, 2 are not writable and are "hardwired" to 0 (init value = 0 at reset)
+   typedef struct packed {
+      logic            [19:0] WPRI_20;
+      logic                   meie;
+      logic                   WPRI_1;
+      logic                   seie;
+      logic                   ueie;
+      logic                   mtie;
+      logic                   WPRI;
+      logic                   stie;
+      logic                   utie;
+      logic                   msie;
+      logic                   WPRI1;
+      logic                   ssie;
+      logic                   usie;
+   } MIE;
+
+   // ------------------------------ Machine Interrupt Pending bits
+   // 12'h344 = 12'b0011_0100_0100  mip                           (read-write)  machine mode
+   //  31:12   11    10    9     8     7     6     5     4     3     2     1     0
+   // {20'b0, meip, 1'b0, seip, ueip, mtip, 1'b0, stip, utip, msip, 1'b0, ssip, usip};
+   typedef struct packed {
+      logic            [19:0] WPRI_20;
+      logic                   meip;
+      logic                   WPRI_1;
+      logic                   seip;
+      logic                   ueip;
+      logic                   mtip;
+      logic                   WPRI;
+      logic                   stip;
+      logic                   utip;
+      logic                   msip;
+      logic                   WPRI1;
+      logic                   ssip;
+      logic                   usip;
+   } MIP;
+
+
+   // ------------------------------ Supervisor Interrupt Pending bits
+   // 12'h144 = 12'b0011_0100_0100  mip                           (read-write)  machine mode
+   //  31:12   11    10    9     8     7     6     5     4     3     2     1     0
+   // {20'b0, 1'b0, 1'b0, seip, ueip, 1'b0, 1'b0, stip, utip, 1'b0, 1'b0, ssip, usip};
+   typedef struct packed {
+      logic            [21:0] WPRI_22;
+      logic                   seip;
+      logic                   ueip;
+      logic             [1:0] WPRI2;
+      logic                   stip;
+      logic                   utip;
+      logic             [1:0] WPRI_2;
+      logic                   ssip;
+      logic                   usip;
+   } SIP;
+
+   // ------------------------------ Supervisor Interrupt Pending bits
+   // 12'h144 = 12'b0011_0100_0100  mip                           (read-write)  machine mode
+   //  31:12   11    10    9     8     7     6     5     4     3     2     1     0
+   // {20'b0, 1'b0, 1'b0, 1'b0, ueip, 1'b0, 1'b0, 1'b0, utip, 1'b0, 1'b0, 1'b0, usip};
+   typedef struct packed {
+      logic            [22:0] WPRI_23;
+      logic                   ueip;
+      logic             [2:0] WPRI3;
+      logic                   utip;
+      logic             [2:0] WPRI_3;
+      logic                   usip;
+   } UIP;
 
 /*
    Register     Alias      Description                      Saved by

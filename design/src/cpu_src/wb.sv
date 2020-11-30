@@ -30,7 +30,12 @@ module wb
    `endif
    input    logic                         reset_in,
 
-   input    logic                         cpu_halt,                                 // Input:   disable CPU operations by not allowing any more input to this stage
+   output   logic                         cpu_halt,                                 // Output:  disable CPU operations by not allowing any more input to this stage
+
+   // interrupt sources
+   `ifdef ext_N
+   input    logic                         ext_irq,                                  // Input:   External Interrupt
+   `endif
 
    // Fetch PC reload signals
    output   logic                         rld_pc_flag,                              // Output:  Cause the Fetch unit to reload the PC
@@ -40,19 +45,26 @@ module wb
    // interface to Memory stage
    M2W_intf.slave                         M2W_bus,
 
+   // CSR forwarding signals
+   output   FWD_CSR                       fwd_wb_csr,
+   // Register forwarding signals
+   output   FWD_GPR                       fwd_wb_gpr,
    `ifdef ext_F
-   // interface to forwarding signals
+   // FPR forwarding signals
    output   FWD_FPR                       fwd_wb_fpr,
 
-   // interface to FPR
+   // interface to FP Registers
    FBUS_intf.master                       fpr_bus,
    `endif
 
-   // interface to forwarding signals
-   output   FWD_GPR                       fwd_wb_gpr,
 
    // interface to GPR
    RBUS_intf.master                       gpr_bus,
+
+   // interface to CSR
+   CSR_WB_intf.master                     csr_wb_bus,
+
+   WB_2_CSR_wr_intf.master                csr_wr_bus,
 
    EV_EXC_intf.master                     EV_EXC_bus                                // Events and Exception information (see csr_fu.sv inside execute.sv)
 );
@@ -65,15 +77,9 @@ module wb
    logic                   mispre;
    logic                   ci;
    logic       [PC_SZ-1:0] br_pc;
-   logic       [PC_SZ-1:0] trap_pc;                                                 // trap vector handler address.
-   logic             [1:0] mode;
    I_TYPE                  i_type;
    logic       [OP_SZ-1:0] op_type;
    logic                   mio_ack_fault;
-   `ifdef ext_N
-   logic                   interrupt_flag;                                          // 1 = take an interrupt trap
-   logic         [RSZ-1:0] interrupt_cause;                                         // value specifying what type of interrupt
-   `endif
 
    // signals created in this WB stage
    `ifdef ext_F
@@ -83,10 +89,31 @@ module wb
    logic     [GPR_ASZ-1:0] wb_Rd_addr;
    logic         [RSZ-1:0] wb_Rd_data;
 
+   logic                   wb_csr_wr;                                             // Writeback stage needs to know whether to write to destination register Rd
+   logic     [GPR_ASZ-1:0] wb_csr_addr;
+   logic         [RSZ-1:0] wb_csr_data;
    // misc
    logic                   xfer_in;
 
-   // signals from MEM stage that are used in WB stage
+   // --------------------------------- csr_wb_bus signal assignments
+   // signals to csr.sv
+   logic                   [PC_SZ-1:0] trap_pc;          // Output:  trap vector handler address.
+   `ifdef ext_N
+   logic                               interrupt_flag;   // 1 = take an interrupt trap
+   logic                     [RSZ-1:0] interrupt_cause;  // value specifying what type of interrupt
+   `endif
+   logic                         [1:0] mode;             // CPU mode
+
+   // signals from csr.sv
+   assign trap_pc             = csr_wb_bus.trap_pc;
+   `ifdef ext_N
+   assign interrupt_flag      = csr_wb_bus.interrupt_flag;
+   assign interrupt_cause     = csr_wb_bus.interrupt_cause;
+   `endif
+   assign mode                = csr_wb_bus.mode;
+
+
+   // --------------------------------- signals from MEM stage that are used in WB stage
    assign ipd                 = M2W_bus.data.ipd;
    assign ls_addr             = M2W_bus.data.ls_addr;
    assign inv_flag            = M2W_bus.data.inv_flag;
@@ -96,15 +123,9 @@ module wb
    assign br_pc               = M2W_bus.data.br_pc;
    assign i_type              = M2W_bus.data.i_type;                                // override default values
    assign op_type             = M2W_bus.data.op_type;
-   assign trap_pc             = M2W_bus.data.trap_pc;
-   assign mode                = M2W_bus.data.mode;
    assign mio_ack_fault       = M2W_bus.data.mio_ack_fault;
-   `ifdef ext_N
-   assign interrupt_flag      = M2W_bus.data.interrupt_flag;
-   assign interrupt_cause     = M2W_bus.data.interrupt_cause;
-   `endif
 
-   // asserted when this stage is ready to finish it's processing
+   // --------------------------------- asserted when this stage is ready to finish it's processing
    assign M2W_bus.rdy         = !reset_in & !cpu_halt;                              // always ready to process results
 
    assign xfer_in             = M2W_bus.valid & M2W_bus.rdy;
@@ -131,6 +152,16 @@ module wb
    assign fpr_bus.Fd_data     = wb_Rd_data;                                         // data for destination register
    `endif
 
+   // Forwarding of CSR info
+   assign fwd_wb_csr.valid       = M2W_bus.valid;
+   assign fwd_wb_csr.csr_wr      = wb_csr_wr;
+   assign fwd_wb_csr.csr_addr    = wb_csr_addr;
+   assign fwd_wb_csr.csr_data    = wb_csr_data;
+
+   assign csr_wr_bus.csr_wr      = xfer_in & wb_csr_wr;                             // when to write
+   assign csr_wr_bus.csr_wr_addr = wb_Rd_addr;                                      // Which destination register
+   assign csr_wr_bus.csr_wr_data = wb_Rd_data;                                      // data for destination register
+
    //------------------------------- Debugging: disassemble instruction in this stage ------------------------------------
    `ifdef SIM_DEBUG
    string   i_str;
@@ -147,6 +178,23 @@ module wb
    assign EV_EXC_bus.exception         = exception;
    assign EV_EXC_bus.current_events    = current_events;                            // number of retired instructions for current clock cycle
 
+
+
+   //------------------- CPU Halt Logic ------------------
+   `ifdef ext_N
+   logic    trigger_wfi;
+assign trigger_wfi = FALSE;      //!!!!!!!!!!!!!!!!! temporary !!!!!!!!!!!!!!!!!!!!
+   // Putting CPU to sleep and waking it up
+   always_ff @(posedge clk_in)
+   begin
+      if (reset_in || ext_irq)
+         cpu_halt <= FALSE;
+      else if (trigger_wfi)
+         cpu_halt <= TRUE;
+   end
+   `else
+   assign cpu_halt = FALSE;
+   `endif
 
    //-----------------------------------------------------
    // Interrupt Code   Description - riscv_privileged.pdf p 37
@@ -198,8 +246,12 @@ module wb
       wb_Fd_wr          = FALSE;
       `endif
       wb_Rd_wr          = FALSE;
-      wb_Rd_addr        = M2W_bus.data.Rd_addr;
-      wb_Rd_data        = M2W_bus.data.Rd_data;
+      wb_Rd_addr        = '0;
+      wb_Rd_data        = '0;
+
+      wb_csr_wr         = FALSE;                                                    // Writeback stage needs to know whether to write to destination register Rd
+      wb_csr_addr       = '0;
+      wb_csr_data       = '0;
 
       rld_pc_flag       = FALSE;
       rld_ic_flag       = FALSE;
@@ -544,6 +596,10 @@ module wb
                   wb_Rd_wr                = M2W_bus.data.Rd_wr;                     // Writeback stage needs to know whether to write to destination register Rd
                   wb_Rd_addr              = M2W_bus.data.Rd_addr;                   // Address of Rd register
                   wb_Rd_data              = M2W_bus.data.Rd_data;                   // Data may be written into Rd register
+
+                  wb_csr_wr               = M2W_bus.data.csr_wr;
+                  wb_csr_addr             = M2W_bus.data.csr_addr;
+                  wb_csr_data             = M2W_bus.data.csr_fwd_data;
                end
 
                current_events.ret_cnt[CSR_RET] = 1'b1;                              // number of CSR instructions retiring this clock cycle

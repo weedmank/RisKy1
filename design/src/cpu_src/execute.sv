@@ -28,16 +28,10 @@ module execute
    input    logic                         clk_in,
    input    logic                         reset_in,
 
-   input    logic             [2*RSZ-1:0] mtime,                           // Input:   Memory-mapped mtime register contents
+   input   logic                          cpu_halt,                        // Input:  cause CPU to stop processing instructions & data
 
-   // used in CSRs
-   `ifdef ext_N
-   input    logic                         ext_irq,                         // Input:   External Interrupt
-   input    logic                         time_irq,                        // These are used in csr_fu.sv
-   input    logic                         sw_irq,
-   `endif
-
-   output   logic                         cpu_halt,                        // Output:  cause CPU to stop processing instructions & data
+   // signals shared between EXE stage and csr.sv
+   CSR_EXE_intf                           csr_exe_bus,
 
    // pipeline flush signal
    input    logic                         pipe_flush,                      // Input:   1 = Flush this segment of the pipeline
@@ -46,14 +40,12 @@ module execute
    output   logic                         rld_pc_flag,                     // Output:  Cause the Fetch unit to reload the PC
    output   logic             [PC_SZ-1:0] rld_pc_addr,                     // Output:  PC address that will need to be reloaded
 
-   output   logic                   [1:0] mode,                            // Output:  Machine=3, Supervisor=1 or User=0
-
    // interface to forwarding signals
+   input    var FWD_CSR                   fwd_mem_csr,
    input    var FWD_GPR                   fwd_mem_gpr,
-   input    var FWD_GPR                   fwd_wb_gpr,
 
-   // interface to GPR
-   input          [MAX_GPR-1:0] [RSZ-1:0] gpr,                             // MAX_GPR General Purpose registers
+   input    var FWD_CSR                   fwd_wb_csr,
+   input    var FWD_GPR                   fwd_wb_gpr,
 
    `ifdef ext_F
    // interface to forwarding signals
@@ -64,14 +56,19 @@ module execute
    input         [MAX_FPR-1:0] [FLEN-1:0] fpr,                             // MAX_FPR single-precision Floating Point registers
    `endif
 
+   // interface to GPR
+   input          [MAX_GPR-1:0] [RSZ-1:0] gpr,                             // MAX_GPR General Purpose registers
+
    // interface to Decode stage
    D2E_intf.slave                         D2E_bus,
 
    // interface to Memory stage
    E2M_intf.master                        E2M_bus,
 
-   // signals between CSR Functional Unit (inside EXE stage) and MEM stage
-   EV_EXC_intf.slave                      EV_EXC_bus
+   // CSR read bus - connects to CSR to read current value of CSR[addr]
+   RCSR_intf.master                       csr_rd_bus,
+   // CSR NEXT port access
+   CSR_NXT_intf.master                    csr_nxt_bus
 );
 
    logic                                  xfer_out, xfer_in;
@@ -82,6 +79,7 @@ module execute
    logic                    [GPR_ASZ-1:0] Rd_addr;                         // Which register to write (destination register)
    logic                    [GPR_ASZ-1:0] Rs1_addr;                        // Which register to read for Rs1_data
    logic                    [GPR_ASZ-1:0] Rs2_addr;                        // Which register to read for Rs2_data
+   logic                           [11:0] csr_addr;                        // which CSR[] to read from
 
    `ifdef ext_F
    logic                                  Fd_wr;                           // floating Point Destination Register write signal
@@ -106,6 +104,9 @@ module execute
    logic                        [RSZ-1:0] Fs2D;                            // data is either from Fs2_data or forwarding data
    `endif
 
+   logic                        [RSZ-1:0] csr_rd_data;                     // csr[csr_addr]
+   logic                        [RSZ-1:0] CSD;                             // data is either from csr_rd_data or forwarding data
+
    // These signal when a particular functional unit is completed
    logic       alu_fu_done;
    logic       br_fu_done;
@@ -126,6 +127,11 @@ module execute
    logic       [OP_SZ-1:0] op_type;
    logic       [PC_SZ-1:0] predicted_addr;
 
+   I_TYPE                  i_type;
+   logic                   ci;
+
+
+   logic                   mode;
    logic       [PC_SZ-1:0] mepc;
    `ifdef ext_S
    logic       [PC_SZ-1:0] sepc;
@@ -134,13 +140,35 @@ module execute
    logic       [PC_SZ-1:0] uepc;
    `endif
 
-   logic                   ill_csr_access;
-   logic            [11:0] ill_csr_addr;
+   // --------------------------------- csr_exe_bus signal assignments
+   // signals to csr.sv
+   logic                   mret;
+   `ifdef ext_S
+   logic                   sret;
+   `endif
+   `ifdef ext_U
+   logic                   uret;
+   `endif
 
-   I_TYPE                  i_type;
-   logic                   ci;
+   assign csr_exe_bus.mret    = mret;
+   `ifdef ext_S
+   assign csr_exe_bus.sret    = sret;
+   `endif
+   `ifdef ext_U
+   assign csr_exe_bus.uret    = uret;
+   `endif
 
-   // fu_done goes high whenever an instruction finishes execution.
+   // signals from csr.sv
+   assign mode    = csr_exe_bus.mode;
+   assign mepc    = csr_exe_bus.mepc;
+   `ifdef ext_S
+   assign sepc    = csr_exe_bus.sepc;
+   `endif
+   `ifdef ext_U
+   assign uepc    = csr_exe_bus.uepc;
+   `endif
+
+   // --------------------------------- fu_done goes high whenever an instruction finishes execution.
    // Most instructions are executed in Functional Units and a few are not
    assign fu_done =  alu_fu_done  | br_fu_done |
    `ifdef ext_M
@@ -151,13 +179,13 @@ module execute
    `endif
                      csr_fu_done  | ls_fu_done | hint_done | sys_done | ill_done;
 
-   // control logic for interface to Decode stage and Memory stage
+   // --------------------------------- control logic for interface to Decode stage and Memory stage
    assign D2E_bus.rdy   = !reset_in & !cpu_halt & fu_done & (!pipe_full | xfer_out);
 
    assign xfer_in       = D2E_bus.valid & D2E_bus.rdy;                              // pop data from DEC_PIPE pipeline register..
    assign xfer_out      = E2M_bus.valid & E2M_bus.rdy;                              // pops data from EXE_PIPE registers to next stage
 
-   // use these addresses to get data from gpr[Rs1_addr], gpr[Rs2_addr]
+   // --------------------------------- use these addresses to get data from gpr[Rs1_addr], gpr[Rs2_addr]
    assign Rd_addr       = D2E_bus.data.Rd_addr;
    assign Rs1_addr      = D2E_bus.data.Rs1_addr;
    assign Rs2_addr      = D2E_bus.data.Rs2_addr;
@@ -189,49 +217,6 @@ module execute
    disasm exe_dis (ASSEMBLY,D2E_bus.data.ipd,i_str,pc_str);                         // disassemble each instruction
    `endif
    //---------------------------------------------------------------------------------------------------------------------
-
-   //************************************ Forwarding Logic ***************************************
-   always_comb
-   begin
-      // Register Write Forwarding - data that gets written into Rd (i.e. R1 = 10)
-      // Note: Forwarding takes place when:
-      //       1. This instruction needs to use Rs1_addr (read it's contents)
-      //       2. The forwarfed instruction is valid
-      //       3. The forwarded instruction is writing to a destination register Rd
-      //       4. This instruciton's Rs1 address is the same as the Rd address being forwarded
-      //       5. The Rs1/Rd address is not for R0 (constant 0 value)
-      // This applies for Rs1, Rs2 registers
-      if (Rs1_rd & fwd_mem_gpr.valid & fwd_mem_gpr.Rd_wr & (Rs1_addr == fwd_mem_gpr.Rd_addr) & (Rs1_addr != 0))
-         Rs1D = fwd_mem_gpr.Rd_data;
-      else if (Rs1_rd & fwd_wb_gpr.valid & fwd_wb_gpr.Rd_wr & (Rs1_addr == fwd_wb_gpr.Rd_addr) & (Rs1_addr != 0))
-         Rs1D = fwd_wb_gpr.Rd_data;
-      else
-         Rs1D = Rs1_data; // pull it from GPR[Rs1_addr]
-
-      if (Rs2_rd & fwd_mem_gpr.valid & fwd_mem_gpr.Rd_wr & (Rs2_addr == fwd_mem_gpr.Rd_addr) & (Rs2_addr != 0))
-         Rs2D = fwd_mem_gpr.Rd_data;
-      else if (Rs2_rd & fwd_wb_gpr.valid & fwd_wb_gpr.Rd_wr & (Rs2_addr == fwd_wb_gpr.Rd_addr)  & (Rs2_addr != 0))
-         Rs2D = fwd_wb_gpr.Rd_data;
-      else
-         Rs2D = Rs2_data; // pull it from GPR[Rs2_addr]
-
-      `ifdef ext_F
-      // For Single Precision Floating Point, Rs1_addr, Rs2_addr are shared, but separate forwarding info (fwd_mem_fpr, fwd_wb_fpr and Fs1D, Fs2D) are used/created
-      if (Fs1_rd & fwd_mem_fpr.valid & fwd_mem_fpr.Fd_wr & (Rs1_addr == fwd_mem_fpr.Fd_addr) & (Rs1_addr != 0))
-         Fs1D = fwd_mem_fpr.Fd_data;
-      else if (Fs1_rd & fwd_wb_fpr.valid & fwd_wb_fpr.Fd_wr & (Rs1_addr == fwd_wb_fpr.Fd_addr) & (Rs1_addr != 0))
-         Fs1D = fwd_wb_fpr.Fd_data;
-      else
-         Fs1D = Fs1_data; // pull it from FPR[Rs1_addr]
-
-      if (Fs2_rd & fwd_mem_fpr.valid & fwd_mem_fpr.Fd_wr & (Rs2_addr == fwd_mem_fpr.Fd_addr) & (Rs2_addr != 0))
-         Fs2D = fwd_mem_fpr.Fd_data;
-      else if (Fs2_rd & fwd_wb_fpr.valid & fwd_wb_fpr.Fd_wr & (Rs2_addr == fwd_wb_fpr.Fd_addr)  & (Rs2_addr != 0))
-         Fs2D = fwd_wb_fpr.Fd_data;
-      else
-         Fs2D = Fs2_data; // pull it from FPR[Rs2_addr]
-      `endif
-   end
 
    //************************************ ALU Functional Unit ************************************
    // get the necessary information from the Decode data & GPR and pass to ALU functional unit
@@ -265,12 +250,12 @@ module execute
    assign brfu_bus.sel_x       = D2E_bus.data.sel_x.br_sel;                // ENUM type: see cpu_structs.svh BR_SEL_TYPE
    assign brfu_bus.sel_y       = D2E_bus.data.sel_y.br_sel;
    assign brfu_bus.op          = BR_OP_TYPE'(op_type[BR_OP_SZ-1:0]);
-   assign brfu_bus.mepc        = csrfu_bus.mepc;
+   assign brfu_bus.mepc        = mepc;
    `ifdef ext_S
-   assign brfu_bus.sepc        = csrfu_bus.sepc;
+   assign brfu_bus.sepc        = sepc;
    `endif
    `ifdef ext_U
-   assign brfu_bus.uepc        = csrfu_bus.uepc;
+   assign brfu_bus.uepc        = uepc;
    `endif
 
    assign br_fu_done = D2E_bus.valid & (i_type == BR_INSTR);  // This functional unit only takes 1 clock cycle
@@ -316,59 +301,50 @@ module execute
    `endif
 
   //************************************ CSR Functional Unit *********************************
-  CSRFU_intf csrfu_bus();
+  CSRFU_intf            csrfu_bus();
+   logic                   csr_avail;
 
-   logic                   mret;             // MRET retiring
-   `ifdef ext_S
-   logic                   sret;             // SRET retiring
-   `endif
-   `ifdef ext_U
-   logic                   uret;             // URET retiring
-   `endif
+   logic                   csr_wr;
+   logic                   csr_rd;
+   logic         [RSZ-1:0] csr_Rd_data;      // value to write into R[Rd]
+   logic         [RSZ-1:0] csr_wr_data;      // value to write into CSR[csr_addr} in WB stage
+   logic         [RSZ-1:0] nxt_csr_rd_data;  // data to use as forwarding value for CSR[csr_addr]
+   logic                   ill_csr_access;   // 1 = illegal csr access
+   logic            [11:0] ill_csr_addr;
+   // ----------------------------------- csr_rd_bus interface
+   // Read CSR access port signals to/from CSR module (csr.sv)
+   assign csr_rd_bus.csr_rd_addr       = csr_addr;                            // Output:  to csr.sv
+   assign csr_avail                    = csr_rd_bus.csr_rd_avail;             // Input:   from csr.sv
+   // see forwarding logic that uses   = csr_rd_bus.csr_rd_data;              // Input:   from csr.sv
 
-   assign csrfu_bus.csr_addr        = D2E_bus.data.imm;                    // csr_addr = CSR Address - see decode_core.sv imm field
-   assign csrfu_bus.csr_valid       = (i_type == CSR_INSTR) & D2E_bus.valid; // permission to write to the CSR
-   assign csrfu_bus.Rd_addr         = Rd_addr;                             // Rd address value
-   assign csrfu_bus.Rs1_addr        = Rs1_addr;                            // Rs1 address value
-   assign csrfu_bus.Rs1_data        = Rs1D;                                // contents of R[Rs1]
+
+   // ----------------------------------- csrfu_bus interface
+   assign csrfu_bus.csr_valid       = (i_type == CSR_INSTR) & D2E_bus.valid;  // permission to write to the CSR
+   assign csrfu_bus.csr_addr        = D2E_bus.data.imm;                       // csr_addr = CSR Address - see decode_core.sv imm field
+   assign csrfu_bus.csr_avail       = csr_avail;                              // csr_addr = CSR Address - see decode_core.sv imm field
+   assign csrfu_bus.csr_rd_data     = CSD;                                    // CSR read data (from csr_rd_bus.csr_rd_data or forwarding data)
+   assign csrfu_bus.Rd_addr         = Rd_addr;                                // Rd address value
+   assign csrfu_bus.Rs1_addr        = Rs1_addr;                               // Rs1 address value
+   assign csrfu_bus.Rs1_data        = Rs1D;                                   // contents of R[Rs1]
    assign csrfu_bus.funct3          = D2E_bus.data.funct3;
-   assign csrfu_bus.mret            = mret;
-   `ifdef ext_S
-   assign csrfu_bus.sret            = sret;
-   `endif
-   `ifdef ext_U
-   assign csrfu_bus.uret            = uret;
-   `endif
+   assign csrfu_bus.mode            = mode;
 
-// This group is sent from MEM stage to here
-   assign csrfu_bus.exception       = EV_EXC_bus.exception;                // exception needs to be sent to CSR_FU from EXE stage???
-   assign csrfu_bus.current_events  = EV_EXC_bus.current_events;           // currrent_events needs to be sent to CSR_FU from EXE stage???
-
-   `ifdef ext_N
-   assign csrfu_bus.ext_irq         = ext_irq;                             // Input:   External Interrupt
-   assign csrfu_bus.time_irq        = time_irq;                            // Input:   Timer Interrupt from clint.sv
-   assign csrfu_bus.sw_irq          = sw_irq;                              // Input:   Software Interrupt from clint.sv
-   `endif
-   assign csrfu_bus.mtime           = mtime;                               // Input:   memory mapped mtime register contents
-
-   assign csr_fu_done = D2E_bus.valid & (i_type == CSR_INSTR); // This functional unit only takes 1 clock cycle
+   assign csr_fu_done = D2E_bus.valid & (i_type == CSR_INSTR);                // This functional unit only takes 1 clock cycle
    // Control & Status Registers
    csr_fu CSRFU
    (
-      .clk_in(clk_in), .reset_in(reset_in),                                // Inputs:  system clock and reset
-      .csrfu_bus(csrfu_bus)
+      .clk_in(clk_in), .reset_in(reset_in),                                   // Inputs:  system clock and reset
+      .csrfu_bus(csrfu_bus),
+      .csr_nxt_bus(csr_nxt_bus)
    );
 
-   assign ill_csr_access               = csrfu_bus.ill_csr_access;
-   assign ill_csr_addr                 = csrfu_bus.ill_csr_addr;
-   assign mode                         = csrfu_bus.mode; // needed in xRET logic
-   assign mepc                         = csrfu_bus.mepc;
-   `ifdef ext_S
-   assign sepc                         = csrfu_bus.sepc;
-   `endif
-   `ifdef ext_U
-   assign uepc                         = csrfu_bus.uepc;
-   `endif
+   assign csr_wr                    = csrfu_bus.csr_wr;
+   assign csr_rd                    = csrfu_bus.csr_rd;
+   assign csr_Rd_data               = csrfu_bus.Rd_data;
+   assign csr_wr_data               = csrfu_bus.csr_wr_data;
+   assign nxt_csr_rd_data           = csrfu_bus.nxt_csr_rd_data;              // value to use in CSR forwarding data
+   assign ill_csr_access            = csrfu_bus.ill_csr_access;
+   assign ill_csr_addr              = csrfu_bus.ill_csr_addr;
 
    //************************************ System Instruction & Illegal Instructions **************
    // There are no Functional Units related to these instructions so they complete in the current clock cycle
@@ -413,21 +389,60 @@ module execute
       .lsfu_bus(lsfu_bus)
    );
 
+   //************************************ Forwarding Logic ***************************************
+   always_comb
+   begin
+      // Register Write Forwarding - data that gets written into R[n]
+      // Note: Forwarding may takes place when:
+      //       1. This instruction needs to read (Rs1_rd) the contents of R[Rs1_addr]
+      //       2. The forwarfed instruction is valid (i.e. fwd_???_gpr.valid)
+      //       3. The forwarded instruction is writing to a destination register Rd (i.e. fwd_mem_gpr.Rd_wr)
+      //       4. This instruciton's Rs1 address is the same as the Rd address being forwarded
+      //       5. The Rs1/Rd address is not for R0 (constant 0 value)
+      // This applies for Rs1, Rs2 registers
+      // forwarding priority uses the most recent match - i.e. MEM stage before WB stage
+      if (Rs1_rd & fwd_mem_gpr.valid & fwd_mem_gpr.Rd_wr & (Rs1_addr == fwd_mem_gpr.Rd_addr) & (Rs1_addr != 0))
+         Rs1D = fwd_mem_gpr.Rd_data;
+      else if (Rs1_rd & fwd_wb_gpr.valid & fwd_wb_gpr.Rd_wr & (Rs1_addr == fwd_wb_gpr.Rd_addr) & (Rs1_addr != 0))
+         Rs1D = fwd_wb_gpr.Rd_data;
+      else
+         Rs1D = Rs1_data; // pull it from GPR[Rs1_addr]
 
-   //------------------- CPU Halt Logic ------------------
+      if (Rs2_rd & fwd_mem_gpr.valid & fwd_mem_gpr.Rd_wr & (Rs2_addr == fwd_mem_gpr.Rd_addr) & (Rs2_addr != 0))
+         Rs2D = fwd_mem_gpr.Rd_data;
+      else if (Rs2_rd & fwd_wb_gpr.valid & fwd_wb_gpr.Rd_wr & (Rs2_addr == fwd_wb_gpr.Rd_addr)  & (Rs2_addr != 0))
+         Rs2D = fwd_wb_gpr.Rd_data;
+      else
+         Rs2D = Rs2_data; // pull it from GPR[Rs2_addr]
+
+      `ifdef ext_F
+      // For Single Precision Floating Point, Rs1_addr, Rs2_addr are shared, but separate forwarding info (fwd_mem_fpr, fwd_wb_fpr and Fs1D, Fs2D) are used/created
+      if (Fs1_rd & fwd_mem_fpr.valid & fwd_mem_fpr.Fd_wr & (Rs1_addr == fwd_mem_fpr.Fd_addr) & (Rs1_addr != 0))
+         Fs1D = fwd_mem_fpr.Fd_data;
+      else if (Fs1_rd & fwd_wb_fpr.valid & fwd_wb_fpr.Fd_wr & (Rs1_addr == fwd_wb_fpr.Fd_addr) & (Rs1_addr != 0))
+         Fs1D = fwd_wb_fpr.Fd_data;
+      else
+         Fs1D = Fs1_data; // pull it from FPR[Rs1_addr]
+
+      if (Fs2_rd & fwd_mem_fpr.valid & fwd_mem_fpr.Fd_wr & (Rs2_addr == fwd_mem_fpr.Fd_addr) & (Rs2_addr != 0))
+         Fs2D = fwd_mem_fpr.Fd_data;
+      else if (Fs2_rd & fwd_wb_fpr.valid & fwd_wb_fpr.Fd_wr & (Rs2_addr == fwd_wb_fpr.Fd_addr)  & (Rs2_addr != 0))
+         Fs2D = fwd_wb_fpr.Fd_data;
+      else
+         Fs2D = Fs2_data; // pull it from FPR[Rs2_addr]
+      `endif
+
+      // CSR forwarding
+      if (csr_rd & fwd_mem_csr.valid & fwd_mem_csr.csr_wr & (csr_addr == fwd_mem_csr.csr_addr))
+         CSD = fwd_mem_csr.csr_data;
+      else if (csr_rd & fwd_wb_csr.valid & fwd_wb_csr.csr_wr & (csr_addr == fwd_wb_csr.csr_addr))
+         CSD = fwd_wb_csr.csr_data;
+      else
+         CSD = csr_rd_bus.csr_rd_data; // value calculated in CSRFU
+   end
+
    `ifdef ext_N
    logic    trigger_wfi;
-   
-   // Putting CPU to sleep and waking it up
-   always_ff @(posedge clk_in)
-   begin
-      if (reset_in || ext_irq)
-         cpu_halt <= FALSE;
-      else if (trigger_wfi)
-         cpu_halt <= TRUE;
-   end
-   `else
-   assign cpu_halt = FALSE;
    `endif
 
    // ****** Decide which Functional Unit output data will get used and passed to next stage *****
@@ -453,7 +468,7 @@ module execute
       `ifdef ext_N
          trigger_wfi    = FALSE;
       `endif
-      
+
       if (D2E_bus.valid)                                                            // should this instruction be processed by this stage? Default exe_dout.? values may be overriden inside this if()
       begin
          op_type                    = D2E_bus.data.op;
@@ -465,14 +480,6 @@ module execute
 
          exe_dout.op_type           = op_type;
          exe_dout.predicted_addr    = predicted_addr;
-
-         // data needed in MEM stage from CSR logic
-         exe_dout.trap_pc           = csrfu_bus.trap_pc;                            // trap vector handler address.
-         exe_dout.mode              = csrfu_bus.mode;
-         `ifdef ext_N
-         exe_dout.interrupt_flag    = csrfu_bus.interrupt_flag;
-         exe_dout.interrupt_cause   = csrfu_bus.interrupt_cause;
-         `endif
 
          unique case(i_type)                                                        // select which functional unit output data is the appropriate one and save it
             ALU_INSTR:
@@ -510,7 +517,7 @@ module execute
                   `ifdef ext_S
                   B_SRET:                                                           // SRET
                   begin
-                     if (mode >= S_MODE)
+                     if (mode >= S_MODE)                                            // if not, an exception will be taken in WB stage
                      begin
                         if (predicted_addr != sepc)
                         begin
@@ -526,7 +533,7 @@ module execute
 
                   B_MRET:                                                           // MRET
                   begin
-                     if (mode == M_MODE)                                            // OK to use if in Machine mode
+                     if (mode == M_MODE)                                            // if not, an exception will be taken in WB stage
                      begin
                         if (predicted_addr != mepc)
                         begin
@@ -706,7 +713,11 @@ module execute
                begin
                   exe_dout.Rd_wr       = Rd_wr & (Rd_addr != 0);                    // Writeback stage needs to know whether to write to destination register Rd
                   exe_dout.Rd_addr     = Rd_addr;
-                  exe_dout.Rd_data     = csrfu_bus.Rd_data;                         // value used to update Rd in WB stage
+                  exe_dout.Rd_data     = csr_Rd_data;                               // value used to update Rd in WB stage
+                  exe_dout.csr_wr      = csr_wr;
+                  exe_dout.csr_addr    = csr_addr;
+                  exe_dout.csr_wr_data = csr_wr_data;                               // Data to be written at WB stage
+                  exe_dout.csr_fwd_data   = nxt_csr_rd_data;                        // This is the data that should be used in forwarding as it may be different than csr_wr_data
                end
             end
 

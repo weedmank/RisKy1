@@ -28,10 +28,14 @@ module mem
    input    logic                         clk_in,
    input    logic                         reset_in,
 
+   input    logic                         cpu_halt,                                 // Input:   disable CPU operations by not allowing any more input to this stage
+
    `ifdef SIM_DEBUG
    output   logic                         sim_stop,
    `endif
 
+   input    logic                   [1:0] mode,
+   
    // I/O Write signals to specific RISC-V I/O registers
    `ifdef ext_N
    output   logic                         msip_wr,                                  // Output:  write to I/O msip register
@@ -50,8 +54,6 @@ module mem
    // misprediction signals to other stages
    input    logic                         pipe_flush,                               // Input:   1 = Flush this segment of the pipeline
 
-   input    logic                         cpu_halt,                                 // Input:   disable CPU operations by not allowing any more input to this stage
-
    `ifdef ext_F
    // interface to forwarding signals
    output   FWD_FPR                       fwd_mem_fpr,
@@ -59,6 +61,9 @@ module mem
 
    // interface to forwarding signals
    output   FWD_GPR                       fwd_mem_gpr,
+
+   // interface to forwarding signals
+   output   FWD_CSR                       fwd_mem_csr,
 
    // System Memory or I/O interface signals
    L1DC_intf.master                       L1DC_bus,
@@ -89,7 +94,6 @@ module mem
    logic                   mis;
    logic                   ci;
    logic       [PC_SZ-1:0] br_pc;
-   logic             [1:0] mode;
 
    // signals create here in MEM stage
    logic                   is_ls;                                                   // this is a Load or Store instruction
@@ -107,7 +111,6 @@ module mem
    assign mis                          = E2M_bus.data.mis;                          // misaligned, illegal CSR access...
    assign ci                           = E2M_bus.data.ci;
    assign br_pc                        = E2M_bus.data.br_pc;
-   assign mode                         = E2M_bus.data.mode;
 
    assign is_ls                        = (is_ld | is_st);
 
@@ -121,16 +124,23 @@ module mem
    `ifdef ext_F
    // Forwarding of FPR info
    assign fwd_mem_fpr.valid            = E2M_bus.valid & !reset_in;                 // Load data (MIO_ack_data) not valid until MIO_ack
-   assign fwd_mem_fpr.Fd_wr            = mem_dout.Fd_wr;
-   assign fwd_mem_fpr.Fd_addr          = mem_dout.Rd_addr;
+   assign fwd_mem_fpr.Fd_wr            = E2M_bus.data.Fd_wr;
+   assign fwd_mem_fpr.Fd_addr          = E2M_bus.data.Rd_addr;
    assign fwd_mem_fpr.Fd_data          = mem_dout.Rd_data;                          // return data from D$ if FP Load instruction, otherwise uses Rd_data from EXE stage
    `endif
 
    // Forwarding of GPR info
    assign fwd_mem_gpr.valid            = E2M_bus.valid & !reset_in;                 // Load data (MIO_ack_data) not valid until MIO_ack
-   assign fwd_mem_gpr.Rd_wr            = mem_dout.Rd_wr;
-   assign fwd_mem_gpr.Rd_addr          = mem_dout.Rd_addr;
+   assign fwd_mem_gpr.Rd_wr            = E2M_bus.data.Rd_wr;
+   assign fwd_mem_gpr.Rd_addr          = E2M_bus.data.Rd_addr;
    assign fwd_mem_gpr.Rd_data          = mem_dout.Rd_data;                          // return data from D$ if integer Load instruction, otherwise uses Rd_data from EXE stage
+
+   // Forwarding of CSR info
+   assign fwd_mem_csr.valid            = E2M_bus.valid & !reset_in;
+   assign fwd_mem_csr.csr_wr           = E2M_bus.data.csr_wr;
+   assign fwd_mem_csr.csr_addr         = E2M_bus.data.csr_addr;
+   assign fwd_mem_csr.csr_data         = E2M_bus.data.csr_fwd_data;
+
 
    assign MIO_req                      = E2M_bus.valid & !reset_in & !cpu_halt & is_ls;   // Load/Store request to D$, or external I/O, only if a valid Load or Store instruction
 
@@ -151,19 +161,16 @@ module mem
    assign mem_dout.br_pc               = E2M_bus.data.br_pc;
    assign mem_dout.i_type              = E2M_bus.data.i_type;
    assign mem_dout.op_type             = E2M_bus.data.op_type;
-   assign mem_dout.trap_pc             = E2M_bus.data.trap_pc;
-   assign mem_dout.mode                = E2M_bus.data.mode;
    //     mem_dout.mio_ack_fault       is created in always block below
-   `ifdef ext_N
-   assign mem_dout.interrupt_flag      = E2M_bus.data.interrupt_flag;
-   assign mem_dout.interrupt_cause     = E2M_bus.data.interrupt_cause;
-   `endif
    `ifdef ext_F
    assign mem_dout.Fd_wr               = E2M_bus.data.Fd_wr;
    `endif
    assign mem_dout.Rd_wr               = E2M_bus.data.Rd_wr;                        // Writeback stage needs to know whether to write to destination register Rd
    assign mem_dout.Rd_addr             = E2M_bus.data.Rd_addr;                      // Address of Rd register
    //     mem_dout.Rd_data             is created in always block below
+   assign mem_dout.csr_wr              = E2M_bus.data.csr_wr;
+   assign mem_dout.csr_addr            = E2M_bus.data.csr_addr;
+   assign mem_dout.csr_fwd_data        = E2M_bus.data.csr_fwd_data;
 
    always_comb
    begin
@@ -250,11 +257,11 @@ module mem
          EIO_bus.wr_data   = '0;
       end
    end
-   
+
    `ifdef SIM_DEBUG
    assign sim_stop             = (ls_addr == Sim_Stop_Addr) & MIO_req;
    `endif
-   
+
    always_comb
    begin
       //------------------------ Memory and I/O access default signals -----------------------------
@@ -269,7 +276,7 @@ module mem
          MIO_ack_data            = L1DC_bus.ack_data;
          MIO_ack_fault           = L1DC_bus.ack_fault;
       end
-   
+
       // ************************** Special: Simulation Debugging **************************
       `ifdef SIM_DEBUG
       else if ((ls_addr == Sim_Stop_Addr) & MIO_req)

@@ -49,9 +49,12 @@ vlog  -sv          +define+ext_M+ext_N+ext_S+ext_U+SIM_DEBUG                    
 # RTL Synthesizable Files
 vlog  -sv -hazards +define+ext_M+ext_N+ext_S+ext_U+SIM_DEBUG  +cover                                           ../../src/cpu_src/alu_fu.sv
 vlog  -sv -hazards +define+ext_M+ext_N+ext_S+ext_U+SIM_DEBUG  +cover                                           ../../src/cpu_src/br_fu.sv
-vlog  -sv -hazards +define+ext_M+ext_N+ext_S+ext_U+SIM_DEBUG  +cover             +incdir+../../src/includes    ../../src/cpu_src/csr_fu.sv
+vlog  -sv -hazards +define+ext_M+ext_N+ext_S+ext_U+SIM_DEBUG  +cover                                           ../../src/cpu_src/csr.sv
+vlog  -sv -hazards +define+ext_M+ext_N+ext_S+ext_U+SIM_DEBUG  +cover                                           ../../src/cpu_src/csr_av_rdata.sv
+vlog  -sv -hazards +define+ext_M+ext_N+ext_S+ext_U+SIM_DEBUG  +cover                                           ../../src/cpu_src/csr_fu.sv
 vlog  -sv -hazards +define+ext_M+ext_N+ext_S+ext_U+SIM_DEBUG  +cover                                           ../../src/cpu_src/csr_lo_cnt.sv
 vlog  -sv -hazards +define+ext_M+ext_N+ext_S+ext_U+SIM_DEBUG  +cover                                           ../../src/cpu_src/csr_std_wr.sv
+vlog  -sv -hazards +define+ext_M+ext_N+ext_S+ext_U+SIM_DEBUG  +cover                                           ../../src/cpu_src/csr_nxt_reg.sv
 vlog  -sv -hazards +define+ext_M+ext_N+ext_S+ext_U+SIM_DEBUG  +cover                                           ../../src/cpu_src/decode.sv
 vlog  -sv -hazards +define+ext_M+ext_N+ext_S+ext_U+SIM_DEBUG  +cover                                           ../../src/cpu_src/decode_core.sv
 vlog  -sv -hazards +define+ext_M+ext_N+ext_S+ext_U+SIM_DEBUG  +cover                                           ../../src/cpu_src/execute.sv
@@ -63,6 +66,7 @@ vlog  -sv -hazards +define+ext_M+ext_N+ext_S+ext_U+SIM_DEBUG  +cover            
 vlog  -sv -hazards +define+ext_M+ext_N+ext_S+ext_U+SIM_DEBUG  +cover                                           ../../src/cpu_src/irq.sv
 vlog  -sv -hazards +define+ext_M+ext_N+ext_S+ext_U+SIM_DEBUG  +cover                                           ../../src/cpu_src/ls_fu.sv
 vlog  -sv -hazards +define+ext_M+ext_N+ext_S+ext_U+SIM_DEBUG  +cover                                           ../../src/cpu_src/mem.sv
+vlog  -sv -hazards +define+ext_M+ext_N+ext_S+ext_U+SIM_DEBUG  +cover                                           ../../src/cpu_src/mode_irq.sv
 vlog  -sv -hazards +define+ext_M+ext_N+ext_S+ext_U+SIM_DEBUG  +cover                                           ../../src/cpu_src/pipe.sv
 vlog  -sv -hazards +define+ext_M+ext_N+ext_S+ext_U+SIM_DEBUG  +cover                                           ../../src/cpu_src/RisKy1_core.sv
 vlog  -sv -hazards +define+ext_M+ext_N+ext_S+ext_U+SIM_DEBUG  +cover                                           ../../src/cpu_src/sdiv_N_by_N.sv
