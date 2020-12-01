@@ -457,7 +457,7 @@ interface MCSR_REG_intf;
    logic                         [RSZ-1:0] mimpid;          // 12'hF13
    logic                         [RSZ-1:0] mhartid;         // 12'hF14
 
-   modport master(output  `ifdef ext_S medeleg, mideleg,`else `ifdef ext_U, `ifdef ext_N medeleg, mideleg, `endif `endif `endif
+   modport master(output  `ifdef ext_S medeleg, mideleg,`else `ifdef ext_U `ifdef ext_N medeleg, mideleg, `endif `endif `endif
                           mstatus, misa, `ifdef ext_N mie, `endif mtvec, mcounteren, mcountinhibit, `ifdef use_MHPM mhpmevent, `endif mscratch,
                           mepc, mcause, mtval, `ifdef ext_N mip, `endif `ifdef USE_PMPCFG pmpcfg0, pmpcfg1, pmpcfg2, pmpcfg3, `endif
                           `ifdef PMP_ADDR0  pmpaddr0,  `endif `ifdef PMP_ADDR1  pmpaddr1,  `endif `ifdef PMP_ADDR2  pmpaddr2,  `endif `ifdef PMP_ADDR3  pmpaddr3,  `endif
@@ -465,10 +465,10 @@ interface MCSR_REG_intf;
                           `ifdef PMP_ADDR8  pmpaddr8,  `endif `ifdef PMP_ADDR9  pmpaddr9,  `endif `ifdef PMP_ADDR10 pmpaddr10, `endif `ifdef PMP_ADDR11 pmpaddr11, `endif
                           `ifdef PMP_ADDR12 pmpaddr12, `endif `ifdef PMP_ADDR13 pmpaddr13, `endif `ifdef PMP_ADDR14 pmpaddr14, `endif `ifdef PMP_ADDR15 pmpaddr15, `endif
                           `ifdef add_DM tselect, tdata1, tdata2, tdata3, dcsr, dpc, dscratch0, dscratch1, `endif mcycle_lo, mcycle_hi, minstret_lo, minstret_hi,
-                          `ifdef use_MHPM mhpmcounter_lo, mhpmcounter_hi `endif
+                          `ifdef use_MHPM mhpmcounter_lo, mhpmcounter_hi, `endif
                           mvendorid, marchid, mimpid, mhartid
                           );
-   modport slave (input   `ifdef ext_S medeleg, mideleg,`else `ifdef ext_U, `ifdef ext_N medeleg, mideleg, `endif `endif `endif
+   modport slave (input   `ifdef ext_S medeleg, mideleg,`else `ifdef ext_U `ifdef ext_N medeleg, mideleg, `endif `endif `endif
                           mstatus, misa, `ifdef ext_N mie, `endif mtvec, mcounteren, mcountinhibit, `ifdef use_MHPM mhpmevent, `endif mscratch,
                           mepc, mcause, mtval, `ifdef ext_N mip, `endif `ifdef USE_PMPCFG pmpcfg0, pmpcfg1, pmpcfg2, pmpcfg3, `endif
                           `ifdef PMP_ADDR0  pmpaddr0,  `endif `ifdef PMP_ADDR1  pmpaddr1,  `endif `ifdef PMP_ADDR2  pmpaddr2,  `endif `ifdef PMP_ADDR3  pmpaddr3,  `endif
@@ -476,7 +476,7 @@ interface MCSR_REG_intf;
                           `ifdef PMP_ADDR8  pmpaddr8,  `endif `ifdef PMP_ADDR9  pmpaddr9,  `endif `ifdef PMP_ADDR10 pmpaddr10, `endif `ifdef PMP_ADDR11 pmpaddr11, `endif
                           `ifdef PMP_ADDR12 pmpaddr12, `endif `ifdef PMP_ADDR13 pmpaddr13, `endif `ifdef PMP_ADDR14 pmpaddr14, `endif `ifdef PMP_ADDR15 pmpaddr15, `endif
                           `ifdef add_DM tselect, tdata1, tdata2, tdata3, dcsr, dpc, dscratch0, dscratch1, `endif mcycle_lo, mcycle_hi, minstret_lo, minstret_hi,
-                          `ifdef use_MHPM mhpmcounter_lo, mhpmcounter_hi `endif
+                          `ifdef use_MHPM mhpmcounter_lo, mhpmcounter_hi, `endif
                           mvendorid, marchid, mimpid, mhartid
                           );
 endinterface: MCSR_REG_intf

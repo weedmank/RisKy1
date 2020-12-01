@@ -209,45 +209,53 @@ module csr_nxt_reg
    assign nxt_sie    = 1'b0;
    `endif
 
-   `ifdef ext_N
-   logic nxt_seip, nxt_stip, nxt_ssip;       // used in csr_super_av_rdata_nxt.sv, csr_mach_av_rdata_nxt.sv
-
-   // Supervisor Interrupt-Pending Register bits
-   always_comb // logic for what WILL happen to ssip, stip, seip under a given condition
-   begin
-      if (reset_in)  // Software Interrupts
-         nxt_ssip    = FALSE;
-      else if (csr_wr & (csr_addr == 12'h344) & (mode == M_MODE)) // see p. 29 riscv-privileged to see about M_MODE writes to this bit
-         nxt_ssip    = csr_wr_data[1];                            // set or clear USIP
-      else if (csr_wr & (csr_addr == 12'h144) & (mode >= S_MODE))
-         nxt_ssip    = csr_wr_data[1];                            // set or clear SSIP
-      else
-         nxt_ssip    = scsr.sip.ssip;
-
-      // The ... STIP bits may be written by M-mode software to deliver timer interrupts to lower privilege levels. see p. 30 riscv-privileged
-      if (reset_in)  // Timer Interrupts
-         nxt_stip    = FALSE;
-      else if (csr_wr & (csr_addr == 12'h344) & (mode == M_MODE))
-         nxt_stip    = csr_wr_data[5];                            // set or clear STIP
-      else if (mode == S_MODE)                                     // irq setting during supervisor mode
-         nxt_stip    = timer_irq;
-      else
-         nxt_stip    = scsr.sip.stip;                             // STIP - read only
-
-      // SEIP may be written by M-mode software to indicate to S-mode that an external interrupt is pending. p. 30 riscv-privileged
-      if (reset_in)  // External Interrupts
-         nxt_seip    = FALSE;
-      else if (csr_wr & (csr_addr == 12'h344) & (mode == M_MODE))
-         nxt_seip    = csr_wr_data[9];                            // set or clear SEIP
-      else if (mode == S_MODE)
-         nxt_seip    = ext_irq;                                   // external interrupt
-      else
-         nxt_seip    = scsr.sip.seip;
-   end
+    logic nxt_seip, nxt_stip, nxt_ssip;       // used in csr_super_av_rdata_nxt.sv, csr_mach_av_rdata_nxt.sv
+   `ifdef ext_S
+      `ifdef ext_N
+      // Supervisor Interrupt-Pending Register bits
+      always_comb // logic for what WILL happen to ssip, stip, seip under a given condition
+      begin
+         if (reset_in)  // Software Interrupts
+            nxt_ssip    = FALSE;
+         else if (csr_wr & (csr_addr == 12'h344) & (mode == M_MODE)) // see p. 29 riscv-privileged to see about M_MODE writes to this bit
+            nxt_ssip    = csr_wr_data[1];                            // set or clear USIP
+         else if (csr_wr & (csr_addr == 12'h144) & (mode >= S_MODE))
+            nxt_ssip    = csr_wr_data[1];                            // set or clear SSIP
+         else
+            nxt_ssip    = scsr.sip.ssip;
+   
+         // The ... STIP bits may be written by M-mode software to deliver timer interrupts to lower privilege levels. see p. 30 riscv-privileged
+         if (reset_in)  // Timer Interrupts
+            nxt_stip    = FALSE;
+         else if (csr_wr & (csr_addr == 12'h344) & (mode == M_MODE))
+            nxt_stip    = csr_wr_data[5];                            // set or clear STIP
+         else if (mode == S_MODE)                                     // irq setting during supervisor mode
+            nxt_stip    = timer_irq;
+         else
+            nxt_stip    = scsr.sip.stip;                             // STIP - read only
+   
+         // SEIP may be written by M-mode software to indicate to S-mode that an external interrupt is pending. p. 30 riscv-privileged
+         if (reset_in)  // External Interrupts
+            nxt_seip    = FALSE;
+         else if (csr_wr & (csr_addr == 12'h344) & (mode == M_MODE))
+            nxt_seip    = csr_wr_data[9];                            // set or clear SEIP
+         else if (mode == S_MODE)
+            nxt_seip    = ext_irq;                                   // external interrupt
+         else
+            nxt_seip    = scsr.sip.seip;
+      end
+      `else
+      assign nxt_seip = FALSE;
+      assign nxt_stip = FALSE;
+      assign nxt_ssip = FALSE;
+      `endif
+   `else
+      assign nxt_seip = FALSE;
+      assign nxt_stip = FALSE;
+      assign nxt_ssip = FALSE;
    `endif
 
    logic nxt_upie, nxt_uie;
-
    `ifdef ext_U
       `ifdef ext_N
       // User Status Register bits
@@ -293,54 +301,63 @@ module csr_nxt_reg
       assign nxt_upie   = 1'b0;
       assign nxt_uie    = 1'b0;
       `endif // ext_N
-   `else // !ext_U
+   `else // !ext_N
    assign nxt_upp    = 1'b0;
    assign nxt_upie   = 1'b0;
    assign nxt_uie    = 1'b0;
    `endif // ext_U
 
-   `ifdef ext_N
    logic nxt_usip, nxt_utip, nxt_ueip;
-
-   // User Interrupt-Pending Register bits
-   always_comb
-   begin
-      // User interrupt pending.
-      // 12'h044 = 12'b0000_0100_0100  uip                              (read-write)  user mode
-      if (reset_in)  // Software Interrupts
-         nxt_usip    = FALSE;
-      else if (csr_wr & (csr_addr == 12'h344) & (mode == M_MODE))       // see p. 29 riscv-privileged to see about M_MODE writes to this bit
-         nxt_usip    = csr_wr_data[0];                                  // set or clear USIP
-      else if (csr_wr & (csr_addr == 12'h144) & (mode >= S_MODE))
-         nxt_usip    = csr_wr_data[0];                                  // set or clear USIP
-      else if (csr_wr & (csr_addr == 12'h044))
-         nxt_usip    = csr_wr_data[0];                                  // set or clear USIP
-      else
-         nxt_usip    = scsr.sip.usip;
-
-      // The UTIP ... bits may be written by M-mode software to deliver timer interrupts to lower privilege levels. see p. 30 riscv-privileged
-      if (reset_in)  // Timer Interrupts
-         nxt_utip    = FALSE;
-      else if (csr_wr & (csr_addr == 12'h344) & (mode == M_MODE))
-         nxt_utip    = csr_wr_data[4];                                  // set or clear UTIP
-      else if (csr_wr & (csr_addr == 12'h144) & (mode >= S_MODE))
-         nxt_utip    = csr_wr_data[4];                                  // set or clear UTIP
-      else if (mode == S_MODE)                                           // irq setting during supervisor mode
-         nxt_utip    = timer_irq;
-      else
-         nxt_utip    = ucsr.uip.utip;
-
-      // UEIP may be written by M-mode software to indicate to S-mode that an external interrupt is pending. p. 30 riscv-privileged
-      if (reset_in)  // External Interrupts
-         nxt_ueip    = FALSE;
-      else if (csr_wr & (csr_addr == 12'h344) & (mode == M_MODE))
-         nxt_ueip    = csr_wr_data[8];                                  // set or clear UEIP
-      else if (mode == U_MODE)
-         nxt_ueip    = ext_irq;                                         // external interrupt
-      else
-         nxt_ueip    = ucsr.uip.ueip;
-   end
-   `endif // etx_N
+   `ifdef ext_U
+      `ifdef ext_N
+      // User Interrupt-Pending Register bits
+      always_comb
+      begin
+         // User interrupt pending.
+         // 12'h044 = 12'b0000_0100_0100  uip                              (read-write)  user mode
+         if (reset_in)  // Software Interrupts
+            nxt_usip    = FALSE;
+         else if (csr_wr & (csr_addr == 12'h344) & (mode == M_MODE))       // see p. 29 riscv-privileged to see about M_MODE writes to this bit
+            nxt_usip    = csr_wr_data[0];                                  // set or clear USIP
+         else if (csr_wr & (csr_addr == 12'h144) & (mode >= S_MODE))
+            nxt_usip    = csr_wr_data[0];                                  // set or clear USIP
+         else if (csr_wr & (csr_addr == 12'h044))
+            nxt_usip    = csr_wr_data[0];                                  // set or clear USIP
+         else
+            nxt_usip    = ucsr.uip.usip;
+   
+         // The UTIP ... bits may be written by M-mode software to deliver timer interrupts to lower privilege levels. see p. 30 riscv-privileged
+         if (reset_in)  // Timer Interrupts
+            nxt_utip    = FALSE;
+         else if (csr_wr & (csr_addr == 12'h344) & (mode == M_MODE))
+            nxt_utip    = csr_wr_data[4];                                  // set or clear UTIP
+         else if (csr_wr & (csr_addr == 12'h144) & (mode >= S_MODE))
+            nxt_utip    = csr_wr_data[4];                                  // set or clear UTIP
+         else if (mode == S_MODE)                                           // irq setting during supervisor mode
+            nxt_utip    = timer_irq;
+         else
+            nxt_utip    = ucsr.uip.utip;
+   
+         // UEIP may be written by M-mode software to indicate to S-mode that an external interrupt is pending. p. 30 riscv-privileged
+         if (reset_in)  // External Interrupts
+            nxt_ueip    = FALSE;
+         else if (csr_wr & (csr_addr == 12'h344) & (mode == M_MODE))
+            nxt_ueip    = csr_wr_data[8];                                  // set or clear UEIP
+         else if (mode == U_MODE)
+            nxt_ueip    = ext_irq;                                         // external interrupt
+         else
+            nxt_ueip    = ucsr.uip.ueip;
+      end
+      `else // !ext_N
+      assign nxt_usip = FALSE;
+      assign nxt_utip = FALSE;
+      assign nxt_ueip = FALSE;
+      `endif // etx_N
+   `else // !ext_U
+   assign nxt_usip = FALSE;
+   assign nxt_utip = FALSE;
+   assign nxt_ueip = FALSE;
+   `endif // etx_U
 
    always_comb
    begin
@@ -681,6 +698,7 @@ module csr_nxt_reg
       endcase
    end
 
+   `ifdef ext_U
    // ------------------------------ User Exception Program Counter
    // 12'h041 = 12'b0000_0100_0001  uepc                             (read-write)
    always_comb
@@ -716,8 +734,9 @@ module csr_nxt_reg
       else if (csr_wr && (csr_addr == 12'h043))                      // all modes can write to this CSR
          nxt_ucsr.utval    = csr_wr_data;                            // Sotware settable
    end
+   `endif
 
-
+   `ifdef ext_S
    // ------------------------------ Supervisor Exception Program Counter
    // 12'h141 = 12'b0001_0100_0001  sepc                             (read-write)
    always_comb
@@ -753,7 +772,8 @@ module csr_nxt_reg
       else if (csr_wr && (csr_addr == 12'h143) & (mode >= S_MODE))   // Only >= Supervisor mode can write to this CSR
          nxt_scsr.stval = csr_wr_data;                               // Sotware settable
    end
-
+   `endif
+   
    // ------------------------------ Machine Exception Program Counter
    always_comb
    begin
