@@ -333,7 +333,7 @@ module csr_nxt_reg
             nxt_utip    = csr_wr_data[4];                                  // set or clear UTIP
          else if (csr_wr & (csr_addr == 12'h144) & (mode >= S_MODE))
             nxt_utip    = csr_wr_data[4];                                  // set or clear UTIP
-         else if (mode == S_MODE)                                           // irq setting during supervisor mode
+         else if (mode == S_MODE)                                          // irq setting during supervisor mode
             nxt_utip    = timer_irq;
          else
             nxt_utip    = ucsr.uip.utip;
