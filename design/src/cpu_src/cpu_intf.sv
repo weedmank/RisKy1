@@ -540,7 +540,7 @@ interface CSR_EXE_intf;
    `endif
    logic                         [1:0] mode;             // CPU mode
 
-   // signals from EXE stage - Note: partial pipeline flush will occur when TRUE & PC reloads
+   // signals from EXE stage - Note: partial pipeline flush will occur when xret == TRUE & PC reloads
    logic                     [RSZ-1:0] mret;             // Machine mode return flag
    `ifdef ext_S
    logic                     [RSZ-1:0] sret;             // Supervisor Mode return flag

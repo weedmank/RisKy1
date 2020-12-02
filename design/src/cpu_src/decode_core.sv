@@ -83,7 +83,7 @@ module decode_core
    assign dcore_bus.dec_data.Fs2_rd          = cntrl_sigs.Fs2_rd;
    assign dcore_bus.dec_data.Fd_wr           = cntrl_sigs.Fd_wr;
    `endif
-   assign dcore_bus.dec_data.i_type          = cntrl_sigs.i_type;
+   assign dcore_bus.dec_data.ig_type         = cntrl_sigs.ig_type;
    assign dcore_bus.dec_data.sel_x           = cntrl_sigs.sel_x;
    assign dcore_bus.dec_data.sel_y           = cntrl_sigs.sel_y;
    assign dcore_bus.dec_data.op              = cntrl_sigs.op;
@@ -156,7 +156,7 @@ module decode_core
          // if a compressed instruction is encounterd (i.e. deafult to illegal instruction)
 
          // number of bits                     1      1      1     1      1      1      4           2       2       4       1     32
-         //                                    Fs1_rd Fs2_rd Fd_wr Rs1_rd Rs2_rd Rd_wr  i_type      sel_x   sel_y   op      ci    imm
+         //                                    Fs1_rd Fs2_rd Fd_wr Rs1_rd Rs2_rd Rd_wr  ig_type     sel_x   sel_y   op      ci    imm
          cntrl_sigs =                        '{1'b0,  1'b0,  1'b0, 1'b0,  1'b0,  1'b0,  ILL_INSTR,  AM_IMM, AM_IMM, A_ADD,  1'b1, 'd0          };    // includes `C_ILLEGAL  16'b000___00000000_000_00
 
          // ext_C must be defined at compile time in order to create decode logic for Compressed instructions, otherwise the above ILL_INSTR will occur
@@ -174,7 +174,7 @@ module decode_core
                Rs1_addr = {2'b00,i[9:7]};
                Rs2_addr = {2'b00,i[4:2]};
                // number of bits               1      1      1     1      1      1      4           2       2       4       1     32
-               //                              Fs1_rd Fs2_rd Fd_wr Rs1_rd Rs2_rd Rd_wr  i_type      sel_x   sel_y   op      ci    imm
+               //                              Fs1_rd Fs2_rd Fd_wr Rs1_rd Rs2_rd Rd_wr  ig_type     sel_x   sel_y   op      ci    imm
                case (funct3)
                   0:
                   begin
@@ -213,7 +213,7 @@ module decode_core
                Rs1_addr    = i[15] ? {2'b00,i[9:7]} : i[11:7];
                Rs2_addr    = {2'b00,i[4:2]};
                 // number of bits               1      1      1     1      1      1      4           2       2       4       1     32
-               //                              Fs1_rd Fs2_rd Fd_wr Rs1_rd Rs2_rd Rd_wr  i_type      sel_x   sel_y   op      ci    imm
+               //                              Fs1_rd Fs2_rd Fd_wr Rs1_rd Rs2_rd Rd_wr  ig_type     sel_x   sel_y   op      ci    imm
                case (funct3)
                   0: // Quadrant 1:0
                   begin
@@ -241,7 +241,7 @@ module decode_core
 
                   1: // Quadrant 1:1
                   // number of bits            1      1      1     1      1      1      4           2       2       4       1     32
-                  //                           Fs1_rd Fs2_rd Fd_wr Rs1_rd Rs2_rd Rd_wr  i_type      sel_x   sel_y   op      ci    imm
+                  //                           Fs1_rd Fs2_rd Fd_wr Rs1_rd Rs2_rd Rd_wr  ig_type     sel_x   sel_y   op      ci    imm
                   begin
                      Rd_addr  = 1;                                                                                               // x1 will get updated to pc + 2
                      cntrl_sigs =            '{1'b0,  1'b0,  1'b0, 1'b0,  1'b0,  1'b1,  BR_INSTR,   BS_PC,  BS_IMM, B_JAL,  1'b1, c_j_imm      };    // C.JAL = JAL R1, offset[11:1]
@@ -249,7 +249,7 @@ module decode_core
 
                   2: // Quadrant 1:2
                   // number of bits            1      1      1     1      1      1      4           2       2       4       1     32
-                  //                           Fs1_rd Fs2_rd Fd_wr Rs1_rd Rs2_rd Rd_wr  i_type      sel_x   sel_y   op      ci    imm
+                  //                           Fs1_rd Fs2_rd Fd_wr Rs1_rd Rs2_rd Rd_wr  ig_type     sel_x   sel_y   op      ci    imm
                   begin
                      // C.LI is only valid when rd̸=x0; the code points with rd=x0 encode HINTs. see riscv-spec.pdf p. 104
                      if (Rd_addr != 0)
@@ -262,7 +262,7 @@ module decode_core
 
                   3: // Quadrant 1:3
                   // number of bits            1      1      1     1      1      1      4           2       2       4       1     32
-                  //                           Fs1_rd Fs2_rd Fd_wr Rs1_rd Rs2_rd Rd_wr  i_type      sel_x   sel_y   op      ci    imm
+                  //                           Fs1_rd Fs2_rd Fd_wr Rs1_rd Rs2_rd Rd_wr  ig_type     sel_x   sel_y   op      ci    imm
                   begin
                      // C.LUI is only valid when rd̸={x0, x2}, and when the immediate is not equal to zero. The code points with nzimm=0 are reserved;
                      // the remaining code points with rd=x0 are HINTs; and the remaining code points with rd=x2 correspond to the C.ADDI16SP instruction. p 104
@@ -284,7 +284,7 @@ module decode_core
 
                   4: // Quadrant 1:4
                   // number of bits            1      1      1     1      1      1      4           2       2       4       1     32
-                  //                           Fs1_rd Fs2_rd Fd_wr Rs1_rd Rs2_rd Rd_wr  i_type      sel_x   sel_y   op      ci    imm
+                  //                           Fs1_rd Fs2_rd Fd_wr Rs1_rd Rs2_rd Rd_wr  ig_type     sel_x   sel_y   op      ci    imm
                   begin
                      case (i[11:10])
                         0:
@@ -341,7 +341,7 @@ module decode_core
                   end
 
                   // number of bits            1      1      1     1      1      1      4           2       2       4       1     32
-                  //                           Fs1_rd Fs2_rd Fd_wr Rs1_rd Rs2_rd Rd_wr  i_type      sel_x   sel_y   op      ci    imm
+                  //                           Fs1_rd Fs2_rd Fd_wr Rs1_rd Rs2_rd Rd_wr  ig_type     sel_x   sel_y   op      ci    imm
                   5: // Quadrant 1:5
                   begin
                      Rd_addr = 0;            // Rd = x0 which wont get updated
@@ -368,7 +368,7 @@ module decode_core
                Rs1_addr = i[11:7];
                Rs2_addr = i[6:2];
                // number of bits               1      1      1     1      1      1      4           2       2       4       1     32
-               //                              Fs1_rd Fs2_rd Fd_wr Rs1_rd Rs2_rd Rd_wr  i_type      sel_x   sel_y   op      ci    imm
+               //                              Fs1_rd Fs2_rd Fd_wr Rs1_rd Rs2_rd Rd_wr  ig_type     sel_x   sel_y   op      ci    imm
                case(funct3)
                   0: // Quadrant 2:0
                   begin
@@ -489,7 +489,7 @@ module decode_core
 
          // undecoded instructions = illegal instructions  (must inlude 32'hFFFF_FFFF)
          // number of bits            1      1      1     1      1      1      4           2       2       4       1     32
-         //                           Fs1_rd Fs2_rd Fd_wr Rs1_rd Rs2_rd Rd_wr  i_type      sel_x   sel_y   op      ci    imm
+         //                           Fs1_rd Fs2_rd Fd_wr Rs1_rd Rs2_rd Rd_wr  ig_type     sel_x   sel_y   op      ci    imm
          cntrl_sigs =               '{1'b0,  1'b0,  1'b0, 1'b0,  1'b0,  1'b0,  ILL_INSTR,  AM_IMM, AM_IMM, A_ADD,  1'b0, 32'd0    };
 
          // ************************************************************************** Load instructins
@@ -497,7 +497,7 @@ module decode_core
          begin
             case(funct3)
                // number of bits      1      1      1     1      1      1      4           2       2       4       1     32
-               //                     Fs1_rd Fs2_rd Fd_wr Rs1_rd Rs2_rd Rd_wr  i_type      sel_x   sel_y   op      ci    imm
+               //                     Fs1_rd Fs2_rd Fd_wr Rs1_rd Rs2_rd Rd_wr  ig_type     sel_x   sel_y   op      ci    imm
                0: cntrl_sigs =      '{1'b0,  1'b0,  1'b0, 1'b1,  1'b0,  1'b1,  LD_INSTR,   AM_RS1, AM_IMM, A_ADD,  1'b0, i_imm    };        // LB       32'b???????_?????_?????_000_?????_0000011
                1: cntrl_sigs =      '{1'b0,  1'b0,  1'b0, 1'b1,  1'b0,  1'b1,  LD_INSTR,   AM_RS1, AM_IMM, A_ADD,  1'b0, i_imm    };        // LH       32'b???????_?????_?????_001_?????_0000011
                2: cntrl_sigs =      '{1'b0,  1'b0,  1'b0, 1'b1,  1'b0,  1'b1,  LD_INSTR,   AM_RS1, AM_IMM, A_ADD,  1'b0, i_imm    };        // LW       32'b???????_?????_?????_010_?????_0000011
@@ -513,7 +513,7 @@ module decode_core
             // NOTE: pred=0 or succ=0 - reserved for future standard use
 
             // number of bits         1      1      1     1      1      1      4           2       2       4       1     32
-            //                        Fs1_rd Fs2_rd Fd_wr Rs1_rd Rs2_rd Rd_wr  i_type      sel_x   sel_y   op      ci    imm
+            //                        Fs1_rd Fs2_rd Fd_wr Rs1_rd Rs2_rd Rd_wr  ig_type     sel_x   sel_y   op      ci    imm
             case (funct3)
                0: cntrl_sigs =      '{1'b0,  1'b0,  1'b0, 1'b0,  1'b0,  1'b0,  SYS_INSTR,  2'd0,   2'd0,   FENCE,  1'b0, 32'd0    };        // FENCE    32'b???????_?????_?????_000_?????_0001111
                1: cntrl_sigs =      '{1'b0,  1'b0,  1'b0, 1'b0,  1'b0,  1'b0,  SYS_INSTR,  2'd0,   2'd0,   FENCEI, 1'b0, 32'd0    };        // FENCE_I  32'b???????_?????_?????_001_?????_0001111
@@ -533,7 +533,7 @@ module decode_core
          begin
             case(funct3)
                // number of bits      1      1      1     1      1      1      4           2       2       4       1     32
-               //                     Fs1_rd Fs2_rd Fd_wr Rs1_rd Rs2_rd Rd_wr  i_type      sel_x   sel_y   op      ci    imm
+               //                     Fs1_rd Fs2_rd Fd_wr Rs1_rd Rs2_rd Rd_wr  ig_type     sel_x   sel_y   op      ci    imm
                0:
                `ifdef H_ADDI
                if (Rd_addr == 0)
@@ -610,7 +610,7 @@ module decode_core
 
          // ************************************************************************** AUIPC instruction
          // number of bits            1      1      1     1      1      1      4           2       2       4       1     32
-         //                           Fs1_rd Fs2_rd Fd_wr Rs1_rd Rs2_rd Rd_wr  i_type      sel_x   sel_y   op      ci    imm
+         //                           Fs1_rd Fs2_rd Fd_wr Rs1_rd Rs2_rd Rd_wr  ig_type     sel_x   sel_y   op      ci    imm
          if (i[6:2] == 5'b00101)
          begin
             `ifdef H_AUIPC
@@ -666,7 +666,7 @@ module decode_core
             if (i[31:25] == 7'b0000000)
             begin
                // number of bits      1      1      1     1      1      1      4           2       2       4       1     32
-               //                     Fs1_rd Fs2_rd Fd_wr Rs1_rd Rs2_rd Rd_wr  i_type      sel_x   sel_y   op      ci    imm
+               //                     Fs1_rd Fs2_rd Fd_wr Rs1_rd Rs2_rd Rd_wr  ig_type     sel_x   sel_y   op      ci    imm
                case(funct3)
                   0:
                   `ifdef R_ADD
@@ -729,7 +729,7 @@ module decode_core
             else if (i[31:25] == 7'b0100000)
             begin
                // number of bits      1      1      1     1      1      1      4           2       2       4       1     32
-               //                     Fs1_rd Fs2_rd Fd_wr Rs1_rd Rs2_rd Rd_wr  i_type      sel_x   sel_y   op      ci    imm
+               //                     Fs1_rd Fs2_rd Fd_wr Rs1_rd Rs2_rd Rd_wr  ig_type     sel_x   sel_y   op      ci    imm
                case(funct3)
                   0:
                   `ifdef R_SUB
@@ -752,7 +752,7 @@ module decode_core
             else if (i[31:25] == 7'b0000001)                                                                            // Multiply, Divide, Remainder instructions
             begin
                // number of bits      1      1      1     1      1      1      4           2       2       4       1     32
-               //                     Fs1_rd Fs2_rd Fd_wr Rs1_rd Rs2_rd Rd_wr  i_type      sel_x   sel_y   op      ci    imm
+               //                     Fs1_rd Fs2_rd Fd_wr Rs1_rd Rs2_rd Rd_wr  ig_type     sel_x   sel_y   op      ci    imm
                case(funct3)
                0: cntrl_sigs =      '{1'b0,  1'b0,  1'b0, 1'b1,  1'b1,  1'b1,  IM_INSTR,   2'd0,   2'd0,   MUL,    1'b0, 32'd0    };        // MUL      32'b0000001_?????_?????_000_?????_0110011    unsigned x unsigned - return lower 32 bits
                1: cntrl_sigs =      '{1'b0,  1'b0,  1'b0, 1'b1,  1'b1,  1'b1,  IM_INSTR,   2'd0,   2'd0,   MULH,   1'b0, 32'd0    };        // MULH     32'b0000001_?????_?????_001_?????_0110011    signed x signed   - return upper 32 bits
@@ -769,7 +769,7 @@ module decode_core
 
          // ************************************************************************** LUI instruction
          // number of bits            1      1      1     1      1      1      4           2       2       4       1     32
-         //                           Fs1_rd Fs2_rd Fd_wr Rs1_rd Rs2_rd Rd_wr  i_type      sel_x   sel_y   op      ci    imm
+         //                           Fs1_rd Fs2_rd Fd_wr Rs1_rd Rs2_rd Rd_wr  ig_type     sel_x   sel_y   op      ci    imm
          if (i[6:2] == 5'b01101)
          begin
             `ifdef H_LUI
@@ -784,7 +784,7 @@ module decode_core
          if (i[6:2] == 5'b11000)
          begin
             // number of bits         1      1      1     1      1      1      4           2       2       4       1     32
-            //                        Fs1_rd Fs2_rd Fd_wr Rs1_rd Rs2_rd Rd_wr  i_type      sel_x   sel_y   op      ci    imm
+            //                        Fs1_rd Fs2_rd Fd_wr Rs1_rd Rs2_rd Rd_wr  ig_type     sel_x   sel_y   op      ci    imm
             case(funct3)
                0: cntrl_sigs =      '{1'b0,  1'b0,  1'b0, 1'b1,  1'b1,  1'b0,  BR_INSTR,   BS_PC,  BS_IMM, B_ADD , 1'b0, b_imm    };        // BEQ      32'b???????_?????_?????_000_?????_1100011
                1: cntrl_sigs =      '{1'b0,  1'b0,  1'b0, 1'b1,  1'b1,  1'b0,  BR_INSTR,   BS_PC,  BS_IMM, B_ADD , 1'b0, b_imm    };        // BNE      32'b???????_?????_?????_001_?????_1100011
@@ -797,7 +797,7 @@ module decode_core
 
          // ************************************************************************** JALR  instruction
             // number of bits         1      1      1     1      1      1      4           2       2       4       1     32
-            //                        Fs1_rd Fs2_rd Fd_wr Rs1_rd Rs2_rd Rd_wr  i_type      sel_x   sel_y   op      ci    imm
+            //                        Fs1_rd Fs2_rd Fd_wr Rs1_rd Rs2_rd Rd_wr  ig_type     sel_x   sel_y   op      ci    imm
          if (i[6:2] == 5'b11001)                                                                                                            //  PC = ( R[rs1] + sext(imm) ) & 0xfffffffe, R[rd] = PC + 4; (PC + 2 for compressed)
          begin
             if (funct3 == 0)
@@ -805,7 +805,7 @@ module decode_core
          end
          // ************************************************************************** JAL instruction
          // number of bits            1      1      1     1      1      1      4           2       2       4       1     32
-         //                           Fs1_rd Fs2_rd Fd_wr Rs1_rd Rs2_rd Rd_wr  i_type      sel_x   sel_y   op      ci    imm
+         //                           Fs1_rd Fs2_rd Fd_wr Rs1_rd Rs2_rd Rd_wr  ig_type     sel_x   sel_y   op      ci    imm
          if (i[6:2] == 5'b11011)                                                                                        //  PC = PC + sext(imm), R[rd] = PC + 4;
             cntrl_sigs =            '{1'b0,  1'b0,  1'b0, 1'b0,  1'b0,  1'b1,  BR_INSTR ,  BS_PC,  BS_IMM, B_JAL,  1'b0, j_imm    };        // JAL      32'b???????_?????_?????_???_?????_1101111
 
@@ -813,7 +813,7 @@ module decode_core
          if (i[6:2] == 5'b11100)
          begin
             // number of bits         1      1      1     1      1      1      4           2       2       4       1     32
-            //                        Fs1_rd Fs2_rd Fd_wr Rs1_rd Rs2_rd Rd_wr  i_type      sel_x   sel_y   op      ci    imm
+            //                        Fs1_rd Fs2_rd Fd_wr Rs1_rd Rs2_rd Rd_wr  ig_type     sel_x   sel_y   op      ci    imm
             case (funct3)
             0:
             begin
@@ -852,7 +852,7 @@ module decode_core
          // ************************************************************************** Floating Point instructions
          `ifdef ext_F // RV32F instructions
          // number of bits            1      1      1     1      1      1      4           2       2       4       1     32
-         //                           Fs1_rd Fs2_rd Fd_wr Rs1_rd Rs2_rd Rd_wr  i_type      sel_x   sel_y   op      ci    imm
+         //                           Fs1_rd Fs2_rd Fd_wr Rs1_rd Rs2_rd Rd_wr  ig_type     sel_x   sel_y   op      ci    imm
          if ((i[6:2] == 5'b00001) && (funct3 == 3'b010))
             cntrl_sigs =            '{1'b0,  1'b0,  1'b1, 1'b1,  1'b0,  1'b0,  SPFP_INSTR, FM_RS1, FM_IMM, F_LW,   1'b0, i_imm    };        // FLW         32'b????????????__?????_010_?????_0000111
          if ((i[6:2] == 5'b01001) && (funct3 == 3'b010))
@@ -914,7 +914,7 @@ module decode_core
       else // 48, 64, etc... instruction  ILLEGAL for this CPU
       begin
          // number of bits            1      1      1     1      1      1      4           2       2       4       1     32
-         //                           Fs1_rd Fs2_rd Fd_wr Rs1_rd Rs2_rd Rd_wr  i_type      sel_x   sel_y   op      ci    imm
+         //                           Fs1_rd Fs2_rd Fd_wr Rs1_rd Rs2_rd Rd_wr  ig_type     sel_x   sel_y   op      ci    imm
             cntrl_sigs =            '{1'b0,  1'b0,  1'b0, 1'b0,  1'b0,  1'b0,  ILL_INSTR,  AM_IMM, AM_IMM, A_ADD,  1'b0, 32'd0    };
       end
    end

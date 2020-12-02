@@ -22,8 +22,8 @@ import cpu_params_pkg::*;
 
    typedef int unsigned u_int;
 
-   // UNKNOWN_INSTR = 0 default until decoded
-   typedef enum logic [3:0] {ILL_INSTR, ALU_INSTR, BR_INSTR, IM_INSTR, IDR_INSTR, HINT_INSTR, SYS_INSTR, CSR_INSTR, LD_INSTR, ST_INSTR, SPFP_INSTR} I_TYPE;
+   // Instruction Group type
+   typedef enum logic [3:0] {ILL_INSTR, ALU_INSTR, BR_INSTR, IM_INSTR, IDR_INSTR, HINT_INSTR, SYS_INSTR, CSR_INSTR, LD_INSTR, ST_INSTR, SPFP_INSTR} IG_TYPE;
 
    typedef enum logic [2:0] {CSRRW=1,CSRRS,CSRRC,CSRRWI=5,CSRRSI,CSRRCI} CSR_TYPE;  // see funct3 bits in Zicsr table - riscv-spec.pdf p. 131
 
@@ -112,7 +112,7 @@ import cpu_params_pkg::*;
       logic                   Rs1_rd;
       logic                   Rs2_rd;
       logic                   Rd_wr;
-      I_TYPE                  i_type;
+      IG_TYPE                 ig_type;
       SEL_TYPE                sel_x;
       SEL_TYPE                sel_y;
       logic       [OP_SZ-1:0] op;
@@ -131,7 +131,7 @@ import cpu_params_pkg::*;
       logic                   Fs2_rd;
       logic                   Fd_wr;
       `endif
-      I_TYPE                  i_type;
+      IG_TYPE                 ig_type;
       SEL_TYPE                sel_x;
       SEL_TYPE                sel_y;
       logic       [OP_SZ-1:0] op;
@@ -191,7 +191,7 @@ import cpu_params_pkg::*;
       logic                   ci;               // 1 = compressed 16-bit instruction, 0 = 32 bit instruction
       logic       [PC_SZ-1:0] predicted_addr;
       logic       [PC_SZ-1:0] br_pc;
-      I_TYPE                  i_type;
+      IG_TYPE                 ig_type;
       logic       [OP_SZ-1:0] op_type;
 
       // GPR/FPR information (gets pased to MEM stage which passes it to WB stage)
@@ -218,7 +218,7 @@ import cpu_params_pkg::*;
       logic                   mispre;
       logic                   ci;               // 1 = compressed 16-bit instruction, 0 = 32 bit instruction
       logic       [PC_SZ-1:0] br_pc;
-      I_TYPE                  i_type;
+      IG_TYPE                 ig_type;
       logic       [OP_SZ-1:0] op_type;
       logic                   mio_ack_fault;
 

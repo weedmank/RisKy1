@@ -499,22 +499,16 @@ module RisKy1_core
    );
 
    // 5th Stage = Write Back Stage
-   logic [PC_SZ-1:0] trap_pc;                                                 // trap vector handler address.
-   `ifdef ext_N
-   logic             interrupt_flag;                                          // 1 = take an interrupt trap
-   logic   [RSZ-1:0] interrupt_cause;                                         // value specifying what type of interrupt
-   `endif
    WB_2_CSR_wr_intf  csr_wr_bus();
    wb WB
    (
+      `ifdef ext_N
       .clk_in(clk_in),                                                        // Input:  system clock (ONLY needed for assertion testing)
+      .ext_irq(ext_irq),                                                      // Input:   External Interrupt - this affects cpu_halt signal
+      `endif
       .reset_in(reset_in),                                                    // Input:  system reset
 
       .cpu_halt(cpu_halt),                                                    // Output:  halt CPU operation if TRUE
-
-      `ifdef ext_N
-      .ext_irq(ext_irq),                                                      // Input:   External Interrupt - this affects cpu_halt signal
-      `endif
 
       // flush pipeline/reload PC signals
       .rld_pc_flag(wb_rld_pc_flag),                                           // Output:  1 = flush pipeline & reload PC with mem_rld_pc_addr
@@ -538,20 +532,20 @@ module RisKy1_core
       // interface to GPR
       .gpr_bus(gpr_bus),
 
-      // interface to CSR
-      .csr_wr_bus(csr_wr_bus),
-
       // signals shared between CSR and WB stage
-      .csr_wb_bus(csr_wb_bus),
+      .csr_wb_bus(csr_wb_bus),                                                // master ->
+
+      // interface to CSR
+      .csr_wr_bus(csr_wr_bus),                                                // master ->
 
       // signals from WB stage
-      .EV_EXC_bus(EV_EXC_bus)                                                 // Output: needed by CSR
+      .EV_EXC_bus(EV_EXC_bus)                                                 // // master -> needed by CSR
    );
 
-   csr CSR
+   csr CSREGS
    (
       .clk_in(clk_in),
-      .reset_in,
+      .reset_in(reset_in),
 
       .mode(mode),
 
@@ -564,14 +558,14 @@ module RisKy1_core
       .csr_exe_bus(csr_exe_bus),
 
       // signals shared between CSR and EXE stage
-      .csr_wb_bus(csr_wb_bus),
+      .csr_wb_bus(csr_wb_bus),                                                // master -> trap_pc, interrupt_flag, interrupt_cause, mode
 
       // signals from WB stage
       .EV_EXC_bus(EV_EXC_bus),                                                // Input: needed by CSR logic
 
       .mtime(mtime),                                                          // Input: mtime counter from irq module can be read through CSRs
 
-      .csr_wr_bus(csr_wr_bus),                                                // Write port used by WB stage
+      .csr_wr_bus(csr_wr_bus),                                                // slave <- Write port used by WB stage
 
       .csr_rd_bus(csr_rd_bus),                                                // Read port used by CSR Functional Unit inside EXE stage
 

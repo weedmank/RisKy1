@@ -22,10 +22,6 @@ package RV_EMU_params_pkg;
 import cpu_params_pkg::*;
 import cpu_structs_pkg::*;
 
-typedef enum logic [4:0]
-   { EMU_UNKNOWN, EMU_ILLEGAL16, EMU_ILLEGAL32, EMU_ILLEGAL48, EMU_HINT, EMU_RES, EMU_LOAD, EMU_FENCE, EMU_REG_IMM, EMU_AUIPC, EMU_REG_REG, EMU_STORE, EMU_LUI, EMU_JALR,
-      EMU_BXX, EMU_JAL, EMU_ECALL, EMU_EBREAK, EMU_URET, EMU_SRET, EMU_WFI, EMU_MRET, EMU_CSR, EMU_MULT, EMU_DIV, EMU_REM
-   } GROUP_TYPE;
 
 typedef
  enum

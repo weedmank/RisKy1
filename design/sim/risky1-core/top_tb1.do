@@ -33,71 +33,71 @@
 # NOTE1: If SIM_DEBUG is needed in one group, then it should be used in all groups. Same reasoning goes for use_xxx
 # NOTE2: All +SIM_DEBUG, +BIND_ASSERTS defines should be removed if doing synthesis for FPGA or ASIC
 
-# Package Files
-vlog  -sv -hazards +define+ext_M+ext_N+ext_S+ext_U+SIM_DEBUG                     +incdir+../../src/includes    ../../src/pkg/logic_params_pkg.sv
-vlog  -sv -hazards +define+ext_M+ext_N+ext_S+ext_U+SIM_DEBUG                     +incdir+../../src/includes    ../../src/pkg/functions_pkg.sv
-vlog  -sv -hazards +define+ext_M+ext_N+ext_S+ext_U+SIM_DEBUG                     +incdir+../../src/includes    ../../src/pkg/cpu_params_pkg.sv
-vlog  -sv -hazards +define+ext_M+ext_N+ext_S+ext_U+SIM_DEBUG                     +incdir+../../src/includes    ../../src/pkg/cpu_structs_pkg.sv
-vlog  -sv -hazards +define+ext_M+ext_N+ext_S+ext_U+SIM_DEBUG                                                   ../../src/emu/RV_EMU_params_pkg.sv
+# Package Files +ext_M+ext_N+ext_U+ext_S
+vlog  -sv -hazards +define+ext_M+ext_S+ext_U+ext_N+SIM_DEBUG                     +incdir+../../src/includes    ../../src/pkg/logic_params_pkg.sv
+vlog  -sv -hazards +define+ext_M+ext_S+ext_U+ext_N+SIM_DEBUG                     +incdir+../../src/includes    ../../src/pkg/functions_pkg.sv
+vlog  -sv -hazards +define+ext_M+ext_S+ext_U+ext_N+SIM_DEBUG                     +incdir+../../src/includes    ../../src/pkg/cpu_params_pkg.sv
+vlog  -sv -hazards +define+ext_M+ext_S+ext_U+ext_N+SIM_DEBUG                     +incdir+../../src/includes    ../../src/pkg/cpu_structs_pkg.sv
+vlog  -sv -hazards +define+ext_M+ext_S+ext_U+ext_N+SIM_DEBUG                                                   ../../src/emu/RV_EMU_params_pkg.sv
 
 # Interfaces
-vlog  -sv -hazards +define+ext_M+ext_N+ext_S+ext_U+SIM_DEBUG                                                   ../../src/cpu_src/cpu_intf.sv
+vlog  -sv -hazards +define+ext_M+ext_S+ext_U+ext_N+SIM_DEBUG                                                   ../../src/cpu_src/cpu_intf.sv
 
 # Debug Files
-vlog  -sv          +define+ext_M+ext_N+ext_S+ext_U+SIM_DEBUG                                                   ../../src/debug/disasm_RV.sv
+vlog  -sv          +define+ext_M+ext_S+ext_U+ext_N+SIM_DEBUG                                                   ../../src/debug/disasm_RV.sv
 
 # RTL Synthesizable Files
-vlog  -sv -hazards +define+ext_M+ext_N+ext_S+ext_U+SIM_DEBUG  +cover                                           ../../src/cpu_src/alu_fu.sv
-vlog  -sv -hazards +define+ext_M+ext_N+ext_S+ext_U+SIM_DEBUG  +cover                                           ../../src/cpu_src/br_fu.sv
-vlog  -sv -hazards +define+ext_M+ext_N+ext_S+ext_U+SIM_DEBUG  +cover                                           ../../src/cpu_src/csr.sv
-vlog  -sv -hazards +define+ext_M+ext_N+ext_S+ext_U+SIM_DEBUG  +cover                                           ../../src/cpu_src/csr_av_rdata.sv
-vlog  -sv -hazards +define+ext_M+ext_N+ext_S+ext_U+SIM_DEBUG  +cover                                           ../../src/cpu_src/csr_fu.sv
-vlog  -sv -hazards +define+ext_M+ext_N+ext_S+ext_U+SIM_DEBUG  +cover                                           ../../src/cpu_src/csr_lo_cnt.sv
-vlog  -sv -hazards +define+ext_M+ext_N+ext_S+ext_U+SIM_DEBUG  +cover                                           ../../src/cpu_src/csr_std_wr.sv
-vlog  -sv -hazards +define+ext_M+ext_N+ext_S+ext_U+SIM_DEBUG  +cover                                           ../../src/cpu_src/csr_nxt_reg.sv
-vlog  -sv -hazards +define+ext_M+ext_N+ext_S+ext_U+SIM_DEBUG  +cover                                           ../../src/cpu_src/decode.sv
-vlog  -sv -hazards +define+ext_M+ext_N+ext_S+ext_U+SIM_DEBUG  +cover                                           ../../src/cpu_src/decode_core.sv
-vlog  -sv -hazards +define+ext_M+ext_N+ext_S+ext_U+SIM_DEBUG  +cover                                           ../../src/cpu_src/execute.sv
-vlog  -sv -hazards +define+ext_M+ext_N+ext_S+ext_U+SIM_DEBUG  +cover                                           ../../src/cpu_src/fetch.sv
-vlog  -sv -hazards +define+ext_M+ext_N+ext_S+ext_U+SIM_DEBUG  +cover                                           ../../src/cpu_src/fpr.sv
-vlog  -sv -hazards +define+ext_M+ext_N+ext_S+ext_U+SIM_DEBUG  +cover                                           ../../src/cpu_src/gpr.sv
-vlog  -sv -hazards +define+ext_M+ext_N+ext_S+ext_U+SIM_DEBUG  +cover                                           ../../src/cpu_src/idr_fu.sv
-vlog  -sv -hazards +define+ext_M+ext_N+ext_S+ext_U+SIM_DEBUG  +cover                                           ../../src/cpu_src/im_fu.sv
-vlog  -sv -hazards +define+ext_M+ext_N+ext_S+ext_U+SIM_DEBUG  +cover                                           ../../src/cpu_src/irq.sv
-vlog  -sv -hazards +define+ext_M+ext_N+ext_S+ext_U+SIM_DEBUG  +cover                                           ../../src/cpu_src/ls_fu.sv
-vlog  -sv -hazards +define+ext_M+ext_N+ext_S+ext_U+SIM_DEBUG  +cover                                           ../../src/cpu_src/mem.sv
-vlog  -sv -hazards +define+ext_M+ext_N+ext_S+ext_U+SIM_DEBUG  +cover                                           ../../src/cpu_src/mode_irq.sv
-vlog  -sv -hazards +define+ext_M+ext_N+ext_S+ext_U+SIM_DEBUG  +cover                                           ../../src/cpu_src/pipe.sv
-vlog  -sv -hazards +define+ext_M+ext_N+ext_S+ext_U+SIM_DEBUG  +cover                                           ../../src/cpu_src/RisKy1_core.sv
-vlog  -sv -hazards +define+ext_M+ext_N+ext_S+ext_U+SIM_DEBUG  +cover                                           ../../src/cpu_src/sdiv_N_by_N.sv
-vlog  -sv -hazards +define+ext_M+ext_N+ext_S+ext_U+SIM_DEBUG  +cover                                           ../../src/cpu_src/spfp_fu.sv
-vlog  -sv -hazards +define+ext_M+ext_N+ext_S+ext_U+SIM_DEBUG  +cover                                           ../../src/cpu_src/vedic_mult16x16.v
-vlog  -sv -hazards +define+ext_M+ext_N+ext_S+ext_U+SIM_DEBUG  +cover                                           ../../src/cpu_src/vedic_mult32x32.v
-vlog  -sv -hazards +define+ext_M+ext_N+ext_S+ext_U+SIM_DEBUG  +cover                                           ../../src/cpu_src/wb.sv
-vlog  -sv -hazards +define+ext_M+ext_N+ext_S+ext_U+SIM_DEBUG  +cover                                           ../../src/emu/RV_EMU_core.svp
+vlog  -sv -hazards +define+ext_M+ext_S+ext_U+ext_N+SIM_DEBUG  +cover                                           ../../src/cpu_src/alu_fu.sv
+vlog  -sv -hazards +define+ext_M+ext_S+ext_U+ext_N+SIM_DEBUG  +cover                                           ../../src/cpu_src/br_fu.sv
+vlog  -sv -hazards +define+ext_M+ext_S+ext_U+ext_N+SIM_DEBUG  +cover                                           ../../src/cpu_src/csr.sv
+vlog  -sv -hazards +define+ext_M+ext_S+ext_U+ext_N+SIM_DEBUG  +cover                                           ../../src/cpu_src/csr_av_rdata.sv
+vlog  -sv -hazards +define+ext_M+ext_S+ext_U+ext_N+SIM_DEBUG  +cover                                           ../../src/cpu_src/csr_fu.sv
+vlog  -sv -hazards +define+ext_M+ext_S+ext_U+ext_N+SIM_DEBUG  +cover                                           ../../src/cpu_src/csr_lo_cnt.sv
+vlog  -sv -hazards +define+ext_M+ext_S+ext_U+ext_N+SIM_DEBUG  +cover                                           ../../src/cpu_src/csr_std_wr.sv
+vlog  -sv -hazards +define+ext_M+ext_S+ext_U+ext_N+SIM_DEBUG  +cover                                           ../../src/cpu_src/csr_nxt_reg.sv
+vlog  -sv -hazards +define+ext_M+ext_S+ext_U+ext_N+SIM_DEBUG  +cover                                           ../../src/cpu_src/decode.sv
+vlog  -sv -hazards +define+ext_M+ext_S+ext_U+ext_N+SIM_DEBUG  +cover                                           ../../src/cpu_src/decode_core.sv
+vlog  -sv -hazards +define+ext_M+ext_S+ext_U+ext_N+SIM_DEBUG  +cover                                           ../../src/cpu_src/execute.sv
+vlog  -sv -hazards +define+ext_M+ext_S+ext_U+ext_N+SIM_DEBUG  +cover                                           ../../src/cpu_src/fetch.sv
+vlog  -sv -hazards +define+ext_M+ext_S+ext_U+ext_N+SIM_DEBUG  +cover                                           ../../src/cpu_src/fpr.sv
+vlog  -sv -hazards +define+ext_M+ext_S+ext_U+ext_N+SIM_DEBUG  +cover                                           ../../src/cpu_src/gpr.sv
+vlog  -sv -hazards +define+ext_M+ext_S+ext_U+ext_N+SIM_DEBUG  +cover                                           ../../src/cpu_src/idr_fu.sv
+vlog  -sv -hazards +define+ext_M+ext_S+ext_U+ext_N+SIM_DEBUG  +cover                                           ../../src/cpu_src/im_fu.sv
+vlog  -sv -hazards +define+ext_M+ext_S+ext_U+ext_N+SIM_DEBUG  +cover                                           ../../src/cpu_src/irq.sv
+vlog  -sv -hazards +define+ext_M+ext_S+ext_U+ext_N+SIM_DEBUG  +cover                                           ../../src/cpu_src/ls_fu.sv
+vlog  -sv -hazards +define+ext_M+ext_S+ext_U+ext_N+SIM_DEBUG  +cover                                           ../../src/cpu_src/mem.sv
+vlog  -sv -hazards +define+ext_M+ext_S+ext_U+ext_N+SIM_DEBUG  +cover                                           ../../src/cpu_src/mode_irq.sv
+vlog  -sv -hazards +define+ext_M+ext_S+ext_U+ext_N+SIM_DEBUG  +cover                                           ../../src/cpu_src/pipe.sv
+vlog  -sv -hazards +define+ext_M+ext_S+ext_U+ext_N+SIM_DEBUG  +cover                                           ../../src/cpu_src/RisKy1_core.sv
+vlog  -sv -hazards +define+ext_M+ext_S+ext_U+ext_N+SIM_DEBUG  +cover                                           ../../src/cpu_src/sdiv_N_by_N.sv
+vlog  -sv -hazards +define+ext_M+ext_S+ext_U+ext_N+SIM_DEBUG  +cover                                           ../../src/cpu_src/spfp_fu.sv
+vlog  -sv -hazards +define+ext_M+ext_S+ext_U+ext_N+SIM_DEBUG  +cover                                           ../../src/cpu_src/vedic_mult16x16.v
+vlog  -sv -hazards +define+ext_M+ext_S+ext_U+ext_N+SIM_DEBUG  +cover                                           ../../src/cpu_src/vedic_mult32x32.v
+vlog  -sv -hazards +define+ext_M+ext_S+ext_U+ext_N+SIM_DEBUG  +cover                                           ../../src/cpu_src/wb.sv
+vlog  -sv -hazards +define+ext_M+ext_S+ext_U+ext_N+SIM_DEBUG  +cover                                           ../../src/emu/RV_EMU_core.svp
 
 
 # no +define+ to be used with caches
 # caches are synthesizable but not practical as they produce flip flops for memory - work in progress to change them
-vlog  -sv -hazards +define+ext_M+ext_N+ext_S+ext_U+SIM_DEBUG                                                   ../../src/peripherals/peripheral_intf.sv
+vlog  -sv -hazards +define+ext_M+ext_S+ext_U+ext_N+SIM_DEBUG                                                   ../../src/peripherals/peripheral_intf.sv
 vlog  -sv -hazards                                                                                             ../../src/peripherals/L1_dcache.sv
 vlog  -sv -hazards                                                                                             ../../src/peripherals/L1_icache.sv
 vlog  -sv -hazards                                                                                             ../../src/peripherals/cache_arbiter.sv
 
 # Models - non synthesizable. Note: arb_sysmem_model affectively substitutes for cache_arbiter + sys_mem_model
-vlog  -sv -hazards +define+TEST_FILE=\"instr_tests/factorial.rom\"                                             ../../src/models/sys_mem_model.sv
+vlog  -sv -hazards +define+ext_M+ext_S+ext_U+ext_N+SIM_DEBUG+TEST_FILE=\"instr_tests/factorial.rom\"           ../../src/models/sys_mem_model.sv
 
 # Top Level Simulation File - add +BIND_ASSERTS if doing assertion testing
-#vlog  -sv -hazards +define+ext_M+ext_N+ext_S+ext_U+SIM_DEBUG+BIND_ASSERTS                                      top_tb1.sv
-vlog  -sv -hazards +define+ext_M+ext_N+ext_S+ext_U+SIM_DEBUG                                                   top_tb1.sv
+#vlog  -sv -hazards +define+ext_M+ext_S+ext_U+ext_N+SIM_DEBUG+BIND_ASSERTS                                      top_tb1.sv
+vlog  -sv -hazards +define+ext_M+ext_S+ext_U+ext_N+SIM_DEBUG                                                   top_tb1.sv
 
 # Assertion/Property Files
-vlog  -sv -hazards +define+ext_M+ext_N+ext_S+ext_U+SIM_DEBUG                                                   ../../src/sva/csr_asserts.sv
-vlog  -sv -hazards +define+ext_M+ext_N+ext_S+ext_U+SIM_DEBUG                                                   ../../src/sva/gpr_asserts.sv
-vlog  -sv -hazards +define+ext_M+ext_N+ext_S+ext_U+SIM_DEBUG                                                   ../../src/sva/mem_asserts.sv
-vlog  -sv -hazards +define+ext_M+ext_N+ext_S+ext_U+SIM_DEBUG                                                   ../../src/sva/wb_asserts.sv
-vlog  -sv -hazards +define+ext_M+ext_N+ext_S+ext_U+SIM_DEBUG                                                   ../../src/sva/pipe_asserts.sv
-vlog  -sv -hazards +define+ext_M+ext_N+ext_S+ext_U+SIM_DEBUG                                                   ../../src/sva/RV_EMU_asserts.svp
+vlog  -sv -hazards +define+ext_M+ext_S+ext_U+ext_N+SIM_DEBUG                                                   ../../src/sva/csr_asserts.sv
+vlog  -sv -hazards +define+ext_M+ext_S+ext_U+ext_N+SIM_DEBUG                                                   ../../src/sva/gpr_asserts.sv
+vlog  -sv -hazards +define+ext_M+ext_S+ext_U+ext_N+SIM_DEBUG                                                   ../../src/sva/mem_asserts.sv
+vlog  -sv -hazards +define+ext_M+ext_S+ext_U+ext_N+SIM_DEBUG                                                   ../../src/sva/wb_asserts.sv
+vlog  -sv -hazards +define+ext_M+ext_S+ext_U+ext_N+SIM_DEBUG                                                   ../../src/sva/pipe_asserts.sv
+vlog  -sv -hazards +define+ext_M+ext_S+ext_U+ext_N+SIM_DEBUG                                                   ../../src/sva/RV_EMU_asserts.svp
 
 view assertions
 view structure

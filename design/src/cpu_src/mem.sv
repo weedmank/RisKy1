@@ -159,7 +159,7 @@ module mem
    assign mem_dout.mispre              = E2M_bus.data.mispre;
    assign mem_dout.ci                  = E2M_bus.data.ci;
    assign mem_dout.br_pc               = E2M_bus.data.br_pc;
-   assign mem_dout.i_type              = E2M_bus.data.i_type;
+   assign mem_dout.ig_type             = E2M_bus.data.ig_type;
    assign mem_dout.op_type             = E2M_bus.data.op_type;
    //     mem_dout.mio_ack_fault       is created in always block below
    `ifdef ext_F
@@ -185,7 +185,7 @@ module mem
          mem_dout.Fd_wr          = E2M_bus.data.Fd_wr;
          `endif
 
-         case(E2M_bus.data.i_type)                                                  // select which functional unit output data is the appropriate one to process
+         case(E2M_bus.data.ig_type)                                                 // select which functional unit output data is the appropriate one to process
             LD_INSTR:
             begin
                mem_dout.mio_ack_fault  = MIO_ack_fault;                             // WB stage exception handling will need to know this.

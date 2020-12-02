@@ -127,7 +127,7 @@ module execute
    logic       [OP_SZ-1:0] op_type;
    logic       [PC_SZ-1:0] predicted_addr;
 
-   I_TYPE                  i_type;
+   IG_TYPE                 ig_type;
    logic                   ci;
 
 
@@ -199,7 +199,7 @@ module execute
    assign Rs1_rd        = D2E_bus.data.Rs1_rd;
    assign Rs2_rd        = D2E_bus.data.Rs2_rd;
 
-   assign i_type        = D2E_bus.data.i_type;
+   assign ig_type       = D2E_bus.data.ig_type;
    assign ci            = D2E_bus.data.ci;
 
    assign Rs1_data      = gpr[Rs1_addr];
@@ -230,7 +230,7 @@ module execute
    assign afu_bus.sel_y      = D2E_bus.data.sel_y.alu_sel;
    assign afu_bus.op         = ALU_OP_TYPE'(op_type[ALU_OP_SZ-1:0]);
 
-   assign alu_fu_done = D2E_bus.valid & (i_type == ALU_INSTR); // This functional unit only takes 1 clock cycle
+   assign alu_fu_done = D2E_bus.valid & (ig_type == ALU_INSTR); // This functional unit only takes 1 clock cycle
    alu_fu AFU
    (
       .afu_bus(afu_bus)
@@ -258,7 +258,7 @@ module execute
    assign brfu_bus.uepc        = uepc;
    `endif
 
-   assign br_fu_done = D2E_bus.valid & (i_type == BR_INSTR);  // This functional unit only takes 1 clock cycle
+   assign br_fu_done = D2E_bus.valid & (ig_type == BR_INSTR);  // This functional unit only takes 1 clock cycle
    br_fu BFU
    (
       .brfu_bus(brfu_bus)
@@ -275,7 +275,7 @@ module execute
    assign imfu_bus.Rs2_data   = Rs2D;
    assign imfu_bus.op         = IM_OP_TYPE'(op_type[IM_OP_SZ-1:0]);
 
-   assign im_fu_done = D2E_bus.valid & (i_type == IM_INSTR);  // This functional unit (currently using vedic multiplier) only takes 1 clock cycle. Note: try mult_N_by_N.sv to improve clock speed
+   assign im_fu_done = D2E_bus.valid & (ig_type == IM_INSTR);  // This functional unit (currently using vedic multiplier) only takes 1 clock cycle. Note: try mult_N_by_N.sv to improve clock speed
    im_fu IMFU
    (
       .imfu_bus(imfu_bus)
@@ -287,7 +287,7 @@ module execute
    assign idrfu_bus.Rs1_data  = Rs1D;
    assign idrfu_bus.Rs2_data  = Rs2D;
    assign idrfu_bus.op        = IDR_OP_TYPE'(op_type[IDR_OP_SZ-1:0]);
-   assign idrfu_bus.start     = D2E_bus.valid & (i_type == IDR_INSTR);
+   assign idrfu_bus.start     = D2E_bus.valid & (ig_type == IDR_INSTR);
 
    assign idr_fu_done         = idrfu_bus.done;
 
@@ -319,7 +319,7 @@ module execute
 
 
    // ----------------------------------- csrfu_bus interface
-   assign csrfu_bus.csr_valid       = (i_type == CSR_INSTR) & D2E_bus.valid;  // permission to write to the CSR
+   assign csrfu_bus.csr_valid       = (ig_type == CSR_INSTR) & D2E_bus.valid; // permission to write to the CSR
    assign csrfu_bus.csr_addr        = D2E_bus.data.imm;                       // csr_addr = CSR Address - see decode_core.sv imm field
    assign csrfu_bus.csr_avail       = csr_avail;                              // csr_addr = CSR Address - see decode_core.sv imm field
    assign csrfu_bus.csr_rd_data     = CSD;                                    // CSR read data (from csr_rd_bus.csr_rd_data or forwarding data)
@@ -329,7 +329,7 @@ module execute
    assign csrfu_bus.funct3          = D2E_bus.data.funct3;
    assign csrfu_bus.mode            = mode;
 
-   assign csr_fu_done = D2E_bus.valid & (i_type == CSR_INSTR);                // This functional unit only takes 1 clock cycle
+   assign csr_fu_done = D2E_bus.valid & (ig_type == CSR_INSTR);               // This functional unit only takes 1 clock cycle
    // Control & Status Registers
    csr_fu CSRFU
    (
@@ -348,9 +348,9 @@ module execute
 
    //************************************ System Instruction & Illegal Instructions **************
    // There are no Functional Units related to these instructions so they complete in the current clock cycle
-   assign hint_done = D2E_bus.valid & (i_type == HINT_INSTR); // These instruction types only take 1 clock cycle - unless logic changed
-   assign sys_done  = D2E_bus.valid & (i_type == SYS_INSTR);  // These instruction types only take 1 clock cycle
-   assign ill_done  = D2E_bus.valid & (i_type == ILL_INSTR);  // These instruction types only takes 1 clock cycle
+   assign hint_done = D2E_bus.valid & (ig_type == HINT_INSTR); // These instruction types only take 1 clock cycle - unless logic changed
+   assign sys_done  = D2E_bus.valid & (ig_type == SYS_INSTR);  // These instruction types only take 1 clock cycle
+   assign ill_done  = D2E_bus.valid & (ig_type == ILL_INSTR);  // These instruction types only takes 1 clock cycle
 
 
    `ifdef ext_F
@@ -361,11 +361,11 @@ module execute
    assign spfpfu_bus.Fs1_data  = Fs1D;
    assign spfpfu_bus.Fs2_data  = Fs2D;
    assign spfpfu_bus.imm       = D2E_bus.data.imm;
-   assign spfpfu_bus.sel_x     = D2E_bus.data.sel_x.spfp_sel;              // ENUM type: see cpu_structs.svh SPFP_SEL_TYPE
+   assign spfpfu_bus.sel_x     = D2E_bus.data.sel_x.spfp_sel;                 // ENUM type: see cpu_structs.svh SPFP_SEL_TYPE
    assign spfpfu_bus.sel_y     = D2E_bus.data.sel_y.spfp_sel;
-   assign spfpfu_bus.op        = SPFP_OP_TYPE'(op_type[SPFP_OP_SZ-1:0]); // cast the op type of data (bit [N:0]) to SPFP_OP_TYPE. see cpu_struts.svh
+   assign spfpfu_bus.op        = SPFP_OP_TYPE'(op_type[SPFP_OP_SZ-1:0]);      // cast the op type of data (bit [N:0]) to SPFP_OP_TYPE. see cpu_struts.svh
 
-   assign spfp_fu_start = D2E_bus.valid & (i_type == SPFP_INSTR);   // This functional unit may takes several clock cycles
+   assign spfp_fu_start = D2E_bus.valid & (ig_type == SPFP_INSTR);            // This functional unit may takes several clock cycles
    spfp_fu SPFPFU
    (
       .spfpfu_bus(spfpfu_bus) // WARNING:  There's no code yet in this module to send spfpfu data onward (via exe_dout like other instructions do) to next stage...needs to be added
@@ -382,7 +382,7 @@ module execute
    assign lsfu_bus.imm         = D2E_bus.data.imm;
    assign lsfu_bus.funct3      = D2E_bus.data.funct3;
 
-   assign ls_fu_done = D2E_bus.valid & ((i_type == LD_INSTR) | (i_type == ST_INSTR));   // This functional unit only takes 1 clock cycle
+   assign ls_fu_done = D2E_bus.valid & ((ig_type == LD_INSTR) | (ig_type == ST_INSTR));   // This functional unit only takes 1 clock cycle
 
    ls_fu LSFU
    (
@@ -476,12 +476,12 @@ module execute
 
          exe_dout.ipd               = D2E_bus.data.ipd;                             // pass on to next stage
          exe_dout.ci                = ci;                                           // 1 = compressed 16 bit instruction, 0 = 32 bit instruction
-         exe_dout.i_type            = i_type;
+         exe_dout.ig_type           = ig_type;
 
          exe_dout.op_type           = op_type;
          exe_dout.predicted_addr    = predicted_addr;
 
-         unique case(i_type)                                                        // select which functional unit output data is the appropriate one and save it
+         unique case(ig_type)                                                       // select which functional unit output data is the appropriate one and save it
             ALU_INSTR:
             begin
                exe_dout.Rd_wr    = Rd_wr & (Rd_addr != 0);                          // Writeback stage needs to know whether to write to destination register Rd

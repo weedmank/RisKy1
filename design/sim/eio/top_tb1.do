@@ -49,9 +49,12 @@ vlog  -sv          +define+SIM_DEBUG                                            
 # RTL Synthesizable Files
 vlog  -sv -hazards +define+SIM_DEBUG  +cover                                           ../../src/cpu_src/alu_fu.sv
 vlog  -sv -hazards +define+SIM_DEBUG  +cover                                           ../../src/cpu_src/br_fu.sv
-vlog  -sv -hazards +define+SIM_DEBUG  +cover             +incdir+../../src/includes    ../../src/cpu_src/csr_fu.sv
+vlog  -sv -hazards +define+SIM_DEBUG  +cover                                           ../../src/cpu_src/csr.sv
+vlog  -sv -hazards +define+SIM_DEBUG  +cover                                           ../../src/cpu_src/csr_av_rdata.sv
+vlog  -sv -hazards +define+SIM_DEBUG  +cover                                           ../../src/cpu_src/csr_fu.sv
 vlog  -sv -hazards +define+SIM_DEBUG  +cover                                           ../../src/cpu_src/csr_lo_cnt.sv
 vlog  -sv -hazards +define+SIM_DEBUG  +cover                                           ../../src/cpu_src/csr_std_wr.sv
+vlog  -sv -hazards +define+SIM_DEBUG  +cover                                           ../../src/cpu_src/csr_nxt_reg.sv
 vlog  -sv -hazards +define+SIM_DEBUG  +cover                                           ../../src/cpu_src/decode.sv
 vlog  -sv -hazards +define+SIM_DEBUG  +cover                                           ../../src/cpu_src/decode_core.sv
 vlog  -sv -hazards +define+SIM_DEBUG  +cover                                           ../../src/cpu_src/execute.sv
@@ -63,7 +66,7 @@ vlog  -sv -hazards +define+SIM_DEBUG  +cover                                    
 vlog  -sv -hazards +define+SIM_DEBUG  +cover                                           ../../src/cpu_src/irq.sv
 vlog  -sv -hazards +define+SIM_DEBUG  +cover                                           ../../src/cpu_src/ls_fu.sv
 vlog  -sv -hazards +define+SIM_DEBUG  +cover                                           ../../src/cpu_src/mem.sv
-vlog  -sv -hazards +define+SIM_DEBUG  +cover                                           ../../src/cpu_src/mem_io.sv
+vlog  -sv -hazards +define+SIM_DEBUG  +cover                                           ../../src/cpu_src/mode_irq.sv
 vlog  -sv -hazards +define+SIM_DEBUG  +cover                                           ../../src/cpu_src/pipe.sv
 vlog  -sv -hazards +define+SIM_DEBUG  +cover                                           ../../src/cpu_src/RisKy1_core.sv
 vlog  -sv -hazards +define+SIM_DEBUG  +cover                                           ../../src/cpu_src/sdiv_N_by_N.sv
@@ -79,15 +82,15 @@ vlog  -sv -hazards +define+SIM_DEBUG  +cover                                    
 # no +define+ to be used with caches
 # caches are synthesizable but not practical as they produce flip flops for memory - work in progress to change them
 vlog  -sv -hazards +define+SIM_DEBUG                                                   ../../src/peripherals/peripheral_intf.sv
-vlog  -sv -hazards                                                                                             ../../src/peripherals/L1_dcache.sv
-vlog  -sv -hazards                                                                                             ../../src/peripherals/L1_icache.sv
-vlog  -sv -hazards                                                                                             ../../src/peripherals/cache_arbiter.sv
+vlog  -sv -hazards                                                                     ../../src/peripherals/L1_dcache.sv
+vlog  -sv -hazards                                                                     ../../src/peripherals/L1_icache.sv
+vlog  -sv -hazards                                                                     ../../src/peripherals/cache_arbiter.sv
 
 # Models - non synthesizable. Note: arb_sysmem_model affectively substitutes for cache_arbiter + sys_mem_model
 vlog  -sv -hazards +define+TEST_FILE=\"instr_tests/eio.hex\"                                                   ../../src/models/sys_mem_model.sv
 
 # Top Level Simulation File - add +BIND_ASSERTS if doing assertion testing
-#vlog  -sv -hazards +define+SIM_DEBUG+BIND_ASSERTS                                      top_tb1.sv
+#vlog  -sv -hazards +define+SIM_DEBUG+BIND_ASSERTS                                       top_tb1.sv
 vlog  -sv -hazards +define+SIM_DEBUG                                                    top_tb1.sv
 
 # Assertion/Property Files

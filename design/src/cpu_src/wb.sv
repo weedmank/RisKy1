@@ -25,17 +25,15 @@ import cpu_structs_pkg::*;
 
 module wb
 (
-   `ifdef SIM_DEBUG
+   `ifdef ext_N
    input    logic                         clk_in,                                   // Input:   clock only needed during SIM_DEBUG for ABV (Assertion Based Verification)
+   // interrupt sources
+   input    logic                         ext_irq,                                  // Input:   External Interrupt
    `endif
+   
    input    logic                         reset_in,
 
    output   logic                         cpu_halt,                                 // Output:  disable CPU operations by not allowing any more input to this stage
-
-   // interrupt sources
-   `ifdef ext_N
-   input    logic                         ext_irq,                                  // Input:   External Interrupt
-   `endif
 
    // Fetch PC reload signals
    output   logic                         rld_pc_flag,                              // Output:  Cause the Fetch unit to reload the PC
@@ -77,7 +75,7 @@ module wb
    logic                   mispre;
    logic                   ci;
    logic       [PC_SZ-1:0] br_pc;
-   I_TYPE                  i_type;
+   IG_TYPE                 ig_type;
    logic       [OP_SZ-1:0] op_type;
    logic                   mio_ack_fault;
 
@@ -121,7 +119,7 @@ module wb
    assign mispre              = M2W_bus.data.mispre;
    assign ci                  = M2W_bus.data.ci;
    assign br_pc               = M2W_bus.data.br_pc;
-   assign i_type              = M2W_bus.data.i_type;                                // override default values
+   assign ig_type             = M2W_bus.data.ig_type;                               // override default values
    assign op_type             = M2W_bus.data.op_type;
    assign mio_ack_fault       = M2W_bus.data.mio_ack_fault;
 
@@ -284,7 +282,7 @@ assign trigger_wfi = FALSE;      //!!!!!!!!!!!!!!!!! temporary !!!!!!!!!!!!!!!!!
          end
          else
          `endif
-         unique case(i_type)                                                        // select which functional unit output data is the appropriate one to process
+         unique case(ig_type)                                                       // select which functional unit output data is the appropriate one to process
             ILL_INSTR:
             begin
                rld_pc_flag             = TRUE;                                      // flush pipeline and reload new fetch address

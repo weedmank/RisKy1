@@ -17,6 +17,7 @@
 // Designer      :  Kirk Weedman - kirk@hdlexpress.com
 // ----------------------------------------------------------------------------------------------------
 
+   // NOTE: this code is inserted (included) within the wv.sv code
    SPFP_INSTR:
    begin
       case(data_in.op)

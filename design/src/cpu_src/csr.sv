@@ -12,7 +12,7 @@
 // Project       :  RisKy1 - new 5 stage pipelined RISC-V ISA based CPU tailored to the RISC-V RV32IM
 // Editor        :  Notepad++
 // File          :  csr.sv
-// Description   :  Contains CSR Write logic for Machine mode.  Used in csr_fu.sv
+// Description   :  Contains CSR Write logic for Machine mode.
 //               :
 // Designer      :  Kirk Weedman - kirk@hdlexpress.com
 // ----------------------------------------------------------------------------------------------------

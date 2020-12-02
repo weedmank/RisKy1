@@ -164,7 +164,7 @@ add wave -noupdate -group IRQ -radix hexadecimal /top_tb1/RK1/IRQ/mtimecmp_lo_wr
 add wave -noupdate -group IRQ -radix hexadecimal /top_tb1/RK1/IRQ/mtimecmp_hi_wr
 add wave -noupdate -group IRQ -radix hexadecimal /top_tb1/RK1/IRQ/mmr_wr_data
 add wave -noupdate -group IRQ -radix hexadecimal /top_tb1/RK1/IRQ/msip_wr
-add wave -noupdate -group IRQ -radix hexadecimal /top_tb1/RK1/IRQ/time_irq
+add wave -noupdate -group IRQ -radix hexadecimal /top_tb1/RK1/IRQ/timer_irq
 add wave -noupdate -group IRQ -radix hexadecimal /top_tb1/RK1/IRQ/sw_irq
 add wave -noupdate -group IRQ -radix hexadecimal /top_tb1/RK1/IRQ/mtime
 add wave -noupdate -group IRQ -radix hexadecimal /top_tb1/RK1/IRQ/mtimecmp
