@@ -31,7 +31,7 @@ module execute
    input   logic                          cpu_halt,                        // Input:  cause CPU to stop processing instructions & data
 
    // signals shared between EXE stage and csr.sv
-   CSR_EXE_intf                           csr_exe_bus,
+   CSR_EXE_intf.slave                     csr_exe_bus,
 
    // pipeline flush signal
    input    logic                         pipe_flush,                      // Input:   1 = Flush this segment of the pipeline
@@ -311,16 +311,18 @@ module execute
    logic         [RSZ-1:0] nxt_csr_rd_data;  // data to use as forwarding value for CSR[csr_addr]
    logic                   ill_csr_access;   // 1 = illegal csr access
    logic            [11:0] ill_csr_addr;
+   
+   assign csr_addr                     = D2E_bus.data.imm;
    // ----------------------------------- csr_rd_bus interface
    // Read CSR access port signals to/from CSR module (csr.sv)
-   assign csr_rd_bus.csr_rd_addr       = csr_addr;                            // Output:  to csr.sv
-   assign csr_avail                    = csr_rd_bus.csr_rd_avail;             // Input:   from csr.sv
-   // see forwarding logic that uses   = csr_rd_bus.csr_rd_data;              // Input:   from csr.sv
+   assign csr_rd_bus.csr_rd_addr    = csr_addr;                            // Output:  to csr.sv
+   assign csr_avail                 = csr_rd_bus.csr_rd_avail;             // Input:   from csr.sv
+   // see forwarding logic that uses  csr_rd_bus.csr_rd_data;              // Input:   from csr.sv
 
 
    // ----------------------------------- csrfu_bus interface
    assign csrfu_bus.csr_valid       = (ig_type == CSR_INSTR) & D2E_bus.valid; // permission to write to the CSR
-   assign csrfu_bus.csr_addr        = D2E_bus.data.imm;                       // csr_addr = CSR Address - see decode_core.sv imm field
+   assign csrfu_bus.csr_addr        = csr_addr;                               // csr_addr = CSR Address - see decode_core.sv imm field
    assign csrfu_bus.csr_avail       = csr_avail;                              // csr_addr = CSR Address - see decode_core.sv imm field
    assign csrfu_bus.csr_rd_data     = CSD;                                    // CSR read data (from csr_rd_bus.csr_rd_data or forwarding data)
    assign csrfu_bus.Rd_addr         = Rd_addr;                                // Rd address value
