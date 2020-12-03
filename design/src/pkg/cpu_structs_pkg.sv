@@ -29,7 +29,7 @@ import cpu_params_pkg::*;
 
    // ----------------------------------------------- Operation types -----------------------------------------------
    // Note: size of field in DEC_2_EXE structure must be the largest size of SYS_OP_TYPE, ALU_OP_TYPE, or SPFP_OP_TYPE
-   typedef enum {ECALL, EBREAK, FENCE, FENCEI, WFI} SYS_OP_TYPE;
+   typedef enum [2:0] {ECALL, EBREAK, FENCE, FENCEI, WFI} SYS_OP_TYPE;
 
    // ALU instruction encodings
    typedef enum logic [3:0] {A_ADD, A_SUB, A_AND, A_OR, A_XOR, A_SLL, A_SRL, A_SRA, A_SLT, A_SLTU} ALU_OP_TYPE;
@@ -69,14 +69,14 @@ import cpu_params_pkg::*;
 
    // ----------------------------------------------- Selection types -----------------------------------------------
    // ALU selection (i.e. sel_x or sel_y) is as follows
-   typedef enum {AM_RS1, AM_IMM, AM_RS2, AM_PC } ALU_SEL_TYPE;
+   typedef enum logic [1:0] {AM_RS1, AM_IMM, AM_RS2, AM_PC } ALU_SEL_TYPE;
 
    // Branch selection (i.e. sel_x or sel_y) is as follows
-   typedef enum {BS_RS1, BS_IMM, BS_PC } BR_SEL_TYPE;
+   typedef enum logic [1:0] {BS_RS1, BS_IMM, BS_PC } BR_SEL_TYPE;
 
 
    // SPFP_FU selection (i.e. sel_x or sel_y) is as follows
-   typedef enum {FM_RS1, FM_IMM, FM_RS2 } SPFP_SEL_TYPE;
+   typedef enum logic [1:0] {FM_RS1, FM_IMM, FM_RS2 } SPFP_SEL_TYPE;
 
    typedef union packed {
       ALU_SEL_TYPE   alu_sel;
@@ -189,7 +189,6 @@ import cpu_params_pkg::*;
       logic                   mis;
       logic                   mispre;
       logic                   ci;               // 1 = compressed 16-bit instruction, 0 = 32 bit instruction
-      logic       [PC_SZ-1:0] predicted_addr;
       logic       [PC_SZ-1:0] br_pc;
       IG_TYPE                 ig_type;
       logic       [OP_SZ-1:0] op_type;
@@ -312,6 +311,7 @@ import cpu_params_pkg::*;
    } LSQ_Data;
 `endif
 
+
    // 12'h300 = 12'b0000_0000_0000  ustatus     (read-write)  user mode
    //  31        22   21  20   19   18   17   16:15 14:13 12:11  10:9    8    7     6     5     4      3     2     1    0
    // {sd, 8'b0, tsr, tw, tvm, mxr, sum, mprv,   xs,   fs,  mpp, 2'b0,  spp, mpie, 1'b0, spie, upie,  mie, 1'b0,  sie, uie};
@@ -408,6 +408,160 @@ import cpu_params_pkg::*;
       logic             [2:0] WPRI_3;
       logic                   usip;
    } UIP_SIGS;
+
+   // ------------------------ Machine mode CSRs ------------------------
+   typedef struct packed {
+      MSTATUS_SIGS                           mstatus;          // 12'h300
+      logic                        [RSZ-1:0] misa;             // 12'h301
+      `ifdef ext_S   // "In systems with S-mode, the medeleg and mideleg registers must exist,..." see p. 28 riscv-privileged.pdf, csr_wr_mach.svh
+      logic                        [RSZ-1:0] medeleg;          // 12'h302
+      logic                        [RSZ-1:0] mideleg;          // 12'h303
+      `else // !ext_S
+         `ifdef ext_U
+         `ifdef ext_N
+         logic                     [RSZ-1:0] medeleg;          // 12'h302
+         logic                     [RSZ-1:0] mideleg;          // 12'h303
+         `endif
+         `endif
+      `endif
+      `ifdef ext_N
+      MIE_SIGS                               mie;              // 12'h304
+      `endif
+      logic                        [RSZ-1:0] mtvec;            // 12'h305
+      logic                        [RSZ-1:0] mcounteren;       // 12'h306
+      logic                        [RSZ-1:0] mcountinhibit;    // 12'h320
+      `ifdef use_MHPM
+      logic   [NUM_MHPM-1:0] [EV_SEL_SZ-1:0] mhpmevent;        // 12'h323 - 12'h33F, mhpmevent3 - mhpmevent31
+      `endif
+   
+      logic                         [RSZ-1:0] mscratch;        // 12'h340
+      logic                       [PC_SZ-1:0] mepc;            // 12'h341
+      logic                         [RSZ-1:0] mcause;          // 12'h342
+      logic                         [RSZ-1:0] mtval;           // 12'h343
+      `ifdef ext_N
+      MIP_SIGS                                mip;             // 12'h344
+      `endif
+   
+      `ifdef USE_PMPCFG
+      logic                         [RSZ-1:0] pmpcfg0;         // 12'h3A0
+      logic                         [RSZ-1:0] pmpcfg1;         // 12'h3A1
+      logic                         [RSZ-1:0] pmpcfg2;         // 12'h3A2
+      logic                         [RSZ-1:0] pmpcfg3;         // 12'h3A3
+      `endif
+   
+      `ifdef PMP_ADDR0
+      logic                         [RSZ-1:0] pmpaddr0;        // 12'h3B0
+      `endif
+      `ifdef PMP_ADDR1
+      logic                         [RSZ-1:0] pmpaddr1;        // 12'h3B1
+      `endif
+      `ifdef PMP_ADDR2
+      logic                         [RSZ-1:0] pmpaddr2;        // 12'h3B2
+      `endif
+      `ifdef PMP_ADDR3
+      logic                         [RSZ-1:0] pmpaddr3;        // 12'h3B3
+      `endif
+      `ifdef PMP_ADDR4
+      logic                         [RSZ-1:0] pmpaddr4;        // 12'h3B4
+      `endif
+      `ifdef PMP_ADDR5
+      logic                         [RSZ-1:0] pmpaddr5;        // 12'h3B5
+      `endif
+      `ifdef PMP_ADDR6
+      logic                         [RSZ-1:0] pmpaddr6;        // 12'h3B6
+      `endif
+      `ifdef PMP_ADDR7
+      logic                         [RSZ-1:0] pmpaddr7;        // 12'h3B7
+      `endif
+      `ifdef PMP_ADDR8
+      logic                         [RSZ-1:0] pmpaddr8;        // 12'h3B8
+      `endif
+      `ifdef PMP_ADDR9
+      logic                         [RSZ-1:0] pmpaddr9;        // 12'h3B9
+      `endif
+      `ifdef PMP_ADDR10
+      logic                         [RSZ-1:0] pmpaddr10;       // 12'h3BA
+      `endif
+      `ifdef PMP_ADDR11
+      logic                         [RSZ-1:0] pmpaddr11;       // 12'h3BB
+      `endif
+      `ifdef PMP_ADDR12
+      logic                         [RSZ-1:0] pmpaddr12;       // 12'h3BC
+      `endif
+      `ifdef PMP_ADDR13
+      logic                         [RSZ-1:0] pmpaddr13;       // 12'h3BD
+      `endif
+      `ifdef PMP_ADDR14
+      logic                         [RSZ-1:0] pmpaddr14;       // 12'h3BE
+      `endif
+      `ifdef PMP_ADDR15
+      logic                         [RSZ-1:0] pmpaddr15;       // 12'h3BF
+      `endif
+   
+      `ifdef add_DM
+      logic                         [RSZ-1:0] tselect;         // 12'h7A0
+      logic                         [RSZ-1:0] tdata1;          // 12'h7A1
+      logic                         [RSZ-1:0] tdata2;          // 12'h7A2
+      logic                         [RSZ-1:0] tdata3;          // 12'h7A3
+      logic                         [RSZ-1:0] dcsr;            // 12'h7B0
+      logic                         [RSZ-1:0] dpc;             // 12'h7B1
+      logic                         [RSZ-1:0] dscratch0;       // 12'h7B2
+      logic                         [RSZ-1:0] dscratch1;       // 12'h7B3
+      `endif
+   
+      logic                         [RSZ-1:0] mcycle_lo;       // 12'hB00
+      logic                         [RSZ-1:0] mcycle_hi;       // 12'hB80
+      logic                         [RSZ-1:0] minstret_lo;     // 12'hB02
+      logic                         [RSZ-1:0] minstret_hi;     // 12'hB82
+   
+      `ifdef use_MHPM
+      logic          [NUM_MHPM-1:0] [RSZ-1:0] mhpmcounter_lo;  // 12'hB03 - 12'B1F
+      logic          [NUM_MHPM-1:0] [RSZ-1:0] mhpmcounter_hi;  // 12'hB83 - 12'B9F
+      `endif
+   
+      logic                         [RSZ-1:0] mvendorid;       // 12'hF11
+      logic                         [RSZ-1:0] marchid;         // 12'hF12
+      logic                         [RSZ-1:0] mimpid;          // 12'hF13
+      logic                         [RSZ-1:0] mhartid;         // 12'hF14
+   } MCSR;
+
+   // ------------------------ Supervisor mode CSRs ------------------------
+   // Supervisor mode Registers
+   typedef struct packed {
+   logic                     [RSZ-1:0] sstatus;          // 12'h100
+   logic                     [RSZ-1:0] sedeleg;          // 12'h102
+   `ifdef ext_N
+   logic                     [RSZ-1:0] sideleg;          // 12'h103
+   logic                     [RSZ-1:0] sie;              // 12'h104
+   `endif
+   logic                     [RSZ-1:0] stvec;            // 12'h105
+   logic                     [RSZ-1:0] scounteren;       // 12'h106
+   logic                     [RSZ-1:0] sscratch;         // 12'h140
+   logic                   [PC_SZ-1:0] sepc;             // 12'h141
+   logic                     [RSZ-1:0] scause;           // 12'h142
+   logic                     [RSZ-1:0] stval;            // 12'h143
+   `ifdef ext_N
+   SIP_SIGS                            sip;              // 12'h144
+   `endif
+   logic                     [RSZ-1:0] satp;             // 12'h180
+   } SCSR;
+
+   // ------------------------ User mode CSRs ------------------------
+   // User mode Registers
+   typedef struct packed {
+   logic                     [RSZ-1:0] ustatus;          // 12'h000
+   `ifdef ext_N
+   logic                     [RSZ-1:0] uie;              // 12'h004
+   `endif
+   logic                     [RSZ-1:0] utvec;            // 12'h005
+   logic                     [RSZ-1:0] uscratch;         // 12'h040
+   logic                   [PC_SZ-1:0] uepc;             // 12'h041
+   logic                     [RSZ-1:0] ucause;           // 12'h042
+   logic                     [RSZ-1:0] utval;            // 12'h043
+   `ifdef ext_N
+   UIP_SIGS                            uip;              // 12'h044
+   `endif
+   } UCSR;
 
 /*
    Register     Alias      Description                      Saved by
