@@ -174,15 +174,15 @@ module mem
 
    always_comb
    begin
-      mem_dout.Rd_data           = E2M_bus.data.Rd_data;
-      mem_dout.mio_ack_fault     = FALSE;
+      mem_dout.Rd_data                 = E2M_bus.data.Rd_data;
+      mem_dout.mio_ack_fault           = FALSE;
 
       // Note: All Exceptions are associated with trap_pc
       if (E2M_bus.valid)                                                            // should this instruction be processed by this stage?
       begin
          // signals to update Rd/Fd in WB stage
          `ifdef ext_F
-         mem_dout.Fd_wr          = E2M_bus.data.Fd_wr;
+         mem_dout.Fd_wr                = E2M_bus.data.Fd_wr;
          `endif
 
          case(E2M_bus.data.ig_type)                                                 // select which functional unit output data is the appropriate one to process
@@ -195,7 +195,7 @@ module mem
             ST_INSTR:
             begin
                // Store exceptions arer done once Store finishes in this MEM stage
-               mem_dout.mio_ack_fault = MIO_ack_fault;                              // WB stage exception handling will need to know this.
+               mem_dout.mio_ack_fault  = MIO_ack_fault;                             // WB stage exception handling will need to know this.
             end
 
             `ifdef ext_F

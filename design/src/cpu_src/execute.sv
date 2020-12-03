@@ -335,7 +335,6 @@ module execute
    // Control & Status Registers
    csr_fu CSRFU
    (
-      .clk_in(clk_in), .reset_in(reset_in),                                   // Inputs:  system clock and reset
       .csrfu_bus(csrfu_bus),
       .csr_nxt_bus(csr_nxt_bus)
    );
@@ -481,7 +480,6 @@ module execute
          exe_dout.ig_type           = ig_type;
 
          exe_dout.op_type           = op_type;
-         exe_dout.predicted_addr    = predicted_addr;
 
          unique case(ig_type)                                                       // select which functional unit output data is the appropriate one and save it
             ALU_INSTR:
