@@ -50,13 +50,20 @@ module mode_irq
    `endif
 
    // only a few of these CSR registers are needed by this module
+//   `ifdef ext_U
+//   UCSR_REG_intf                 ucsr,              // Input:   current register state of all the User Mode Control & Status Registers
+//   `endif
+//   `ifdef ext_S
+//   SCSR_REG_intf                 scsr,              // Input:   current register state of all the Supervisor Mode Control & Status Registers
+//   `endif
+//   MCSR_REG_intf                 mcsr               // Input:   current register state of all the Machine Mode Control & Status Registers
    `ifdef ext_U
-   UCSR_REG_intf                 ucsr,              // Input:   current register state of all the User Mode Control & Status Registers
+   input var UCSR                  ucsr,              // Input:   current register state of all the User Mode Control & Status Registers
    `endif
    `ifdef ext_S
-   SCSR_REG_intf                 scsr,              // Input:   current register state of all the Supervisor Mode Control & Status Registers
+   input var SCSR                  scsr,              // Input:   current register state of all the Supervisor Mode Control & Status Registers
    `endif
-   MCSR_REG_intf                 mcsr               // Input:   current register state of all the Machine Mode Control & Status Registers
+   input var MCSR                  mcsr               // Input:   current register state of all the Machine Mode Control & Status Registers
 );
 
    //----------------------------------------------------------------------------------------------------------------------------------------
