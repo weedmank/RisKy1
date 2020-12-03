@@ -27,8 +27,6 @@ import cpu_structs_pkg::*;
 
 module csr_fu
 (
-   input    logic       clk_in,
-   input    logic       reset_in,
    CSRFU_intf.slave     csrfu_bus,
    CSR_NXT_intf.master  csr_nxt_bus
 );

@@ -58,18 +58,28 @@ module csr
    CSR_NXT_intf.slave         csr_nxt_bus
 );
 
+//   `ifdef ext_U
+//   UCSR_REG_intf              nxt_ucsr();
+//   UCSR_REG_intf              ucsr();                       // all of the User mode Control & Status Registers
+//   `endif
+//   `ifdef ext_S
+//   SCSR_REG_intf              nxt_scsr();
+//   SCSR_REG_intf              scsr();                       // all of the Supervisor mode Control & Status Registers
+//   `endif
+//   MCSR_REG_intf              nxt_mcsr();
+//   MCSR_REG_intf              mcsr();                       // all of the Machine mode Control & Status Registers
    `ifdef ext_U
-   UCSR_REG_intf              nxt_ucsr();
-   UCSR_REG_intf              ucsr();                       // all of the User mode Control & Status Registers
+   UCSR              nxt_ucsr;
+   UCSR              ucsr;                         // all of the User mode Control & Status Registers
    `endif
    `ifdef ext_S
-   SCSR_REG_intf              nxt_scsr();
-   SCSR_REG_intf              scsr();                       // all of the Supervisor mode Control & Status Registers
+   SCSR              nxt_scsr;
+   SCSR              scsr;                         // all of the Supervisor mode Control & Status Registers
    `endif
-   MCSR_REG_intf              nxt_mcsr();
-   MCSR_REG_intf              mcsr();                       // all of the Machine mode Control & Status Registers
+   MCSR              nxt_mcsr;
+   MCSR              mcsr;                         // all of the Machine mode Control & Status Registers
 
-   logic                [1:0] nxt_mode;                     // from mode_irq(). This is the next mode (what mode will be on the next clock cycle)
+   logic       [1:0] nxt_mode;                     // from mode_irq(). This is the next mode (what mode will be on the next clock cycle)
 
    // ----------------------------------- csr_nxt_bus interface
    logic             nxt_csr_wr;
@@ -148,12 +158,12 @@ module csr
       .mode(mode),
 
       `ifdef ext_U
-      .ucsr,                                                // all of the User Mode Control & Status Registers
+      .ucsr(ucsr),                                          // all of the User Mode Control & Status Registers
       `endif
       `ifdef ext_S
-      .scsr,                                                // all of the Supervisor Mode Control & Status Registers
+      .scsr(scsr),                                          // all of the Supervisor Mode Control & Status Registers
       `endif
-      .mcsr                                                 // all of the Machine Mode Control & Status Registers
+      .mcsr(mcsr)                                           // all of the Machine Mode Control & Status Registers
    );
 
    // ================================================================== Next csr_rd_data logic ======================================================
@@ -165,12 +175,19 @@ module csr
    // Note: Forwarding of Architectural Registers is easy because what you write to them will be the same as what you later read from them. Not so
    //       with some CSRs
 
-   MCSR_REG_intf              nxt_CSRFU_mcsr();
+//   MCSR_REG_intf              nxt_CSRFU_mcsr();
+//   `ifdef ext_S
+//   SCSR_REG_intf              nxt_CSRFU_scsr();
+//   `endif
+//   `ifdef ext_U
+//   UCSR_REG_intf              nxt_CSRFU_ucsr();
+//   `endif
+   MCSR             nxt_CSRFU_mcsr;
    `ifdef ext_S
-   SCSR_REG_intf              nxt_CSRFU_scsr();
+   SCSR             nxt_CSRFU_scsr;
    `endif
    `ifdef ext_U
-   UCSR_REG_intf              nxt_CSRFU_ucsr();
+   UCSR             nxt_CSRFU_ucsr;
    `endif
    csr_nxt_reg cnr_fu (
       .reset_in(reset_in),
@@ -269,8 +286,8 @@ module csr
       .mode(mode),                                          // Output:  current mode
       .nxt_mode(nxt_mode),                                  // output:  next mode - needed by csr_nxt_reg
 
-      .exception(exception),                                // Input:   
-      
+      .exception(exception),                                // Input:
+
       `ifdef ext_U
       .uret(uret),
       `endif

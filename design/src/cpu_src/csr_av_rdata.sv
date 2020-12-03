@@ -36,13 +36,20 @@ module csr_av_rdata
    
    input    logic          [1:0] mode,
 
+//   `ifdef ext_U
+//   UCSR_REG_intf.slave           ucsr,          // all of the User mode Control & Status Registers
+//   `endif
+//   `ifdef ext_S
+//   SCSR_REG_intf.slave           scsr,          // all of the Supervisor mode Control & Status Registers
+//   `endif
+//   MCSR_REG_intf.slave           mcsr           // all of the Machine mode Control & Status Registers
    `ifdef ext_U
-   UCSR_REG_intf.slave           ucsr,          // all of the User mode Control & Status Registers
+   input var UCSR  ucsr,          // all of the User mode Control & Status Registers
    `endif
    `ifdef ext_S
-   SCSR_REG_intf.slave           scsr,          // all of the Supervisor mode Control & Status Registers
+   input var SCSR  scsr,          // all of the Supervisor mode Control & Status Registers
    `endif
-   MCSR_REG_intf.slave           mcsr           // all of the Machine mode Control & Status Registers
+   input var MCSR  mcsr           // all of the Machine mode Control & Status Registers
 );
    logic    av;
    
