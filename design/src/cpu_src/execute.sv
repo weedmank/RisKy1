@@ -475,6 +475,13 @@ module execute
          op_type                    = D2E_bus.data.op;
          predicted_addr             = D2E_bus.data.predicted_addr;
 
+         // trap_pc, interrupt_flag, interrupt_cause need to come from CSR in this stage so they can be passed to next stages as they relate to current instruction
+         exe_dout.trap_pc           = csr_exe_bus.trap_pc;                          // trap_pc, interrupt_flag, interrupt_cause not used in this stage,but needed in WB stage
+         `ifdef ext_N         
+         exe_dout.interrupt_flag    = csr_exe_bus.interrupt_flag;
+         exe_dout.interrupt_cause   = csr_exe_bus.interrupt_cause;
+         `endif
+
          exe_dout.ipd               = D2E_bus.data.ipd;                             // pass on to next stage
          exe_dout.ci                = ci;                                           // 1 = compressed 16 bit instruction, 0 = 32 bit instruction
          exe_dout.ig_type           = ig_type;
