@@ -42,7 +42,7 @@ module  top_tb1 ();
       `ifdef M_MODE_ONLY
          $display("RisKy1 set for M Mode Only");
       `else
-         $display("RisKy1 set to support the following:");
+         $display("RisKy1 simulation is currently set to support the following:");
          $display("   Machine mode");
          `ifdef ext_S
             $display("   Supervisor mode");
@@ -61,7 +61,7 @@ module  top_tb1 ();
          $display("   Compressed (16-bit) instructions");
       `endif
       `ifdef SIM_DEBUG
-         $display("   Simulation Debugging logic - non synthesizable");
+         $display("   Simulation Debugging logic");
       `endif
 
 

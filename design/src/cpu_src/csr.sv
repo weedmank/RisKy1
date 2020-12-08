@@ -30,8 +30,6 @@ module csr
    input    logic             clk_in,
    input    logic             reset_in,
 
-   output   logic       [1:0] mode,
-
    `ifdef ext_N
    input    logic             ext_irq,
    input    logic             timer_irq,
@@ -79,7 +77,15 @@ module csr
    MCSR              nxt_mcsr;
    MCSR              mcsr;                         // all of the Machine mode Control & Status Registers
 
-   logic       [1:0] nxt_mode;                     // from mode_irq(). This is the next mode (what mode will be on the next clock cycle)
+   logic       [1:0] mode, nxt_mode;               // from mode_irq(). This is the next mode (what mode will be on the next clock cycle)
+
+   logic             hpm_events [0:23];            // 23 ---> create a parameter in cpu_params for this!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+   EXCEPTION         exception;
+   EVENTS            current_events;
+   logic             tot_retired;      // In this design, at most, 1 instruction can retire per clock cycle
+
+   assign exception        = EV_EXC_bus.exception;
+   assign current_events   = EV_EXC_bus.current_events;
 
    // ----------------------------------- csr_nxt_bus interface
    logic             nxt_csr_wr;
@@ -113,6 +119,7 @@ module csr
 
    // ----------------------------------- signals shared between csr.sv and EXE stage
    assign csr_exe_bus.mode = mode;
+   
    assign csr_exe_bus.mepc = mcsr.mepc;
    `ifdef ext_S
    assign csr_exe_bus.sepc = scsr.sepc;
@@ -201,7 +208,10 @@ module csr
       .csr_wr(nxt_csr_wr),
       .csr_wr_data(nxt_csr_wr_data),
 
-      .EV_EXC_bus(EV_EXC_bus),
+      .tot_retired(tot_retired),
+      .exception(exception),                                // Input:
+      .hpm_events(hpm_events),                              // 24 different event counts (counts for this clock cycle) that can be used. 1 bit needed per event for this design (1 instruction max per clock cycle)
+
       .mode(mode),
       .nxt_mode(nxt_mode),
 
@@ -221,11 +231,13 @@ module csr
       .mcsr(mcsr),                                          // Input:  current register state of all the Machine Mode Control & Status Registers
       .nxt_mcsr(nxt_CSRFU_mcsr)                             // Output: next register state of all the Machine Mode Control & Status Registers
    );
+
+   // Read the contents of a specific CSR and knw if it's available (exists for reading)
    csr_av_rdata car_fu
    (
       .csr_rd_addr(nxt_csr_wr_addr),
       .csr_rd_data(nxt_csr_rd_data),
-      .csr_rd_avail(),                                      // 1 = register exists (available) in design NOTE: not needed by CSR Functional Unit
+      .csr_rd_avail(),                                      // 1 = register exists (available) in design NOTE: not needed by CSR Functional Unit we only need the read result for NEXT clock cycle
 
       .mtime(mtime),
       .mode(mode),
@@ -255,7 +267,10 @@ module csr
       .csr_wr(csr_wr),
       .csr_wr_data(csr_wr_data),
 
-      .EV_EXC_bus(EV_EXC_bus),
+      .tot_retired(tot_retired),
+      .exception(exception),                                // Input:
+      .hpm_events(hpm_events),                              // 24 different event counts (counts for this clock cycle) that can be used. 1 bit needed per event for this design (1 instruction max per clock cycle)
+
       .mode(mode),
       .nxt_mode(nxt_mode),
 
@@ -277,16 +292,14 @@ module csr
    );
 
    // ================================================================== Mode & Interrupt Control logic ======================================================
-   EXCEPTION   exception;
-   assign exception = EV_EXC_bus.exception;
    mode_irq mi (
       .reset_in(reset_in),
       .clk_in(clk_in),
 
+      .exception_flag(exception.flag),                      // Input:
+
       .mode(mode),                                          // Output:  current mode
       .nxt_mode(nxt_mode),                                  // output:  next mode - needed by csr_nxt_reg
-
-      .exception(exception),                                // Input:
 
       `ifdef ext_U
       .uret(uret),
@@ -319,7 +332,7 @@ module csr
    //  31          22    21    20   19    18   17   16:15 14:13 12:11 10:9   8     7     6     5     4     3     2     1     0
    // {sd, 8'b0, 1'b0, 1'b0, 1'b0, mxr,  sum, 1'b0,   xs,   fs, 2'b0, 2'b0, 1'b0, 1'b0, 1'b0, 1'b0, upie, 1'b0, 1'b0, 1'b0, uie};
 
-   assign ucsr.ustatus = mcsr.mstatus & ~32'h7FF2_7FF2_1FFE; // just a mask of the mstatus register
+   assign ucsr.ustatus = mcsr.mstatus & ~32'h7FF2_1FEE; // just a mask of the mstatus register
 
    `ifdef ext_N
    // ------------------------------ User Interrupt-Enable Register
@@ -634,5 +647,61 @@ module csr
    // Hardware Thread ID
    // 12'hF14 = 12'b1111_0001_0100  mhartid     (read-only)
    assign mcsr.mhartid     = nxt_mcsr.mhartid;
+
+
+   // Machine instructions-retired counter.
+   // The size of thefollowig counters must be large enough to hold the maximum number that can retire in a given clock cycle
+   logic             br_cnt;
+   logic             misaligned_cnt;
+
+    // At most, for this pipelined design, only 1 instruction can retire per clock so just OR the retire bits (instead of adding)
+   assign tot_retired      = current_events.ret_cnt[LD_RET]  | current_events.ret_cnt[ST_RET]   | current_events.ret_cnt[CSR_RET]  | current_events.ret_cnt[SYS_RET]  |
+                             current_events.ret_cnt[ALU_RET] | current_events.ret_cnt[BXX_RET]  | current_events.ret_cnt[JAL_RET]  | current_events.ret_cnt[JALR_RET] |
+                             current_events.ret_cnt[IM_RET]  | current_events.ret_cnt[ID_RET]   | current_events.ret_cnt[IR_RET]   | current_events.ret_cnt[HINT_RET] |
+               `ifdef ext_F  current_events.ret_cnt[FLD_RET] | current_events.ret_cnt[FST_RET]  | current_events.ret_cnt[FP_RET]   | `endif
+                             current_events.ret_cnt[UNK_RET];
+
+   assign br_cnt           = current_events.ret_cnt[BXX_RET] | current_events.ret_cnt[JAL_RET]  | current_events.ret_cnt[JALR_RET];
+   assign misaligned_cnt   = (current_events.e_flag & (current_events.e_cause == 0)) |  /* 0 = Instruction Address Misaligned */
+                             (current_events.e_flag & (current_events.e_cause == 4)) |  /* 4 = Load Address Misaligned        */
+                             (current_events.e_flag & (current_events.e_cause == 6));   /* 6 = Store Address Misaligned       */
+
+   assign hpm_events[0 ]   = 0;                                      // no change to mhpm counter when this even selected
+   // The following hpm_events return a count value which is used by a mhpmcounter[]. mhpmcounter[n] can use whichever event[x] it wants by setting mphmevent[n]
+   // The count sources (i.e. current_events.ret_cnt[LD_RET]) may be changed by the user to reflect what information they want to use for a given counter.
+   // Any of the logic on the RH side of the assignment can changed or used for any hpm_events[x] - even new logic can be created for a new event source.
+   assign hpm_events[1 ]   = current_events.ret_cnt[LD_RET];         // Load Instruction retirement count. See ret_cnt[] in cpu_structs_pkg.sv. One ret_cnt for each instruction type.
+   assign hpm_events[2 ]   = current_events.ret_cnt[ST_RET];         // Store Instruction retirement count.
+   assign hpm_events[3 ]   = current_events.ret_cnt[CSR_RET];        // CSR
+   assign hpm_events[4 ]   = current_events.ret_cnt[SYS_RET];        // System
+   assign hpm_events[5 ]   = current_events.ret_cnt[ALU_RET];        // ALU
+   assign hpm_events[6 ]   = current_events.ret_cnt[BXX_RET];        // BXX
+   assign hpm_events[7 ]   = current_events.ret_cnt[JAL_RET];        // JAL
+   assign hpm_events[8 ]   = current_events.ret_cnt[JALR_RET];       // JALR
+   assign hpm_events[9 ]   = current_events.ret_cnt[IM_RET];         // Integer Multiply
+   assign hpm_events[10]   = current_events.ret_cnt[ID_RET];         // Integer Divide
+   assign hpm_events[11]   = current_events.ret_cnt[IR_RET];         // Integer Remainder
+   assign hpm_events[12]   = current_events.ret_cnt[HINT_RET];       // Hint Instructions
+   assign hpm_events[13]   = current_events.ret_cnt[UNK_RET];        // Unknown Instructions
+   assign hpm_events[14]   = current_events.e_flag ? (current_events.e_cause == 0) : 0; // e_cause = 0 = Instruction Address Misaligned
+   assign hpm_events[15]   = current_events.e_flag ? (current_events.e_cause == 1) : 0; // e_cause = 1 = Instruction Access Fault
+   assign hpm_events[16]   = current_events.mispredict;              // branch mispredictions
+   assign hpm_events[17]   = br_cnt;                                 // all bxx, jal, jalr instructions
+   assign hpm_events[18]   = misaligned_cnt;                         // all misaligned instructions
+   assign hpm_events[19]   = tot_retired;                            // total of all instructions retired this clock cycle
+   `ifdef ext_F
+   assign hpm_events[20]   = current_events.ret_cnt[FLD_RET];        // single precision Floating Point Load retired
+   assign hpm_events[21]   = current_events.ret_cnt[FST_RET];        // single precision Floating Point Store retired
+   assign hpm_events[22]   = current_events.ret_cnt[FP_RET];         // single precision Floating Point operation retired
+   assign hpm_events[23]   = current_events.ext_irq;                 // this will always be a 0 or 1 count as only 1 per clock cycle can ever occur
+   `else
+   assign hpm_events[20]   = current_events.e_flag ? (current_events.e_cause == 2) : 0; // e_cause = 2 = Illegal Instruction
+   assign hpm_events[21]   = current_events.e_flag ? (current_events.e_cause == 3) : 0; // e_cause = 3 = Environment Break
+   assign hpm_events[22]   = current_events.e_flag ? (current_events.e_cause == 8) : 0; // e_cause = 8 = User ECALL
+   assign hpm_events[23]   = current_events.ext_irq;                 // this will always be a 0 or 1 count as only 1 per clock cycle can ever occur
+   `endif // uxt_F
+
+   // Note: currently there are NUM_EVENTS hpm_events as specified at the beginning of this generate block. The number can be changed if more or less event types are needed
+
 
 endmodule

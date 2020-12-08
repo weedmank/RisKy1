@@ -29,7 +29,7 @@ import cpu_params_pkg::*;
 
    // ----------------------------------------------- Operation types -----------------------------------------------
    // Note: size of field in DEC_2_EXE structure must be the largest size of SYS_OP_TYPE, ALU_OP_TYPE, or SPFP_OP_TYPE
-   typedef enum [2:0] {ECALL, EBREAK, FENCE, FENCEI, WFI} SYS_OP_TYPE;
+   typedef enum logic [2:0] {ECALL, EBREAK, FENCE, FENCEI, WFI} SYS_OP_TYPE;
 
    // ALU instruction encodings
    typedef enum logic [3:0] {A_ADD, A_SUB, A_AND, A_OR, A_XOR, A_SLL, A_SRL, A_SRA, A_SLT, A_SLTU} ALU_OP_TYPE;
@@ -152,15 +152,21 @@ import cpu_params_pkg::*;
       logic                   flag;             // 1 = take an exception trap
    } EXCEPTION;
 
-   typedef enum {LD_RET, ST_RET, CSR_RET, SYS_RET, ALU_RET, BXX_RET, JAL_RET, JALR_RET, IM_RET, ID_RET, IR_RET, HINT_RET, UNK_RET
-                 `ifdef ext_F FLD_RET, FST_RET, FP_RET `endif } RETIRE_TYPE;  // Thre will be a ret_cnt for each of these type of instructions
-   localparam RET_SZ = $size(RETIRE_TYPE);
+   // There will be a ret_cnt for each of these type of instructions
+   typedef enum {LD_RET, ST_RET, CSR_RET, SYS_RET, ALU_RET, BXX_RET, JAL_RET, JALR_RET, IM_RET, ID_RET, IR_RET, HINT_RET, `ifdef ext_F FLD_RET, FST_RET, FP_RET, `endif  UNK_RET} RETIRE_TYPE;
 
+   // Verilog
+   `ifdef MODELSIM
+      localparam RET_SZ = 15;                   // must change depending on number of RETIRE_TYPE entries!!!!!!!!!!!!!
+   `else
+      localparam RET_SZ = RETIRE_TYPE.num();    // Modelsim 2020.1 and lower can't handle this
+   `endif
+   
    typedef struct packed {                      // each entry contains count of how many instructions  of that typeretired this clock cycle
       logic                   mispredict;       // Branch Mispredict count          - not one of the faults but usefull information
       logic                   ext_irq;          // External Interrutp Request count - not one of the faults but usefull information - only 1 of these can ever occur during a clock cycle
-//    logic [RET_SZ-1:0] [n-1:0] ret_cnt;  // general format to use if more than 1 instruction retires per clock cycle - where n is the number of bits needed to hold maximum count
-      logic      [RET_SZ-1:0] ret_cnt;          // only 1 instruction maximum retires per clock cycle in this pipelined RV32imc... design
+//    logic   [RET_SZ:0] [n-1:0] ret_cnt;       // general format to use if more than 1 instruction retires per clock cycle - where n is the number of bits needed to hold maximum count
+      logic        [RET_SZ:0] ret_cnt;          // only 1 instruction maximum retires per clock cycle in this pipelined RV32imc... design
       logic                   e_flag;           // e_flag = 1 = the type of problem that occured with this instrucion is specified in e_cause
       logic             [3:0] e_cause;          // 0 = Instruction Address Misaligned
                                                 // 1 = Instruction Access Fault
@@ -433,134 +439,134 @@ import cpu_params_pkg::*;
       `ifdef use_MHPM
       logic   [NUM_MHPM-1:0] [EV_SEL_SZ-1:0] mhpmevent;        // 12'h323 - 12'h33F, mhpmevent3 - mhpmevent31
       `endif
-   
-      logic                         [RSZ-1:0] mscratch;        // 12'h340
-      logic                       [PC_SZ-1:0] mepc;            // 12'h341
-      logic                         [RSZ-1:0] mcause;          // 12'h342
-      logic                         [RSZ-1:0] mtval;           // 12'h343
+
+      logic                        [RSZ-1:0] mscratch;         // 12'h340
+      logic                      [PC_SZ-1:0] mepc;             // 12'h341
+      logic                        [RSZ-1:0] mcause;           // 12'h342
+      logic                        [RSZ-1:0] mtval;            // 12'h343
       `ifdef ext_N
-      MIP_SIGS                                mip;             // 12'h344
+      MIP_SIGS                               mip;              // 12'h344
       `endif
-   
+
       `ifdef USE_PMPCFG
-      logic                         [RSZ-1:0] pmpcfg0;         // 12'h3A0
-      logic                         [RSZ-1:0] pmpcfg1;         // 12'h3A1
-      logic                         [RSZ-1:0] pmpcfg2;         // 12'h3A2
-      logic                         [RSZ-1:0] pmpcfg3;         // 12'h3A3
+      logic                        [RSZ-1:0] pmpcfg0;          // 12'h3A0
+      logic                        [RSZ-1:0] pmpcfg1;          // 12'h3A1
+      logic                        [RSZ-1:0] pmpcfg2;          // 12'h3A2
+      logic                        [RSZ-1:0] pmpcfg3;          // 12'h3A3
       `endif
-   
+
       `ifdef PMP_ADDR0
-      logic                         [RSZ-1:0] pmpaddr0;        // 12'h3B0
+      logic                        [RSZ-1:0] pmpaddr0;         // 12'h3B0
       `endif
       `ifdef PMP_ADDR1
-      logic                         [RSZ-1:0] pmpaddr1;        // 12'h3B1
+      logic                        [RSZ-1:0] pmpaddr1;         // 12'h3B1
       `endif
       `ifdef PMP_ADDR2
-      logic                         [RSZ-1:0] pmpaddr2;        // 12'h3B2
+      logic                        [RSZ-1:0] pmpaddr2;         // 12'h3B2
       `endif
       `ifdef PMP_ADDR3
-      logic                         [RSZ-1:0] pmpaddr3;        // 12'h3B3
+      logic                        [RSZ-1:0] pmpaddr3;         // 12'h3B3
       `endif
       `ifdef PMP_ADDR4
-      logic                         [RSZ-1:0] pmpaddr4;        // 12'h3B4
+      logic                        [RSZ-1:0] pmpaddr4;         // 12'h3B4
       `endif
       `ifdef PMP_ADDR5
-      logic                         [RSZ-1:0] pmpaddr5;        // 12'h3B5
+      logic                        [RSZ-1:0] pmpaddr5;         // 12'h3B5
       `endif
       `ifdef PMP_ADDR6
-      logic                         [RSZ-1:0] pmpaddr6;        // 12'h3B6
+      logic                        [RSZ-1:0] pmpaddr6;         // 12'h3B6
       `endif
       `ifdef PMP_ADDR7
-      logic                         [RSZ-1:0] pmpaddr7;        // 12'h3B7
+      logic                        [RSZ-1:0] pmpaddr7;         // 12'h3B7
       `endif
       `ifdef PMP_ADDR8
-      logic                         [RSZ-1:0] pmpaddr8;        // 12'h3B8
+      logic                        [RSZ-1:0] pmpaddr8;         // 12'h3B8
       `endif
       `ifdef PMP_ADDR9
-      logic                         [RSZ-1:0] pmpaddr9;        // 12'h3B9
+      logic                        [RSZ-1:0] pmpaddr9;         // 12'h3B9
       `endif
       `ifdef PMP_ADDR10
-      logic                         [RSZ-1:0] pmpaddr10;       // 12'h3BA
+      logic                        [RSZ-1:0] pmpaddr10;        // 12'h3BA
       `endif
       `ifdef PMP_ADDR11
-      logic                         [RSZ-1:0] pmpaddr11;       // 12'h3BB
+      logic                        [RSZ-1:0] pmpaddr11;        // 12'h3BB
       `endif
       `ifdef PMP_ADDR12
-      logic                         [RSZ-1:0] pmpaddr12;       // 12'h3BC
+      logic                        [RSZ-1:0] pmpaddr12;        // 12'h3BC
       `endif
       `ifdef PMP_ADDR13
-      logic                         [RSZ-1:0] pmpaddr13;       // 12'h3BD
+      logic                        [RSZ-1:0] pmpaddr13;        // 12'h3BD
       `endif
       `ifdef PMP_ADDR14
-      logic                         [RSZ-1:0] pmpaddr14;       // 12'h3BE
+      logic                        [RSZ-1:0] pmpaddr14;        // 12'h3BE
       `endif
       `ifdef PMP_ADDR15
-      logic                         [RSZ-1:0] pmpaddr15;       // 12'h3BF
+      logic                        [RSZ-1:0] pmpaddr15;        // 12'h3BF
       `endif
-   
+
       `ifdef add_DM
-      logic                         [RSZ-1:0] tselect;         // 12'h7A0
-      logic                         [RSZ-1:0] tdata1;          // 12'h7A1
-      logic                         [RSZ-1:0] tdata2;          // 12'h7A2
-      logic                         [RSZ-1:0] tdata3;          // 12'h7A3
-      logic                         [RSZ-1:0] dcsr;            // 12'h7B0
-      logic                         [RSZ-1:0] dpc;             // 12'h7B1
-      logic                         [RSZ-1:0] dscratch0;       // 12'h7B2
-      logic                         [RSZ-1:0] dscratch1;       // 12'h7B3
+      logic                        [RSZ-1:0] tselect;          // 12'h7A0
+      logic                        [RSZ-1:0] tdata1;           // 12'h7A1
+      logic                        [RSZ-1:0] tdata2;           // 12'h7A2
+      logic                        [RSZ-1:0] tdata3;           // 12'h7A3
+      logic                        [RSZ-1:0] dcsr;             // 12'h7B0
+      logic                        [RSZ-1:0] dpc;              // 12'h7B1
+      logic                        [RSZ-1:0] dscratch0;        // 12'h7B2
+      logic                        [RSZ-1:0] dscratch1;        // 12'h7B3
       `endif
-   
-      logic                         [RSZ-1:0] mcycle_lo;       // 12'hB00
-      logic                         [RSZ-1:0] mcycle_hi;       // 12'hB80
-      logic                         [RSZ-1:0] minstret_lo;     // 12'hB02
-      logic                         [RSZ-1:0] minstret_hi;     // 12'hB82
-   
+
+      logic                        [RSZ-1:0] mcycle_lo;        // 12'hB00
+      logic                        [RSZ-1:0] mcycle_hi;        // 12'hB80
+      logic                        [RSZ-1:0] minstret_lo;      // 12'hB02
+      logic                        [RSZ-1:0] minstret_hi;      // 12'hB82
+
       `ifdef use_MHPM
-      logic          [NUM_MHPM-1:0] [RSZ-1:0] mhpmcounter_lo;  // 12'hB03 - 12'B1F
-      logic          [NUM_MHPM-1:0] [RSZ-1:0] mhpmcounter_hi;  // 12'hB83 - 12'B9F
+      logic         [NUM_MHPM-1:0] [RSZ-1:0] mhpmcounter_lo;   // 12'hB03 - 12'B1F
+      logic         [NUM_MHPM-1:0] [RSZ-1:0] mhpmcounter_hi;   // 12'hB83 - 12'B9F
       `endif
-   
-      logic                         [RSZ-1:0] mvendorid;       // 12'hF11
-      logic                         [RSZ-1:0] marchid;         // 12'hF12
-      logic                         [RSZ-1:0] mimpid;          // 12'hF13
-      logic                         [RSZ-1:0] mhartid;         // 12'hF14
+
+      logic                        [RSZ-1:0] mvendorid;        // 12'hF11
+      logic                        [RSZ-1:0] marchid;          // 12'hF12
+      logic                        [RSZ-1:0] mimpid;           // 12'hF13
+      logic                        [RSZ-1:0] mhartid;          // 12'hF14
    } MCSR;
 
    // ------------------------ Supervisor mode CSRs ------------------------
    // Supervisor mode Registers
    typedef struct packed {
-   logic                     [RSZ-1:0] sstatus;          // 12'h100
-   logic                     [RSZ-1:0] sedeleg;          // 12'h102
-   `ifdef ext_N
-   logic                     [RSZ-1:0] sideleg;          // 12'h103
-   logic                     [RSZ-1:0] sie;              // 12'h104
-   `endif
-   logic                     [RSZ-1:0] stvec;            // 12'h105
-   logic                     [RSZ-1:0] scounteren;       // 12'h106
-   logic                     [RSZ-1:0] sscratch;         // 12'h140
-   logic                   [PC_SZ-1:0] sepc;             // 12'h141
-   logic                     [RSZ-1:0] scause;           // 12'h142
-   logic                     [RSZ-1:0] stval;            // 12'h143
-   `ifdef ext_N
-   SIP_SIGS                            sip;              // 12'h144
-   `endif
-   logic                     [RSZ-1:0] satp;             // 12'h180
+      logic                        [RSZ-1:0] sstatus;          // 12'h100
+      logic                        [RSZ-1:0] sedeleg;          // 12'h102
+      `ifdef ext_N
+      logic                        [RSZ-1:0] sideleg;          // 12'h103
+      logic                        [RSZ-1:0] sie;              // 12'h104
+      `endif
+      logic                        [RSZ-1:0] stvec;            // 12'h105
+      logic                        [RSZ-1:0] scounteren;       // 12'h106
+      logic                        [RSZ-1:0] sscratch;         // 12'h140
+      logic                      [PC_SZ-1:0] sepc;             // 12'h141
+      logic                        [RSZ-1:0] scause;           // 12'h142
+      logic                        [RSZ-1:0] stval;            // 12'h143
+      `ifdef ext_N
+      SIP_SIGS                               sip;              // 12'h144
+      `endif
+      logic                        [RSZ-1:0] satp;             // 12'h180
    } SCSR;
 
    // ------------------------ User mode CSRs ------------------------
    // User mode Registers
    typedef struct packed {
-   logic                     [RSZ-1:0] ustatus;          // 12'h000
-   `ifdef ext_N
-   logic                     [RSZ-1:0] uie;              // 12'h004
-   `endif
-   logic                     [RSZ-1:0] utvec;            // 12'h005
-   logic                     [RSZ-1:0] uscratch;         // 12'h040
-   logic                   [PC_SZ-1:0] uepc;             // 12'h041
-   logic                     [RSZ-1:0] ucause;           // 12'h042
-   logic                     [RSZ-1:0] utval;            // 12'h043
-   `ifdef ext_N
-   UIP_SIGS                            uip;              // 12'h044
-   `endif
+      logic                        [RSZ-1:0] ustatus;          // 12'h000
+      `ifdef ext_N
+      logic                        [RSZ-1:0] uie;              // 12'h004
+      `endif
+      logic                        [RSZ-1:0] utvec;            // 12'h005
+      logic                        [RSZ-1:0] uscratch;         // 12'h040
+      logic                      [PC_SZ-1:0] uepc;             // 12'h041
+      logic                        [RSZ-1:0] ucause;           // 12'h042
+      logic                        [RSZ-1:0] utval;            // 12'h043
+      `ifdef ext_N
+      UIP_SIGS                               uip;              // 12'h044
+      `endif
    } UCSR;
 
 /*

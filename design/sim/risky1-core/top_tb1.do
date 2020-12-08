@@ -33,11 +33,11 @@
 # NOTE1: If SIM_DEBUG is needed in one group, then it should be used in all groups. Same reasoning goes for use_xxx
 # NOTE2: All +SIM_DEBUG, +BIND_ASSERTS defines should be removed if doing synthesis for FPGA or ASIC
 
-# Package Files +ext_M+ext_N+ext_U+ext_S
-vlog  -sv -hazards +define+ext_M+ext_S+ext_U+ext_N+SIM_DEBUG                     +incdir+../../src/includes    ../../src/pkg/logic_params_pkg.sv
-vlog  -sv -hazards +define+ext_M+ext_S+ext_U+ext_N+SIM_DEBUG                     +incdir+../../src/includes    ../../src/pkg/functions_pkg.sv
-vlog  -sv -hazards +define+ext_M+ext_S+ext_U+ext_N+SIM_DEBUG                     +incdir+../../src/includes    ../../src/pkg/cpu_params_pkg.sv
-vlog  -sv -hazards +define+ext_M+ext_S+ext_U+ext_N+SIM_DEBUG                     +incdir+../../src/includes    ../../src/pkg/cpu_structs_pkg.sv
+# Package Files +ext_M+ext_S+ext_U+ext_N+SIM_DEBUG
+vlog  -sv -hazards +define+ext_M+ext_S+ext_U+ext_N+SIM_DEBUG                                                   ../../src/pkg/logic_params_pkg.sv
+vlog  -sv -hazards +define+ext_M+ext_S+ext_U+ext_N+SIM_DEBUG                                                   ../../src/pkg/functions_pkg.sv
+vlog  -sv -hazards +define+ext_M+ext_S+ext_U+ext_N+SIM_DEBUG                                                   ../../src/pkg/cpu_params_pkg.sv
+vlog  -sv -hazards +define+ext_M+ext_S+ext_U+ext_N+SIM_DEBUG+MODELSIM                                          ../../src/pkg/cpu_structs_pkg.sv
 vlog  -sv -hazards +define+ext_M+ext_S+ext_U+ext_N+SIM_DEBUG                                                   ../../src/emu/RV_EMU_params_pkg.sv
 
 # Interfaces
@@ -75,6 +75,7 @@ vlog  -sv -hazards +define+ext_M+ext_S+ext_U+ext_N+SIM_DEBUG  +cover            
 vlog  -sv -hazards +define+ext_M+ext_S+ext_U+ext_N+SIM_DEBUG  +cover                                           ../../src/cpu_src/vedic_mult32x32.v
 vlog  -sv -hazards +define+ext_M+ext_S+ext_U+ext_N+SIM_DEBUG  +cover                                           ../../src/cpu_src/wb.sv
 vlog  -sv -hazards +define+ext_M+ext_S+ext_U+ext_N+SIM_DEBUG  +cover                                           ../../src/emu/RV_EMU_core.svp
+#vlog  -sv -hazards +define+ext_M+ext_S+ext_U+ext_N+SIM_DEBUG  +cover                                           ../../src/encrypt/RV_EMU_core.sv
 
 
 # no +define+ to be used with caches
@@ -96,8 +97,8 @@ vlog  -sv -hazards +define+ext_M+ext_S+ext_U+ext_N+SIM_DEBUG                    
 vlog  -sv -hazards +define+ext_M+ext_S+ext_U+ext_N+SIM_DEBUG                                                   ../../src/sva/gpr_asserts.sv
 vlog  -sv -hazards +define+ext_M+ext_S+ext_U+ext_N+SIM_DEBUG                                                   ../../src/sva/mem_asserts.sv
 vlog  -sv -hazards +define+ext_M+ext_S+ext_U+ext_N+SIM_DEBUG                                                   ../../src/sva/wb_asserts.sv
-vlog  -sv -hazards +define+ext_M+ext_S+ext_U+ext_N+SIM_DEBUG                                                   ../../src/sva/pipe_asserts.sv
-vlog  -sv -hazards +define+ext_M+ext_S+ext_U+ext_N+SIM_DEBUG                                                   ../../src/sva/RV_EMU_asserts.svp
+vlog  -sv -hazards +define+ext_M+ext_S+ext_U+ext_N+SIM_DEBUG                        +incdir+../../src/sva      ../../src/sva/RV_EMU_asserts.svp
+#vlog  -sv -hazards +define+ext_M+ext_S+ext_U+ext_N+SIM_DEBUG                        +incdir+../../src/encrypt      ../../src/encrypt/RV_EMU_asserts.sv
 
 view assertions
 view structure

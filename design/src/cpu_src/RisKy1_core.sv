@@ -313,8 +313,6 @@ module RisKy1_core
 
    CSR_NXT_intf                        csr_nxt_bus();
 
-   logic                         [1:0] mode;                                  // Current CPU mode: Machine, Supervisor, or User
-
    logic                               mtime_lo_wr, mtime_hi_wr, mtimecmp_lo_wr, mtimecmp_hi_wr;
    logic                   [2*RSZ-1:0] mtime, mtimecmp;
    logic                     [RSZ-1:0] msip_reg;
@@ -457,7 +455,7 @@ module RisKy1_core
       .sim_stop(sim_stop),
       `endif
 
-      .mode(mode),
+      .mode(csr_exe_bus.mode),
 
       // Internal I/O Write Data - in case it's a Store instruction wanting to write to the contents of the following registers
       `ifdef ext_N
@@ -546,8 +544,6 @@ module RisKy1_core
    (
       .clk_in(clk_in),
       .reset_in(reset_in),
-
-      .mode(mode),
 
       `ifdef ext_N
       .ext_irq(ext_irq),                                                      // Input:   External Interrupt

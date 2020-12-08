@@ -33,7 +33,7 @@ module mode_irq
    output   logic          [1:0] mode,
    output   logic          [1:0] nxt_mode,
    
-   EXCEPTION                     exception,
+   input    logic                exception_flag,
    
    `ifdef ext_U
    input    logic                uret,
@@ -165,7 +165,7 @@ module mode_irq
    //M -> U: on a "return from interrupt" instruction where the saved processor status indicates the CPU should be in U mode.
    always_comb
    begin
-      if (reset_in | exception.flag `ifdef ext_N | interrupt_flag `endif)
+      if (reset_in | exception_flag `ifdef ext_N | interrupt_flag `endif)
          nxt_mode = 2'b11;                                  // Machine Mode
       else if (mret)
          nxt_mode = mpp;                                    // "When executing an MRET instruction, supposing MPP holds the value y, ... the privilege mode is changed to y; ..."
