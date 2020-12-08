@@ -156,11 +156,11 @@ import cpu_params_pkg::*;
    typedef enum {LD_RET, ST_RET, CSR_RET, SYS_RET, ALU_RET, BXX_RET, JAL_RET, JALR_RET, IM_RET, ID_RET, IR_RET, HINT_RET, `ifdef ext_F FLD_RET, FST_RET, FP_RET, `endif  UNK_RET} RETIRE_TYPE;
 
    // Verilog
-   `ifdef MODELSIM
+//   `ifdef MODELSIM
       localparam RET_SZ = 15;                   // must change depending on number of RETIRE_TYPE entries!!!!!!!!!!!!!
-   `else
-      localparam RET_SZ = RETIRE_TYPE.num();    // Modelsim 2020.1 and lower can't handle this
-   `endif
+//   `else
+//      localparam RET_SZ = RETIRE_TYPE.num();    // Modelsim 2020.1 and lower can't handle this
+//   `endif
    
    typedef struct packed {                      // each entry contains count of how many instructions  of that typeretired this clock cycle
       logic                   mispredict;       // Branch Mispredict count          - not one of the faults but usefull information
