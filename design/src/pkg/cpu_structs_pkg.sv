@@ -198,6 +198,12 @@ import cpu_params_pkg::*;
       logic       [PC_SZ-1:0] br_pc;
       IG_TYPE                 ig_type;
       logic       [OP_SZ-1:0] op_type;
+      logic             [1:0] mode;             // mode can change on any clock cycle, but we want to pass value associated with current instruction
+      `ifdef ext_N
+      logic                   interrupt_flag;   // 1 = take an interrupt trap
+      logic         [RSZ-1:0] interrupt_cause;  // value specifying what type of interrupt
+      `endif
+      logic       [PC_SZ-1:0] trap_pc;          // Output:  trap vector handler address.
 
       // GPR/FPR information (gets pased to MEM stage which passes it to WB stage)
       `ifdef ext_F
@@ -226,6 +232,12 @@ import cpu_params_pkg::*;
       IG_TYPE                 ig_type;
       logic       [OP_SZ-1:0] op_type;
       logic                   mio_ack_fault;
+      logic             [1:0] mode;
+      `ifdef ext_N
+      logic                   interrupt_flag;   // 1 = take an interrupt trap
+      logic         [RSZ-1:0] interrupt_cause;  // value specifying what type of interrupt
+      `endif
+      logic       [PC_SZ-1:0] trap_pc;          // Output:  trap vector handler address.
 
       // GPR/FPR information
       `ifdef ext_F

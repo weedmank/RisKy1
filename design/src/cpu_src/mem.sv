@@ -34,8 +34,6 @@ module mem
    output   logic                         sim_stop,
    `endif
 
-   input    logic                   [1:0] mode,
-   
    // I/O Write signals to specific RISC-V I/O registers
    `ifdef ext_N
    output   logic                         msip_wr,                                  // Output:  write to I/O msip register
@@ -99,7 +97,8 @@ module mem
    logic                   is_ls;                                                   // this is a Load or Store instruction
    logic                   MIO_req, MIO_ack, MIO_ack_fault;
    logic         [RSZ-1:0] MIO_ack_data;
-
+   logic             [1:0] mode;
+   
    // signals used in MEM stage
    assign ls_addr                      = E2M_bus.data.ls_addr;
    assign st_data                      = E2M_bus.data.st_data;
@@ -111,7 +110,8 @@ module mem
    assign mis                          = E2M_bus.data.mis;                          // misaligned, illegal CSR access...
    assign ci                           = E2M_bus.data.ci;
    assign br_pc                        = E2M_bus.data.br_pc;
-
+   assign mode                         = E2M_bus.data.mode;
+   
    assign is_ls                        = (is_ld | is_st);
 
    // control logic for interface to Execution Stage
@@ -162,6 +162,13 @@ module mem
    assign mem_dout.ig_type             = E2M_bus.data.ig_type;
    assign mem_dout.op_type             = E2M_bus.data.op_type;
    //     mem_dout.mio_ack_fault       is created in always block below
+   assign mem_dout.mode                = E2M_bus.data.mode;
+   assign mem_dout.trap_pc             = E2M_bus.data.trap_pc;                      // trap_pc, interrupt_flag, interrupt_cause not used in this stage,but needed in WB stage
+   `ifdef ext_N         
+   assign mem_dout.interrupt_flag      = E2M_bus.data.interrupt_flag;
+   assign mem_dout.interrupt_cause     = E2M_bus.data.interrupt_cause;
+   `endif
+   
    `ifdef ext_F
    assign mem_dout.Fd_wr               = E2M_bus.data.Fd_wr;
    `endif

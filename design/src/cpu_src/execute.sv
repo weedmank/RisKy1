@@ -480,7 +480,8 @@ module execute
          exe_dout.ig_type           = ig_type;
 
          exe_dout.op_type           = op_type;
-
+         exe_dout.mode              = mode;                                         // pass mode value associated with this instruction
+         
          unique case(ig_type)                                                       // select which functional unit output data is the appropriate one and save it
             ALU_INSTR:
             begin

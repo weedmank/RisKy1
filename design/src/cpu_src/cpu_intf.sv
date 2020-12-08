@@ -399,33 +399,25 @@ interface CSR_EXE_intf;
    `ifdef ext_U
    logic                     [RSZ-1:0] uepc;             // User Exception PC
    `endif
-   logic                         [1:0] mode;             // CPU mode
-
+   logic                         [1:0] mode;
+   `ifdef ext_N
+   logic                               interrupt_flag;   // 1 = take an interrupt trap
+   logic                     [RSZ-1:0] interrupt_cause;  // value specifying what type of interrupt
+   `endif
+   logic                   [PC_SZ-1:0] trap_pc;          // Output:  trap vector handler address.
+   
    // signals from EXE stage - Note: partial pipeline flush will occur when xret == TRUE & PC reloads
-   logic                     [RSZ-1:0] mret;             // Machine mode return flag
    `ifdef ext_S
    logic                     [RSZ-1:0] sret;             // Supervisor Mode return flag
    `endif
    `ifdef ext_U
    logic                     [RSZ-1:0] uret;             // User Mode return flag
    `endif
-
-   modport master(output   mepc, `ifdef ext_S sepc, `endif `ifdef ext_U uepc, `endif mode, input  `ifdef ext_S sret, `endif `ifdef ext_U uret, `endif mret);
-   modport  slave(input    mepc, `ifdef ext_S sepc, `endif `ifdef ext_U uepc, `endif mode, output `ifdef ext_S sret, `endif `ifdef ext_U uret, `endif mret);
+   logic                     [RSZ-1:0] mret;             // Machine mode return flag
+   
+   modport master(output   mepc, `ifdef ext_S sepc, `endif `ifdef ext_U uepc, `endif mode, `ifdef ext_N interrupt_flag, interrupt_cause, `endif trap_pc,
+                  input  `ifdef ext_S sret, `endif `ifdef ext_U uret, `endif mret);
+   modport  slave(input    mepc, `ifdef ext_S sepc, `endif `ifdef ext_U uepc, `endif mode, `ifdef ext_N interrupt_flag, interrupt_cause, `endif trap_pc,
+                  output `ifdef ext_S sret, `endif `ifdef ext_U uret, `endif mret);
 
 endinterface: CSR_EXE_intf
-
-
-// ------------------------ CSR - WB interface ------------------------
-interface CSR_WB_intf;
-   logic                   [PC_SZ-1:0] trap_pc;          // Output:  trap vector handler address.
-   `ifdef ext_N
-   logic                               interrupt_flag;   // 1 = take an interrupt trap
-   logic                     [RSZ-1:0] interrupt_cause;  // value specifying what type of interrupt
-   `endif
-   logic                         [1:0] mode;             // CPU mode
-
-   modport master(output trap_pc, `ifdef ext_N interrupt_flag, interrupt_cause, `endif mode);
-   modport  slave(input  trap_pc, `ifdef ext_N interrupt_flag, interrupt_cause, `endif mode);
-
-endinterface: CSR_WB_intf

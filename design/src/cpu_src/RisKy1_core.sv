@@ -295,9 +295,6 @@ module RisKy1_core
    // signals shared between CSR and EXE stage
    CSR_EXE_intf                        csr_exe_bus();
 
-   // signals shared between CSR and WB stage
-   CSR_WB_intf                         csr_wb_bus();
-
    // register forwarding signals
    FWD_CSR                             fwd_mem_csr;
    FWD_CSR                             fwd_wb_csr;
@@ -406,7 +403,7 @@ module RisKy1_core
       .cpu_halt(cpu_halt),                                                    // Input:   Cause the CPU to stop processing instructions and data
 
       // signals shared between CSR and EXE stage
-      .csr_exe_bus(csr_exe_bus),
+      .csr_exe_bus(csr_exe_bus),                                              // Input:   mepc,sepc,uepc,mert,sret,uret,mode
 
       // Time to flush pipeline and reload PC signal
       .pipe_flush(pipe_flush_exe),                                            // Input:   1 = flush pipeline
@@ -455,8 +452,6 @@ module RisKy1_core
       .sim_stop(sim_stop),
       `endif
 
-      .mode(csr_exe_bus.mode),
-
       // Internal I/O Write Data - in case it's a Store instruction wanting to write to the contents of the following registers
       `ifdef ext_N
       .msip_wr(msip_wr),                                                      // Output:  write to I/O msip register
@@ -498,15 +493,18 @@ module RisKy1_core
 
    // 5th Stage = Write Back Stage
    WB_2_CSR_wr_intf  csr_wr_bus();
+   `ifdef ext_N
+   logic             trigger_wfi;
+   `endif
    wb WB
    (
-      `ifdef ext_N
-      .clk_in(clk_in),                                                        // Input:  system clock (ONLY needed for assertion testing)
-      .ext_irq(ext_irq),                                                      // Input:   External Interrupt - this affects cpu_halt signal
-      `endif
       .reset_in(reset_in),                                                    // Input:  system reset
 
-      .cpu_halt(cpu_halt),                                                    // Output:  halt CPU operation if TRUE
+      .cpu_halt(cpu_halt),                                                    // Input:   halt CPU operation if TRUE
+
+      `ifdef ext_N
+      .trigger_wfi(trigger_wfi),                                              // Output:  Trigger a CPU halt
+      `endif
 
       // flush pipeline/reload PC signals
       .rld_pc_flag(wb_rld_pc_flag),                                           // Output:  1 = flush pipeline & reload PC with mem_rld_pc_addr
@@ -528,16 +526,13 @@ module RisKy1_core
       `endif
 
       // interface to GPR
-      .gpr_bus(gpr_bus),
-
-      // signals shared between CSR and WB stage
-      .csr_wb_bus(csr_wb_bus),                                                // master ->
+      .gpr_bus(gpr_bus),                                                      // writes data to a specific architectural register
 
       // interface to CSR
-      .csr_wr_bus(csr_wr_bus),                                                // master ->
+      .csr_wr_bus(csr_wr_bus),                                                // writes data to a specific CSR
 
       // signals from WB stage
-      .EV_EXC_bus(EV_EXC_bus)                                                 // // master -> needed by CSR
+      .EV_EXC_bus(EV_EXC_bus)                                                 // master -> needed by CSR
    );
 
    csr CSREGS
@@ -552,9 +547,6 @@ module RisKy1_core
 
       // signals shared between CSR and EXE stage
       .csr_exe_bus(csr_exe_bus),
-
-      // signals shared between CSR and EXE stage
-      .csr_wb_bus(csr_wb_bus),                                                // master -> trap_pc, interrupt_flag, interrupt_cause, mode
 
       // signals from WB stage
       .EV_EXC_bus(EV_EXC_bus),                                                // Input: needed by CSR logic
@@ -612,5 +604,21 @@ module RisKy1_core
      .mtime(mtime), .mtimecmp(mtimecmp),                                      // Outputs: 64 bit mtime & mtimecmp registers
      .msip_reg(msip_reg)                                                      // Output:  Software Interrupt Pending register (1 bit)
    );
+
+   //---------------------------------------------------------------------------
+   // CPU Halt Logic
+   //---------------------------------------------------------------------------
+   `ifdef ext_N
+   // Putting CPU to sleep and waking it up
+   always_ff @(posedge clk_in)
+   begin
+      if (reset_in || ext_irq)
+         cpu_halt <= FALSE;
+      else if (trigger_wfi)
+         cpu_halt <= TRUE;
+   end
+   `else
+   assign cpu_halt = FALSE;
+   `endif
 
 endmodule

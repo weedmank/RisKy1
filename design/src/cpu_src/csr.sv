@@ -38,9 +38,6 @@ module csr
    // signals shared between CSR and EXE stage
    CSR_EXE_intf.master        csr_exe_bus,
 
-   // signals shared between CSR and WB stage
-   CSR_WB_intf.master         csr_wb_bus,
-
    // signals from WB stage
    EV_EXC_intf.slave          EV_EXC_bus,                   // Events and Exception information (see wb.sv)
 
@@ -118,14 +115,24 @@ module csr
    assign csr_rd_bus.csr_rd_avail   = csr_rd_avail;
 
    // ----------------------------------- signals shared between csr.sv and EXE stage
-   assign csr_exe_bus.mode = mode;
-   
-   assign csr_exe_bus.mepc = mcsr.mepc;
+   logic                   [PC_SZ-1:0] trap_pc;             // Output:  trap vector handler address.
+   `ifdef ext_N
+   logic                               interrupt_flag;      // 1 = take an interrupt trap
+   logic                     [RSZ-1:0] interrupt_cause;     // value specifying what type of interrupt
+   `endif
+   assign csr_exe_bus.mode             = mode;
+
+   assign csr_exe_bus.mepc             = mcsr.mepc;
    `ifdef ext_S
-   assign csr_exe_bus.sepc = scsr.sepc;
+   assign csr_exe_bus.sepc             = scsr.sepc;
    `endif
    `ifdef ext_U
-   assign csr_exe_bus.uepc = ucsr.uepc;
+   assign csr_exe_bus.uepc             = ucsr.uepc;
+   `endif
+   assign csr_exe_bus.trap_pc          = trap_pc;
+   `ifdef ext_N
+   assign csr_exe_bus.interrupt_flag   = interrupt_flag;
+   assign csr_exe_bus.interrupt_cause  = interrupt_cause;
    `endif
 
    assign mret = csr_exe_bus.mret;
@@ -135,22 +142,6 @@ module csr
    `ifdef ext_U
    assign uret = csr_exe_bus.uret;
    `endif
-
-   // --------------------------------- csr_wb_bus signal assignments
-   // signals to csr.sv
-   logic                   [PC_SZ-1:0] trap_pc;             // Output:  trap vector handler address.
-   `ifdef ext_N
-   logic                               interrupt_flag;      // 1 = take an interrupt trap
-   logic                     [RSZ-1:0] interrupt_cause;     // value specifying what type of interrupt
-   `endif
-
-   // signals from csr.sv
-   assign csr_wb_bus.trap_pc           = trap_pc;
-   `ifdef ext_N
-   assign csr_wb_bus.interrupt_flag    = interrupt_flag;
-   assign csr_wb_bus.interrupt_cause   = interrupt_cause;
-   `endif
-   assign csr_wb_bus.mode              = mode;
 
    // ================================================================== csr_rd_data logic ============================================================
    // produces current values of csr_rd_data and csr_rd_avail based in input csr_rd_addr. Needed by CSR Functional Unit inside EXE stage to read

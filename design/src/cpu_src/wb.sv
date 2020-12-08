@@ -25,16 +25,14 @@ import cpu_structs_pkg::*;
 
 module wb
 (
-   `ifdef ext_N
-   input    logic                         clk_in,                                   // Input:   clock only needed during SIM_DEBUG for ABV (Assertion Based Verification)
-   // interrupt sources
-   input    logic                         ext_irq,                                  // Input:   External Interrupt
-   `endif
-   
    input    logic                         reset_in,
 
-   output   logic                         cpu_halt,                                 // Output:  disable CPU operations by not allowing any more input to this stage
+   input    logic                         cpu_halt,                                 // Output:  disable CPU operations by not allowing any more input to this stage
 
+   `ifdef ext_N
+   output   logic                         trigger_wfi,                              // WFI instruction may trigger a CPU halt
+   `endif
+   
    // Fetch PC reload signals
    output   logic                         rld_pc_flag,                              // Output:  Cause the Fetch unit to reload the PC
    output   logic                         rld_ic_flag,                              // Output:  A STORE to L1 D$ also wrote to L1 I$ address space
@@ -58,9 +56,6 @@ module wb
 
    // interface to GPR
    RBUS_intf.master                       gpr_bus,
-
-   // interface to CSR
-   CSR_WB_intf.master                     csr_wb_bus,
 
    WB_2_CSR_wr_intf.master                csr_wr_bus,
 
@@ -87,28 +82,18 @@ module wb
    logic     [GPR_ASZ-1:0] wb_Rd_addr;
    logic         [RSZ-1:0] wb_Rd_data;
 
-   logic                   wb_csr_wr;                                             // Writeback stage needs to know whether to write to destination register Rd
+   logic                   wb_csr_wr;                                               // Writeback stage needs to know whether to write to destination register Rd
    logic     [GPR_ASZ-1:0] wb_csr_addr;
    logic         [RSZ-1:0] wb_csr_data;
    // misc
    logic                   xfer_in;
 
-   // --------------------------------- csr_wb_bus signal assignments
-   // signals to csr.sv
-   logic                   [PC_SZ-1:0] trap_pc;          // Output:  trap vector handler address.
-   `ifdef ext_N
-   logic                               interrupt_flag;   // 1 = take an interrupt trap
-   logic                     [RSZ-1:0] interrupt_cause;  // value specifying what type of interrupt
+   logic             [1:0] mode;                                                    // CPU mode when this instruction was in EXE stage
+   logic       [PC_SZ-1:0] trap_pc;                                                 // Output:  trap vector handler address.
+   `ifdef ext_N                                       
+   logic                   interrupt_flag;                                          // 1 = take an interrupt trap
+   logic         [RSZ-1:0] interrupt_cause;                                         // value specifying what type of interrupt
    `endif
-   logic                         [1:0] mode;             // CPU mode
-
-   // signals from csr.sv
-   assign trap_pc             = csr_wb_bus.trap_pc;
-   `ifdef ext_N
-   assign interrupt_flag      = csr_wb_bus.interrupt_flag;
-   assign interrupt_cause     = csr_wb_bus.interrupt_cause;
-   `endif
-   assign mode                = csr_wb_bus.mode;
 
 
    // --------------------------------- signals from MEM stage that are used in WB stage
@@ -122,6 +107,13 @@ module wb
    assign ig_type             = M2W_bus.data.ig_type;                               // override default values
    assign op_type             = M2W_bus.data.op_type;
    assign mio_ack_fault       = M2W_bus.data.mio_ack_fault;
+   assign mode                = M2W_bus.data.mode;
+   assign trap_pc             = M2W_bus.data.trap_pc;
+   `ifdef ext_N
+   assign interrupt_flag      = M2W_bus.data.interrupt_flag;
+   assign interrupt_cause     = M2W_bus.data.interrupt_cause;
+   `endif
+
 
    // --------------------------------- asserted when this stage is ready to finish it's processing
    assign M2W_bus.rdy         = !reset_in & !cpu_halt;                              // always ready to process results
@@ -180,18 +172,7 @@ module wb
 
    //------------------- CPU Halt Logic ------------------
    `ifdef ext_N
-   logic    trigger_wfi;
-assign trigger_wfi = FALSE;      //!!!!!!!!!!!!!!!!! temporary !!!!!!!!!!!!!!!!!!!!
-   // Putting CPU to sleep and waking it up
-   always_ff @(posedge clk_in)
-   begin
-      if (reset_in || ext_irq)
-         cpu_halt <= FALSE;
-      else if (trigger_wfi)
-         cpu_halt <= TRUE;
-   end
-   `else
-   assign cpu_halt = FALSE;
+   assign trigger_wfi = FALSE;      //!!!!!!!!!!!!!!!!! temporary !!!!!!!!!!!!!!!!!!!!
    `endif
 
    //-----------------------------------------------------
