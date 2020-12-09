@@ -177,6 +177,7 @@ module mem
    //     mem_dout.Rd_data             is created in always block below
    assign mem_dout.csr_wr              = E2M_bus.data.csr_wr;
    assign mem_dout.csr_addr            = E2M_bus.data.csr_addr;
+   assign mem_dout.csr_wr_data         = E2M_bus.data.csr_wr_data;
    assign mem_dout.csr_fwd_data        = E2M_bus.data.csr_fwd_data;
 
    always_comb
