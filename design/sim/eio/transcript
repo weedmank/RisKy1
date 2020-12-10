@@ -1,0 +1,1464 @@
+# Compile of external_register.sv was successful with warnings.
+# Compile of alu_fu.sv was successful with warnings.
+# Compile of br_fu.sv was successful with warnings.
+# Compile of cpu_intf.sv was successful with warnings.
+# Compile of csr.sv was successful with warnings.
+# Compile of csr_av_rdata.sv was successful with warnings.
+# Compile of csr_fu.sv was successful with warnings.
+# Compile of csr_lo_cnt.sv was successful with warnings.
+# Compile of csr_nxt_reg.sv was successful with warnings.
+# Compile of csr_std_wr.sv was successful with warnings.
+# Compile of decode.sv was successful with warnings.
+# Compile of decode_core.sv was successful with warnings.
+# Compile of execute.sv was successful with warnings.
+# Compile of fetch.sv was successful with warnings.
+# Compile of fpr.sv was successful with warnings.
+# Compile of gpr.sv was successful with warnings.
+# Compile of idr_fu.sv was successful with warnings.
+# Compile of im_fu.sv was successful with warnings.
+# Compile of irq.sv was successful with warnings.
+# Compile of ls_fu.sv was successful with warnings.
+# Compile of mem.sv was successful with warnings.
+# Compile of mode_irq.sv was successful with warnings.
+# Compile of pipe.sv was successful with warnings.
+# Compile of RisKy1_core.sv was successful with warnings.
+# Compile of sdiv_N_by_N.sv was successful with warnings.
+# Compile of spfp_fu.sv was successful.
+# Compile of vedic_mult16x16.v was successful.
+# Compile of vedic_mult32x32.v was successful.
+# Compile of wb.sv was successful with warnings.
+# Compile of disasm_RV.sv was successful with warnings.
+# Compile of cpu_params_pkg.sv was successful.
+# Compile of cpu_structs_pkg.sv was successful.
+# Compile of functions_pkg.sv was successful.
+# Compile of logic_params_pkg.sv was successful.
+# Compile of top_tb1.sv was successful with warnings.
+# Compile of RV_EMU_asserts.svp was successful with warnings.
+# Compile of RV_EMU_core.svp was successful with warnings.
+# 37 compiles, 0 failed with no errors.
+# Compile of external_register.sv was successful.
+# Compile of alu_fu.sv was successful.
+# Compile of br_fu.sv was successful.
+# Compile of cpu_intf.sv was successful.
+# Compile of csr.sv was successful.
+# Compile of csr_av_rdata.sv was successful.
+# Compile of csr_fu.sv was successful.
+# Compile of csr_lo_cnt.sv was successful.
+# Compile of csr_nxt_reg.sv was successful.
+# Compile of csr_std_wr.sv was successful.
+# Compile of decode.sv was successful.
+# Compile of decode_core.sv was successful.
+# Compile of execute.sv was successful.
+# Compile of fetch.sv was successful.
+# Compile of fpr.sv was successful.
+# Compile of gpr.sv was successful.
+# Compile of idr_fu.sv was successful.
+# Compile of im_fu.sv was successful.
+# Compile of irq.sv was successful.
+# Compile of ls_fu.sv was successful.
+# Compile of mem.sv was successful.
+# Compile of mode_irq.sv was successful.
+# Compile of pipe.sv was successful.
+# Compile of RisKy1_core.sv was successful.
+# Compile of sdiv_N_by_N.sv was successful.
+# Compile of spfp_fu.sv was successful.
+# Compile of vedic_mult16x16.v was successful.
+# Compile of vedic_mult32x32.v was successful.
+# Compile of wb.sv was successful.
+# Compile of disasm_RV.sv was successful.
+# Compile of cpu_params_pkg.sv was successful.
+# Compile of cpu_structs_pkg.sv was successful.
+# Compile of functions_pkg.sv was successful.
+# Compile of logic_params_pkg.sv was successful.
+# Compile of top_tb1.sv was successful.
+# Compile of RV_EMU_asserts.svp was successful with warnings.
+# Compile of RV_EMU_core.svp was successful.
+# 37 compiles, 0 failed with no errors.
+do top_tb1.do
+# Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
+# Start time: 20:00:53 on Dec 09,2020
+# vlog -reportprogress 300 -sv -hazards "+define+SIM_DEBUG" ../../src/pkg/logic_params_pkg.sv 
+# -- Compiling package logic_params_pkg
+# 
+# Top level modules:
+# 	--none--
+# End time: 20:00:54 on Dec 09,2020, Elapsed time: 0:00:01
+# Errors: 0, Warnings: 0
+# Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
+# Start time: 20:00:54 on Dec 09,2020
+# vlog -reportprogress 300 -sv -hazards "+define+SIM_DEBUG" ../../src/pkg/functions_pkg.sv 
+# -- Compiling package functions_pkg
+# 
+# Top level modules:
+# 	--none--
+# End time: 20:00:54 on Dec 09,2020, Elapsed time: 0:00:00
+# Errors: 0, Warnings: 0
+# Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
+# Start time: 20:00:54 on Dec 09,2020
+# vlog -reportprogress 300 -sv -hazards "+define+SIM_DEBUG" ../../src/pkg/cpu_params_pkg.sv 
+# -- Compiling package cpu_params_pkg
+# -- Importing package functions_pkg
+# 
+# Top level modules:
+# 	--none--
+# End time: 20:00:54 on Dec 09,2020, Elapsed time: 0:00:00
+# Errors: 0, Warnings: 0
+# Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
+# Start time: 20:00:54 on Dec 09,2020
+# vlog -reportprogress 300 -sv -hazards "+define+SIM_DEBUG" ../../src/pkg/cpu_structs_pkg.sv 
+# -- Compiling package cpu_structs_pkg
+# -- Importing package cpu_params_pkg
+# -- Importing package functions_pkg
+# 
+# Top level modules:
+# 	--none--
+# End time: 20:00:54 on Dec 09,2020, Elapsed time: 0:00:00
+# Errors: 0, Warnings: 0
+# Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
+# Start time: 20:00:54 on Dec 09,2020
+# vlog -reportprogress 300 -sv -hazards "+define+SIM_DEBUG" ../../src/cpu_src/cpu_intf.sv 
+# ** Warning: ../../src/cpu_src/cpu_intf.sv(22): (vlog-13233) Design unit "cpu_intf_sv_unit" already exists and will be overwritten. Overwriting SystemVerilog $unit with different source files.
+# -- Compiling package cpu_intf_sv_unit
+# -- Importing package cpu_params_pkg
+# -- Importing package functions_pkg
+# -- Importing package cpu_structs_pkg
+# -- Compiling interface F2D_intf
+# -- Compiling interface D2E_intf
+# -- Compiling interface E2M_intf
+# -- Compiling interface M2W_intf
+# -- Compiling interface AFU_intf
+# -- Compiling interface BFU_intf
+# -- Compiling interface LSFU_intf
+# -- Compiling interface CSRFU_intf
+# -- Compiling interface WB_2_CSR_wr_intf
+# -- Compiling interface RCSR_intf
+# -- Compiling interface CSR_NXT_intf
+# -- Compiling interface DCORE_intf
+# -- Compiling interface RBUS_intf
+# -- Compiling interface FBUS_intf
+# -- Compiling interface L1IC_intf
+# -- Compiling interface L1DC_intf
+# -- Compiling interface EV_EXC_intf
+# -- Compiling interface EIO_intf
+# -- Compiling interface CSR_EXE_intf
+# 
+# Top level modules:
+# 	--none--
+# End time: 20:00:54 on Dec 09,2020, Elapsed time: 0:00:00
+# Errors: 0, Warnings: 1
+# Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
+# Start time: 20:00:54 on Dec 09,2020
+# vlog -reportprogress 300 -sv "+define+SIM_DEBUG" ../../src/debug/disasm_RV.sv 
+# ** Warning: ../../src/debug/disasm_RV.sv(23): (vlog-13233) Design unit "disasm_RV_sv_unit" already exists and will be overwritten. Overwriting SystemVerilog $unit with different source files.
+# -- Compiling package disasm_RV_sv_unit
+# -- Importing package functions_pkg
+# -- Importing package logic_params_pkg
+# -- Importing package cpu_params_pkg
+# -- Importing package cpu_structs_pkg
+# -- Compiling module disasm
+# 
+# Top level modules:
+# 	disasm
+# End time: 20:00:54 on Dec 09,2020, Elapsed time: 0:00:00
+# Errors: 0, Warnings: 1
+# Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
+# Start time: 20:00:54 on Dec 09,2020
+# vlog -reportprogress 300 -sv -hazards "+define+SIM_DEBUG" "+cover" ../../src/cpu_src/alu_fu.sv 
+# ** Warning: ../../src/cpu_src/alu_fu.sv(26): (vlog-13233) Design unit "alu_fu_sv_unit" already exists and will be overwritten. Overwriting SystemVerilog $unit with different source files.
+# -- Compiling package alu_fu_sv_unit
+# -- Importing package functions_pkg
+# -- Importing package logic_params_pkg
+# -- Importing package cpu_params_pkg
+# -- Importing package cpu_structs_pkg
+# -- Compiling module alu_fu
+# 
+# Top level modules:
+# 	alu_fu
+# End time: 20:00:55 on Dec 09,2020, Elapsed time: 0:00:01
+# Errors: 0, Warnings: 1
+# Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
+# Start time: 20:00:55 on Dec 09,2020
+# vlog -reportprogress 300 -sv -hazards "+define+SIM_DEBUG" "+cover" ../../src/cpu_src/br_fu.sv 
+# ** Warning: ../../src/cpu_src/br_fu.sv(26): (vlog-13233) Design unit "br_fu_sv_unit" already exists and will be overwritten. Overwriting SystemVerilog $unit with different source files.
+# -- Compiling package br_fu_sv_unit
+# -- Importing package functions_pkg
+# -- Importing package logic_params_pkg
+# -- Importing package cpu_params_pkg
+# -- Importing package cpu_structs_pkg
+# -- Compiling module br_fu
+# 
+# Top level modules:
+# 	br_fu
+# End time: 20:00:55 on Dec 09,2020, Elapsed time: 0:00:00
+# Errors: 0, Warnings: 1
+# Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
+# Start time: 20:00:55 on Dec 09,2020
+# vlog -reportprogress 300 -sv -hazards "+define+SIM_DEBUG" "+cover" ../../src/cpu_src/csr.sv 
+# ** Warning: ../../src/cpu_src/csr.sv(23): (vlog-13233) Design unit "csr_sv_unit" already exists and will be overwritten. Overwriting SystemVerilog $unit with different source files.
+# -- Compiling package csr_sv_unit
+# -- Importing package functions_pkg
+# -- Importing package logic_params_pkg
+# -- Importing package cpu_params_pkg
+# -- Importing package cpu_structs_pkg
+# -- Compiling module csr
+# 
+# Top level modules:
+# 	csr
+# End time: 20:00:55 on Dec 09,2020, Elapsed time: 0:00:00
+# Errors: 0, Warnings: 1
+# Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
+# Start time: 20:00:55 on Dec 09,2020
+# vlog -reportprogress 300 -sv -hazards "+define+SIM_DEBUG" "+cover" ../../src/cpu_src/csr_av_rdata.sv 
+# ** Warning: ../../src/cpu_src/csr_av_rdata.sv(24): (vlog-13233) Design unit "csr_av_rdata_sv_unit" already exists and will be overwritten. Overwriting SystemVerilog $unit with different source files.
+# -- Compiling package csr_av_rdata_sv_unit
+# -- Importing package functions_pkg
+# -- Importing package logic_params_pkg
+# -- Importing package cpu_params_pkg
+# -- Importing package cpu_structs_pkg
+# -- Compiling module csr_av_rdata
+# 
+# Top level modules:
+# 	csr_av_rdata
+# End time: 20:00:55 on Dec 09,2020, Elapsed time: 0:00:00
+# Errors: 0, Warnings: 1
+# Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
+# Start time: 20:00:55 on Dec 09,2020
+# vlog -reportprogress 300 -sv -hazards "+define+SIM_DEBUG" "+cover" ../../src/cpu_src/csr_fu.sv 
+# ** Warning: ../../src/cpu_src/csr_fu.sv(23): (vlog-13233) Design unit "csr_fu_sv_unit" already exists and will be overwritten. Overwriting SystemVerilog $unit with different source files.
+# -- Compiling package csr_fu_sv_unit
+# -- Importing package functions_pkg
+# -- Importing package logic_params_pkg
+# -- Importing package cpu_params_pkg
+# -- Importing package cpu_structs_pkg
+# -- Compiling module csr_fu
+# 
+# Top level modules:
+# 	csr_fu
+# End time: 20:00:55 on Dec 09,2020, Elapsed time: 0:00:00
+# Errors: 0, Warnings: 1
+# Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
+# Start time: 20:00:55 on Dec 09,2020
+# vlog -reportprogress 300 -sv -hazards "+define+SIM_DEBUG" "+cover" ../../src/cpu_src/csr_lo_cnt.sv 
+# ** Warning: ../../src/cpu_src/csr_lo_cnt.sv(22): (vlog-13233) Design unit "csr_lo_cnt_sv_unit" already exists and will be overwritten. Overwriting SystemVerilog $unit with different source files.
+# -- Compiling package csr_lo_cnt_sv_unit
+# -- Importing package functions_pkg
+# -- Importing package cpu_params_pkg
+# -- Compiling module csr_lo_cnt
+# 
+# Top level modules:
+# 	csr_lo_cnt
+# End time: 20:00:56 on Dec 09,2020, Elapsed time: 0:00:01
+# Errors: 0, Warnings: 1
+# Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
+# Start time: 20:00:56 on Dec 09,2020
+# vlog -reportprogress 300 -sv -hazards "+define+SIM_DEBUG" "+cover" ../../src/cpu_src/csr_std_wr.sv 
+# ** Warning: ../../src/cpu_src/csr_std_wr.sv(21): (vlog-13233) Design unit "csr_std_wr_sv_unit" already exists and will be overwritten. Overwriting SystemVerilog $unit with different source files.
+# -- Compiling package csr_std_wr_sv_unit
+# -- Importing package functions_pkg
+# -- Importing package cpu_params_pkg
+# -- Compiling module csr_std_wr
+# 
+# Top level modules:
+# 	csr_std_wr
+# End time: 20:00:56 on Dec 09,2020, Elapsed time: 0:00:00
+# Errors: 0, Warnings: 1
+# Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
+# Start time: 20:00:56 on Dec 09,2020
+# vlog -reportprogress 300 -sv -hazards "+define+SIM_DEBUG" "+cover" ../../src/cpu_src/csr_nxt_reg.sv 
+# ** Warning: ../../src/cpu_src/csr_nxt_reg.sv(24): (vlog-13233) Design unit "csr_nxt_reg_sv_unit" already exists and will be overwritten. Overwriting SystemVerilog $unit with different source files.
+# -- Compiling package csr_nxt_reg_sv_unit
+# -- Importing package functions_pkg
+# -- Importing package logic_params_pkg
+# -- Importing package cpu_params_pkg
+# -- Importing package cpu_structs_pkg
+# -- Compiling module csr_nxt_reg
+# 
+# Top level modules:
+# 	csr_nxt_reg
+# End time: 20:00:56 on Dec 09,2020, Elapsed time: 0:00:00
+# Errors: 0, Warnings: 1
+# Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
+# Start time: 20:00:56 on Dec 09,2020
+# vlog -reportprogress 300 -sv -hazards "+define+SIM_DEBUG" "+cover" ../../src/cpu_src/decode.sv 
+# ** Warning: ../../src/cpu_src/decode.sv(21): (vlog-13233) Design unit "decode_sv_unit" already exists and will be overwritten. Overwriting SystemVerilog $unit with different source files.
+# -- Compiling package decode_sv_unit
+# -- Importing package functions_pkg
+# -- Importing package logic_params_pkg
+# -- Importing package cpu_params_pkg
+# -- Importing package cpu_structs_pkg
+# -- Compiling module decode
+# 
+# Top level modules:
+# 	decode
+# End time: 20:00:56 on Dec 09,2020, Elapsed time: 0:00:00
+# Errors: 0, Warnings: 1
+# Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
+# Start time: 20:00:56 on Dec 09,2020
+# vlog -reportprogress 300 -sv -hazards "+define+SIM_DEBUG" "+cover" ../../src/cpu_src/decode_core.sv 
+# ** Warning: ../../src/cpu_src/decode_core.sv(22): (vlog-13233) Design unit "decode_core_sv_unit" already exists and will be overwritten. Overwriting SystemVerilog $unit with different source files.
+# -- Compiling package decode_core_sv_unit
+# -- Importing package functions_pkg
+# -- Importing package logic_params_pkg
+# -- Importing package cpu_params_pkg
+# -- Importing package cpu_structs_pkg
+# -- Compiling module decode_core
+# 
+# Top level modules:
+# 	decode_core
+# End time: 20:00:56 on Dec 09,2020, Elapsed time: 0:00:00
+# Errors: 0, Warnings: 1
+# Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
+# Start time: 20:00:56 on Dec 09,2020
+# vlog -reportprogress 300 -sv -hazards "+define+SIM_DEBUG" "+cover" ../../src/cpu_src/execute.sv 
+# ** Warning: ../../src/cpu_src/execute.sv(21): (vlog-13233) Design unit "execute_sv_unit" already exists and will be overwritten. Overwriting SystemVerilog $unit with different source files.
+# -- Compiling package execute_sv_unit
+# -- Importing package functions_pkg
+# -- Importing package logic_params_pkg
+# -- Importing package cpu_params_pkg
+# -- Importing package cpu_structs_pkg
+# -- Compiling module execute
+# 
+# Top level modules:
+# 	execute
+# End time: 20:00:56 on Dec 09,2020, Elapsed time: 0:00:00
+# Errors: 0, Warnings: 1
+# Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
+# Start time: 20:00:56 on Dec 09,2020
+# vlog -reportprogress 300 -sv -hazards "+define+SIM_DEBUG" "+cover" ../../src/cpu_src/fetch.sv 
+# ** Warning: ../../src/cpu_src/fetch.sv(21): (vlog-13233) Design unit "fetch_sv_unit" already exists and will be overwritten. Overwriting SystemVerilog $unit with different source files.
+# -- Compiling package fetch_sv_unit
+# -- Importing package functions_pkg
+# -- Importing package logic_params_pkg
+# -- Importing package cpu_params_pkg
+# -- Importing package cpu_structs_pkg
+# -- Compiling module fetch
+# ** Note: (vlog-143) Recognized 1 FSM in module "fetch(verilog)".
+# 
+# Top level modules:
+# 	fetch
+# End time: 20:00:57 on Dec 09,2020, Elapsed time: 0:00:01
+# Errors: 0, Warnings: 1
+# Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
+# Start time: 20:00:57 on Dec 09,2020
+# vlog -reportprogress 300 -sv -hazards "+define+SIM_DEBUG" "+cover" ../../src/cpu_src/fpr.sv 
+# ** Warning: ../../src/cpu_src/fpr.sv(21): (vlog-13233) Design unit "fpr_sv_unit" already exists and will be overwritten. Overwriting SystemVerilog $unit with different source files.
+# -- Compiling package fpr_sv_unit
+# -- Importing package functions_pkg
+# -- Importing package cpu_params_pkg
+# -- Compiling module fpr
+# 
+# Top level modules:
+# 	fpr
+# End time: 20:00:57 on Dec 09,2020, Elapsed time: 0:00:00
+# Errors: 0, Warnings: 1
+# Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
+# Start time: 20:00:57 on Dec 09,2020
+# vlog -reportprogress 300 -sv -hazards "+define+SIM_DEBUG" "+cover" ../../src/cpu_src/gpr.sv 
+# ** Warning: ../../src/cpu_src/gpr.sv(21): (vlog-13233) Design unit "gpr_sv_unit" already exists and will be overwritten. Overwriting SystemVerilog $unit with different source files.
+# -- Compiling package gpr_sv_unit
+# -- Importing package functions_pkg
+# -- Importing package cpu_params_pkg
+# -- Compiling module gpr
+# 
+# Top level modules:
+# 	gpr
+# End time: 20:00:57 on Dec 09,2020, Elapsed time: 0:00:00
+# Errors: 0, Warnings: 1
+# Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
+# Start time: 20:00:57 on Dec 09,2020
+# vlog -reportprogress 300 -sv -hazards "+define+SIM_DEBUG" "+cover" ../../src/cpu_src/idr_fu.sv 
+# ** Warning: ../../src/cpu_src/idr_fu.sv(24): (vlog-13233) Design unit "idr_fu_sv_unit" already exists and will be overwritten. Overwriting SystemVerilog $unit with different source files.
+# -- Compiling package idr_fu_sv_unit
+# -- Importing package functions_pkg
+# -- Importing package logic_params_pkg
+# -- Importing package cpu_params_pkg
+# -- Importing package cpu_structs_pkg
+# -- Compiling module idr_fu
+# 
+# Top level modules:
+# 	idr_fu
+# End time: 20:00:57 on Dec 09,2020, Elapsed time: 0:00:00
+# Errors: 0, Warnings: 1
+# Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
+# Start time: 20:00:57 on Dec 09,2020
+# vlog -reportprogress 300 -sv -hazards "+define+SIM_DEBUG" "+cover" ../../src/cpu_src/im_fu.sv 
+# ** Warning: ../../src/cpu_src/im_fu.sv(26): (vlog-13233) Design unit "im_fu_sv_unit" already exists and will be overwritten. Overwriting SystemVerilog $unit with different source files.
+# -- Compiling package im_fu_sv_unit
+# -- Importing package functions_pkg
+# -- Importing package logic_params_pkg
+# -- Importing package cpu_params_pkg
+# -- Importing package cpu_structs_pkg
+# -- Compiling module im_fu
+# 
+# Top level modules:
+# 	im_fu
+# End time: 20:00:57 on Dec 09,2020, Elapsed time: 0:00:00
+# Errors: 0, Warnings: 1
+# Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
+# Start time: 20:00:57 on Dec 09,2020
+# vlog -reportprogress 300 -sv -hazards "+define+SIM_DEBUG" "+cover" ../../src/cpu_src/irq.sv 
+# ** Warning: ../../src/cpu_src/irq.sv(21): (vlog-13233) Design unit "irq_sv_unit" already exists and will be overwritten. Overwriting SystemVerilog $unit with different source files.
+# -- Compiling package irq_sv_unit
+# -- Importing package functions_pkg
+# -- Importing package logic_params_pkg
+# -- Importing package cpu_params_pkg
+# -- Compiling module irq
+# 
+# Top level modules:
+# 	irq
+# End time: 20:00:58 on Dec 09,2020, Elapsed time: 0:00:01
+# Errors: 0, Warnings: 1
+# Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
+# Start time: 20:00:58 on Dec 09,2020
+# vlog -reportprogress 300 -sv -hazards "+define+SIM_DEBUG" "+cover" ../../src/cpu_src/ls_fu.sv 
+# ** Warning: ../../src/cpu_src/ls_fu.sv(24): (vlog-13233) Design unit "ls_fu_sv_unit" already exists and will be overwritten. Overwriting SystemVerilog $unit with different source files.
+# -- Compiling package ls_fu_sv_unit
+# -- Importing package functions_pkg
+# -- Importing package logic_params_pkg
+# -- Importing package cpu_params_pkg
+# -- Importing package cpu_structs_pkg
+# -- Compiling module ls_fu
+# 
+# Top level modules:
+# 	ls_fu
+# End time: 20:00:58 on Dec 09,2020, Elapsed time: 0:00:00
+# Errors: 0, Warnings: 1
+# Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
+# Start time: 20:00:58 on Dec 09,2020
+# vlog -reportprogress 300 -sv -hazards "+define+SIM_DEBUG" "+cover" ../../src/cpu_src/mem.sv 
+# ** Warning: ../../src/cpu_src/mem.sv(21): (vlog-13233) Design unit "mem_sv_unit" already exists and will be overwritten. Overwriting SystemVerilog $unit with different source files.
+# -- Compiling package mem_sv_unit
+# -- Importing package functions_pkg
+# -- Importing package logic_params_pkg
+# -- Importing package cpu_params_pkg
+# -- Importing package cpu_structs_pkg
+# -- Compiling module mem
+# 
+# Top level modules:
+# 	mem
+# End time: 20:00:58 on Dec 09,2020, Elapsed time: 0:00:00
+# Errors: 0, Warnings: 1
+# Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
+# Start time: 20:00:58 on Dec 09,2020
+# vlog -reportprogress 300 -sv -hazards "+define+SIM_DEBUG" "+cover" ../../src/cpu_src/mode_irq.sv 
+# ** Warning: ../../src/cpu_src/mode_irq.sv(23): (vlog-13233) Design unit "mode_irq_sv_unit" already exists and will be overwritten. Overwriting SystemVerilog $unit with different source files.
+# -- Compiling package mode_irq_sv_unit
+# -- Importing package functions_pkg
+# -- Importing package logic_params_pkg
+# -- Importing package cpu_params_pkg
+# -- Importing package cpu_structs_pkg
+# -- Compiling module mode_irq
+# 
+# Top level modules:
+# 	mode_irq
+# End time: 20:00:58 on Dec 09,2020, Elapsed time: 0:00:00
+# Errors: 0, Warnings: 1
+# Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
+# Start time: 20:00:58 on Dec 09,2020
+# vlog -reportprogress 300 -sv -hazards "+define+SIM_DEBUG" "+cover" ../../src/cpu_src/pipe.sv 
+# ** Warning: ../../src/cpu_src/pipe.sv(21): (vlog-13233) Design unit "pipe_sv_unit" already exists and will be overwritten. Overwriting SystemVerilog $unit with different source files.
+# -- Compiling package pipe_sv_unit
+# -- Importing package functions_pkg
+# -- Importing package logic_params_pkg
+# -- Importing package cpu_params_pkg
+# -- Importing package cpu_structs_pkg
+# -- Compiling module pipe
+# 
+# Top level modules:
+# 	pipe
+# End time: 20:00:58 on Dec 09,2020, Elapsed time: 0:00:00
+# Errors: 0, Warnings: 1
+# Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
+# Start time: 20:00:58 on Dec 09,2020
+# vlog -reportprogress 300 -sv -hazards "+define+SIM_DEBUG" "+cover" ../../src/cpu_src/RisKy1_core.sv 
+# ** Warning: ../../src/cpu_src/RisKy1_core.sv(21): (vlog-13233) Design unit "RisKy1_core_sv_unit" already exists and will be overwritten. Overwriting SystemVerilog $unit with different source files.
+# -- Compiling package RisKy1_core_sv_unit
+# -- Importing package functions_pkg
+# -- Importing package logic_params_pkg
+# -- Importing package cpu_params_pkg
+# -- Importing package cpu_structs_pkg
+# -- Compiling module RisKy1_core
+# 
+# Top level modules:
+# 	RisKy1_core
+# End time: 20:00:58 on Dec 09,2020, Elapsed time: 0:00:00
+# Errors: 0, Warnings: 1
+# Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
+# Start time: 20:00:59 on Dec 09,2020
+# vlog -reportprogress 300 -sv -hazards "+define+SIM_DEBUG" "+cover" ../../src/cpu_src/sdiv_N_by_N.sv 
+# ** Warning: ../../src/cpu_src/sdiv_N_by_N.sv(24): (vlog-13233) Design unit "sdiv_N_by_N_sv_unit" already exists and will be overwritten. Overwriting SystemVerilog $unit with different source files.
+# -- Compiling package sdiv_N_by_N_sv_unit
+# -- Importing package functions_pkg
+# -- Compiling module sdiv_N_by_N
+# -- Compiling module priority_encoder
+# -- Compiling module onehot
+# 
+# Top level modules:
+# 	sdiv_N_by_N
+# End time: 20:00:59 on Dec 09,2020, Elapsed time: 0:00:00
+# Errors: 0, Warnings: 1
+# Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
+# Start time: 20:00:59 on Dec 09,2020
+# vlog -reportprogress 300 -sv -hazards "+define+SIM_DEBUG" "+cover" ../../src/cpu_src/spfp_fu.sv 
+# End time: 20:00:59 on Dec 09,2020, Elapsed time: 0:00:00
+# Errors: 0, Warnings: 0
+# Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
+# Start time: 20:00:59 on Dec 09,2020
+# vlog -reportprogress 300 -sv -hazards "+define+SIM_DEBUG" "+cover" ../../src/cpu_src/vedic_mult16x16.v 
+# -- Compiling module vedic_mult16x16
+# -- Compiling module vedic_mult8
+# -- Compiling module vedic_mult4
+# -- Compiling module vedic_mult2
+# -- Compiling module ha
+# 
+# Top level modules:
+# 	vedic_mult16x16
+# End time: 20:00:59 on Dec 09,2020, Elapsed time: 0:00:00
+# Errors: 0, Warnings: 0
+# Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
+# Start time: 20:00:59 on Dec 09,2020
+# vlog -reportprogress 300 -sv -hazards "+define+SIM_DEBUG" "+cover" ../../src/cpu_src/vedic_mult32x32.v 
+# -- Compiling module vedic_mult32x32
+# 
+# Top level modules:
+# 	vedic_mult32x32
+# End time: 20:00:59 on Dec 09,2020, Elapsed time: 0:00:00
+# Errors: 0, Warnings: 0
+# Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
+# Start time: 20:00:59 on Dec 09,2020
+# vlog -reportprogress 300 -sv -hazards "+define+SIM_DEBUG" "+cover" ../../src/cpu_src/wb.sv 
+# ** Warning: ../../src/cpu_src/wb.sv(21): (vlog-13233) Design unit "wb_sv_unit" already exists and will be overwritten. Overwriting SystemVerilog $unit with different source files.
+# -- Compiling package wb_sv_unit
+# -- Importing package functions_pkg
+# -- Importing package logic_params_pkg
+# -- Importing package cpu_params_pkg
+# -- Importing package cpu_structs_pkg
+# -- Compiling module wb
+# 
+# Top level modules:
+# 	wb
+# End time: 20:00:59 on Dec 09,2020, Elapsed time: 0:00:00
+# Errors: 0, Warnings: 1
+# Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
+# Start time: 20:00:59 on Dec 09,2020
+# vlog -reportprogress 300 -sv -hazards "+define+SIM_DEBUG" "+cover" external_register.sv 
+# ** Warning: external_register.sv(5): (vlog-13233) Design unit "external_register_sv_unit" already exists and will be overwritten. Overwriting SystemVerilog $unit with different source files.
+# -- Compiling package external_register_sv_unit
+# -- Importing package cpu_params_pkg
+# -- Importing package functions_pkg
+# -- Importing package cpu_structs_pkg
+# -- Importing package logic_params_pkg
+# -- Compiling module external_register
+# ** Note: (vlog-143) Recognized 1 FSM in module "external_register(verilog)".
+# 
+# Top level modules:
+# 	external_register
+# End time: 20:01:00 on Dec 09,2020, Elapsed time: 0:00:01
+# Errors: 0, Warnings: 1
+# Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
+# Start time: 20:01:00 on Dec 09,2020
+# vlog -reportprogress 300 -sv -hazards "+define+SIM_DEBUG" ../../src/peripherals/peripheral_intf.sv 
+# -- Compiling package peripheral_intf_sv_unit
+# -- Importing package cpu_params_pkg
+# -- Importing package functions_pkg
+# -- Importing package cpu_structs_pkg
+# -- Compiling interface L1IC_ARB
+# -- Compiling interface L1DC_ARB
+# -- Compiling interface SysMem
+# 
+# Top level modules:
+# 	--none--
+# End time: 20:01:00 on Dec 09,2020, Elapsed time: 0:00:00
+# Errors: 0, Warnings: 0
+# Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
+# Start time: 20:01:00 on Dec 09,2020
+# vlog -reportprogress 300 -sv -hazards ../../src/peripherals/L1_dcache.sv 
+# -- Compiling package L1_dcache_sv_unit
+# -- Importing package functions_pkg
+# -- Importing package logic_params_pkg
+# -- Importing package cpu_params_pkg
+# -- Importing package cpu_structs_pkg
+# -- Compiling module L1_dcache
+# 
+# Top level modules:
+# 	L1_dcache
+# End time: 20:01:00 on Dec 09,2020, Elapsed time: 0:00:00
+# Errors: 0, Warnings: 0
+# Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
+# Start time: 20:01:00 on Dec 09,2020
+# vlog -reportprogress 300 -sv -hazards ../../src/peripherals/L1_icache.sv 
+# -- Compiling package L1_icache_sv_unit
+# -- Importing package functions_pkg
+# -- Importing package logic_params_pkg
+# -- Importing package cpu_params_pkg
+# -- Importing package cpu_structs_pkg
+# -- Compiling module L1_icache
+# 
+# Top level modules:
+# 	L1_icache
+# End time: 20:01:00 on Dec 09,2020, Elapsed time: 0:00:00
+# Errors: 0, Warnings: 0
+# Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
+# Start time: 20:01:00 on Dec 09,2020
+# vlog -reportprogress 300 -sv -hazards ../../src/peripherals/cache_arbiter.sv 
+# -- Compiling package cache_arbiter_sv_unit
+# -- Importing package functions_pkg
+# -- Importing package logic_params_pkg
+# -- Importing package cpu_params_pkg
+# -- Importing package cpu_structs_pkg
+# -- Compiling module cache_arbiter
+# 
+# Top level modules:
+# 	cache_arbiter
+# End time: 20:01:00 on Dec 09,2020, Elapsed time: 0:00:00
+# Errors: 0, Warnings: 0
+# Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
+# Start time: 20:01:00 on Dec 09,2020
+# vlog -reportprogress 300 -sv -hazards "+define+TEST_FILE="instr_tests/eio.hex"" ../../src/models/sys_mem_model.sv 
+# -- Compiling package sys_mem_model_sv_unit
+# -- Importing package functions_pkg
+# -- Importing package logic_params_pkg
+# -- Importing package cpu_params_pkg
+# -- Importing package cpu_structs_pkg
+# -- Compiling module sys_mem_model
+# 
+# Top level modules:
+# 	sys_mem_model
+# End time: 20:01:01 on Dec 09,2020, Elapsed time: 0:00:01
+# Errors: 0, Warnings: 0
+# Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
+# Start time: 20:01:01 on Dec 09,2020
+# vlog -reportprogress 300 -sv -hazards "+define+SIM_DEBUG" top_tb1.sv 
+# ** Warning: top_tb1.sv(17): (vlog-13233) Design unit "top_tb1_sv_unit" already exists and will be overwritten. Overwriting SystemVerilog $unit with different source files.
+# -- Compiling package top_tb1_sv_unit
+# -- Importing package functions_pkg
+# -- Importing package logic_params_pkg
+# -- Importing package cpu_params_pkg
+# -- Importing package cpu_structs_pkg
+# -- Compiling module top_tb1
+# 
+# Top level modules:
+# 	top_tb1
+# End time: 20:01:01 on Dec 09,2020, Elapsed time: 0:00:00
+# Errors: 0, Warnings: 1
+# Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
+# ** Warning: (vlog-13288) Multiple macros defined in +define+ command line switch.
+# Start time: 20:01:01 on Dec 09,2020
+# vlog -reportprogress 300 -sv -hazards "+define+ext_M+ext_S+ext_U+ext_N+SIM_DEBUG" ../../src/questa_formal/property_checks/RV_EMU_params_pkg.sv 
+# -- Compiling package RV_EMU_params_pkg
+# -- Importing package cpu_params_pkg
+# -- Importing package functions_pkg
+# -- Importing package cpu_structs_pkg
+# 
+# Top level modules:
+# 	--none--
+# End time: 20:01:01 on Dec 09,2020, Elapsed time: 0:00:00
+# Errors: 0, Warnings: 1
+# Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
+# ** Warning: (vlog-13288) Multiple macros defined in +define+ command line switch.
+# Start time: 20:01:01 on Dec 09,2020
+# vlog -reportprogress 300 -sv -hazards "+define+ext_M+ext_S+ext_U+ext_N+SIM_DEBUG" ../../src/questa_formal/property_checks/RV_EMU_core.svp 
+# ** Warning: ../../src/questa_formal/property_checks/RV_EMU_core.svp(22): (vlog-13233) Design unit "RV_EMU_core_svp_unit" already exists and will be overwritten. Overwriting SystemVerilog $unit with different source files.
+# -- Compiling package RV_EMU_core_svp_unit
+# -- Importing package functions_pkg
+# -- Importing package logic_params_pkg
+# -- Importing package cpu_params_pkg
+# -- Importing package cpu_structs_pkg
+# -- Importing package RV_EMU_params_pkg
+# -- Compiling module RV_EMU_core
+# ** Error (suppressible): (vlog-13276) ../../src/questa_formal/property_checks/RV_EMU_core.svp(106): Could not find field/method name (interrupt_flag) in 'M2W' of 'M2W.interrupt_flag'.
+# ** Error (suppressible): (vlog-13276) ../../src/questa_formal/property_checks/RV_EMU_core.svp(106): Could not find field/method name (interrupt_cause) in 'M2W' of 'M2W.interrupt_cause'.
+# End time: 20:01:01 on Dec 09,2020, Elapsed time: 0:00:00
+# Errors: 2, Warnings: 2
+# ** Error: C:/intelFPGA_pro/20.1/modelsim_ase/win32aloem/vlog failed.
+# Error in macro ./top_tb1.do line 97
+# C:/intelFPGA_pro/20.1/modelsim_ase/win32aloem/vlog failed.
+#     while executing
+# "vlog  -sv -hazards +define+ext_M+ext_S+ext_U+ext_N+SIM_DEBUG                                                         ../../src/questa_formal/property_..."
+do top_tb1.do
+# Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
+# Start time: 20:01:56 on Dec 09,2020
+# vlog -reportprogress 300 -sv -hazards "+define+SIM_DEBUG" ../../src/pkg/logic_params_pkg.sv 
+# -- Compiling package logic_params_pkg
+# 
+# Top level modules:
+# 	--none--
+# End time: 20:01:56 on Dec 09,2020, Elapsed time: 0:00:00
+# Errors: 0, Warnings: 0
+# Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
+# Start time: 20:01:56 on Dec 09,2020
+# vlog -reportprogress 300 -sv -hazards "+define+SIM_DEBUG" ../../src/pkg/functions_pkg.sv 
+# -- Compiling package functions_pkg
+# 
+# Top level modules:
+# 	--none--
+# End time: 20:01:57 on Dec 09,2020, Elapsed time: 0:00:01
+# Errors: 0, Warnings: 0
+# Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
+# Start time: 20:01:57 on Dec 09,2020
+# vlog -reportprogress 300 -sv -hazards "+define+SIM_DEBUG" ../../src/pkg/cpu_params_pkg.sv 
+# -- Compiling package cpu_params_pkg
+# -- Importing package functions_pkg
+# 
+# Top level modules:
+# 	--none--
+# End time: 20:01:57 on Dec 09,2020, Elapsed time: 0:00:00
+# Errors: 0, Warnings: 0
+# Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
+# Start time: 20:01:57 on Dec 09,2020
+# vlog -reportprogress 300 -sv -hazards "+define+SIM_DEBUG" ../../src/pkg/cpu_structs_pkg.sv 
+# -- Compiling package cpu_structs_pkg
+# -- Importing package cpu_params_pkg
+# -- Importing package functions_pkg
+# 
+# Top level modules:
+# 	--none--
+# End time: 20:01:57 on Dec 09,2020, Elapsed time: 0:00:00
+# Errors: 0, Warnings: 0
+# Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
+# Start time: 20:01:57 on Dec 09,2020
+# vlog -reportprogress 300 -sv -hazards "+define+SIM_DEBUG" ../../src/cpu_src/cpu_intf.sv 
+# -- Compiling package cpu_intf_sv_unit
+# -- Importing package cpu_params_pkg
+# -- Importing package functions_pkg
+# -- Importing package cpu_structs_pkg
+# -- Compiling interface F2D_intf
+# -- Compiling interface D2E_intf
+# -- Compiling interface E2M_intf
+# -- Compiling interface M2W_intf
+# -- Compiling interface AFU_intf
+# -- Compiling interface BFU_intf
+# -- Compiling interface LSFU_intf
+# -- Compiling interface CSRFU_intf
+# -- Compiling interface WB_2_CSR_wr_intf
+# -- Compiling interface RCSR_intf
+# -- Compiling interface CSR_NXT_intf
+# -- Compiling interface DCORE_intf
+# -- Compiling interface RBUS_intf
+# -- Compiling interface FBUS_intf
+# -- Compiling interface L1IC_intf
+# -- Compiling interface L1DC_intf
+# -- Compiling interface EV_EXC_intf
+# -- Compiling interface EIO_intf
+# -- Compiling interface CSR_EXE_intf
+# 
+# Top level modules:
+# 	--none--
+# End time: 20:01:57 on Dec 09,2020, Elapsed time: 0:00:00
+# Errors: 0, Warnings: 0
+# Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
+# Start time: 20:01:57 on Dec 09,2020
+# vlog -reportprogress 300 -sv "+define+SIM_DEBUG" ../../src/debug/disasm_RV.sv 
+# -- Compiling package disasm_RV_sv_unit
+# -- Importing package functions_pkg
+# -- Importing package logic_params_pkg
+# -- Importing package cpu_params_pkg
+# -- Importing package cpu_structs_pkg
+# -- Compiling module disasm
+# 
+# Top level modules:
+# 	disasm
+# End time: 20:01:57 on Dec 09,2020, Elapsed time: 0:00:00
+# Errors: 0, Warnings: 0
+# Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
+# Start time: 20:01:57 on Dec 09,2020
+# vlog -reportprogress 300 -sv -hazards "+define+SIM_DEBUG" "+cover" ../../src/cpu_src/alu_fu.sv 
+# -- Compiling package alu_fu_sv_unit
+# -- Importing package functions_pkg
+# -- Importing package logic_params_pkg
+# -- Importing package cpu_params_pkg
+# -- Importing package cpu_structs_pkg
+# -- Compiling module alu_fu
+# 
+# Top level modules:
+# 	alu_fu
+# End time: 20:01:57 on Dec 09,2020, Elapsed time: 0:00:00
+# Errors: 0, Warnings: 0
+# Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
+# Start time: 20:01:58 on Dec 09,2020
+# vlog -reportprogress 300 -sv -hazards "+define+SIM_DEBUG" "+cover" ../../src/cpu_src/br_fu.sv 
+# -- Compiling package br_fu_sv_unit
+# -- Importing package functions_pkg
+# -- Importing package logic_params_pkg
+# -- Importing package cpu_params_pkg
+# -- Importing package cpu_structs_pkg
+# -- Compiling module br_fu
+# 
+# Top level modules:
+# 	br_fu
+# End time: 20:01:58 on Dec 09,2020, Elapsed time: 0:00:00
+# Errors: 0, Warnings: 0
+# Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
+# Start time: 20:01:58 on Dec 09,2020
+# vlog -reportprogress 300 -sv -hazards "+define+SIM_DEBUG" "+cover" ../../src/cpu_src/csr.sv 
+# -- Compiling package csr_sv_unit
+# -- Importing package functions_pkg
+# -- Importing package logic_params_pkg
+# -- Importing package cpu_params_pkg
+# -- Importing package cpu_structs_pkg
+# -- Compiling module csr
+# 
+# Top level modules:
+# 	csr
+# End time: 20:01:58 on Dec 09,2020, Elapsed time: 0:00:00
+# Errors: 0, Warnings: 0
+# Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
+# Start time: 20:01:58 on Dec 09,2020
+# vlog -reportprogress 300 -sv -hazards "+define+SIM_DEBUG" "+cover" ../../src/cpu_src/csr_av_rdata.sv 
+# -- Compiling package csr_av_rdata_sv_unit
+# -- Importing package functions_pkg
+# -- Importing package logic_params_pkg
+# -- Importing package cpu_params_pkg
+# -- Importing package cpu_structs_pkg
+# -- Compiling module csr_av_rdata
+# 
+# Top level modules:
+# 	csr_av_rdata
+# End time: 20:01:58 on Dec 09,2020, Elapsed time: 0:00:00
+# Errors: 0, Warnings: 0
+# Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
+# Start time: 20:01:58 on Dec 09,2020
+# vlog -reportprogress 300 -sv -hazards "+define+SIM_DEBUG" "+cover" ../../src/cpu_src/csr_fu.sv 
+# -- Compiling package csr_fu_sv_unit
+# -- Importing package functions_pkg
+# -- Importing package logic_params_pkg
+# -- Importing package cpu_params_pkg
+# -- Importing package cpu_structs_pkg
+# -- Compiling module csr_fu
+# 
+# Top level modules:
+# 	csr_fu
+# End time: 20:01:58 on Dec 09,2020, Elapsed time: 0:00:00
+# Errors: 0, Warnings: 0
+# Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
+# Start time: 20:01:58 on Dec 09,2020
+# vlog -reportprogress 300 -sv -hazards "+define+SIM_DEBUG" "+cover" ../../src/cpu_src/csr_lo_cnt.sv 
+# -- Compiling package csr_lo_cnt_sv_unit
+# -- Importing package functions_pkg
+# -- Importing package cpu_params_pkg
+# -- Compiling module csr_lo_cnt
+# 
+# Top level modules:
+# 	csr_lo_cnt
+# End time: 20:01:58 on Dec 09,2020, Elapsed time: 0:00:00
+# Errors: 0, Warnings: 0
+# Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
+# Start time: 20:01:58 on Dec 09,2020
+# vlog -reportprogress 300 -sv -hazards "+define+SIM_DEBUG" "+cover" ../../src/cpu_src/csr_std_wr.sv 
+# -- Compiling package csr_std_wr_sv_unit
+# -- Importing package functions_pkg
+# -- Importing package cpu_params_pkg
+# -- Compiling module csr_std_wr
+# 
+# Top level modules:
+# 	csr_std_wr
+# End time: 20:01:59 on Dec 09,2020, Elapsed time: 0:00:01
+# Errors: 0, Warnings: 0
+# Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
+# Start time: 20:01:59 on Dec 09,2020
+# vlog -reportprogress 300 -sv -hazards "+define+SIM_DEBUG" "+cover" ../../src/cpu_src/csr_nxt_reg.sv 
+# -- Compiling package csr_nxt_reg_sv_unit
+# -- Importing package functions_pkg
+# -- Importing package logic_params_pkg
+# -- Importing package cpu_params_pkg
+# -- Importing package cpu_structs_pkg
+# -- Compiling module csr_nxt_reg
+# 
+# Top level modules:
+# 	csr_nxt_reg
+# End time: 20:01:59 on Dec 09,2020, Elapsed time: 0:00:00
+# Errors: 0, Warnings: 0
+# Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
+# Start time: 20:01:59 on Dec 09,2020
+# vlog -reportprogress 300 -sv -hazards "+define+SIM_DEBUG" "+cover" ../../src/cpu_src/decode.sv 
+# -- Compiling package decode_sv_unit
+# -- Importing package functions_pkg
+# -- Importing package logic_params_pkg
+# -- Importing package cpu_params_pkg
+# -- Importing package cpu_structs_pkg
+# -- Compiling module decode
+# 
+# Top level modules:
+# 	decode
+# End time: 20:01:59 on Dec 09,2020, Elapsed time: 0:00:00
+# Errors: 0, Warnings: 0
+# Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
+# Start time: 20:01:59 on Dec 09,2020
+# vlog -reportprogress 300 -sv -hazards "+define+SIM_DEBUG" "+cover" ../../src/cpu_src/decode_core.sv 
+# -- Compiling package decode_core_sv_unit
+# -- Importing package functions_pkg
+# -- Importing package logic_params_pkg
+# -- Importing package cpu_params_pkg
+# -- Importing package cpu_structs_pkg
+# -- Compiling module decode_core
+# 
+# Top level modules:
+# 	decode_core
+# End time: 20:01:59 on Dec 09,2020, Elapsed time: 0:00:00
+# Errors: 0, Warnings: 0
+# Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
+# Start time: 20:01:59 on Dec 09,2020
+# vlog -reportprogress 300 -sv -hazards "+define+SIM_DEBUG" "+cover" ../../src/cpu_src/execute.sv 
+# -- Compiling package execute_sv_unit
+# -- Importing package functions_pkg
+# -- Importing package logic_params_pkg
+# -- Importing package cpu_params_pkg
+# -- Importing package cpu_structs_pkg
+# -- Compiling module execute
+# 
+# Top level modules:
+# 	execute
+# End time: 20:01:59 on Dec 09,2020, Elapsed time: 0:00:00
+# Errors: 0, Warnings: 0
+# Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
+# Start time: 20:01:59 on Dec 09,2020
+# vlog -reportprogress 300 -sv -hazards "+define+SIM_DEBUG" "+cover" ../../src/cpu_src/fetch.sv 
+# -- Compiling package fetch_sv_unit
+# -- Importing package functions_pkg
+# -- Importing package logic_params_pkg
+# -- Importing package cpu_params_pkg
+# -- Importing package cpu_structs_pkg
+# -- Compiling module fetch
+# ** Note: (vlog-143) Recognized 1 FSM in module "fetch(verilog)".
+# 
+# Top level modules:
+# 	fetch
+# End time: 20:02:00 on Dec 09,2020, Elapsed time: 0:00:01
+# Errors: 0, Warnings: 0
+# Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
+# Start time: 20:02:00 on Dec 09,2020
+# vlog -reportprogress 300 -sv -hazards "+define+SIM_DEBUG" "+cover" ../../src/cpu_src/fpr.sv 
+# -- Compiling package fpr_sv_unit
+# -- Importing package functions_pkg
+# -- Importing package cpu_params_pkg
+# -- Compiling module fpr
+# 
+# Top level modules:
+# 	fpr
+# End time: 20:02:00 on Dec 09,2020, Elapsed time: 0:00:00
+# Errors: 0, Warnings: 0
+# Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
+# Start time: 20:02:00 on Dec 09,2020
+# vlog -reportprogress 300 -sv -hazards "+define+SIM_DEBUG" "+cover" ../../src/cpu_src/gpr.sv 
+# -- Compiling package gpr_sv_unit
+# -- Importing package functions_pkg
+# -- Importing package cpu_params_pkg
+# -- Compiling module gpr
+# 
+# Top level modules:
+# 	gpr
+# End time: 20:02:00 on Dec 09,2020, Elapsed time: 0:00:00
+# Errors: 0, Warnings: 0
+# Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
+# Start time: 20:02:00 on Dec 09,2020
+# vlog -reportprogress 300 -sv -hazards "+define+SIM_DEBUG" "+cover" ../../src/cpu_src/idr_fu.sv 
+# -- Compiling package idr_fu_sv_unit
+# -- Importing package functions_pkg
+# -- Importing package logic_params_pkg
+# -- Importing package cpu_params_pkg
+# -- Importing package cpu_structs_pkg
+# -- Compiling module idr_fu
+# 
+# Top level modules:
+# 	idr_fu
+# End time: 20:02:00 on Dec 09,2020, Elapsed time: 0:00:00
+# Errors: 0, Warnings: 0
+# Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
+# Start time: 20:02:00 on Dec 09,2020
+# vlog -reportprogress 300 -sv -hazards "+define+SIM_DEBUG" "+cover" ../../src/cpu_src/im_fu.sv 
+# -- Compiling package im_fu_sv_unit
+# -- Importing package functions_pkg
+# -- Importing package logic_params_pkg
+# -- Importing package cpu_params_pkg
+# -- Importing package cpu_structs_pkg
+# -- Compiling module im_fu
+# 
+# Top level modules:
+# 	im_fu
+# End time: 20:02:00 on Dec 09,2020, Elapsed time: 0:00:00
+# Errors: 0, Warnings: 0
+# Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
+# Start time: 20:02:00 on Dec 09,2020
+# vlog -reportprogress 300 -sv -hazards "+define+SIM_DEBUG" "+cover" ../../src/cpu_src/irq.sv 
+# -- Compiling package irq_sv_unit
+# -- Importing package functions_pkg
+# -- Importing package logic_params_pkg
+# -- Importing package cpu_params_pkg
+# -- Compiling module irq
+# 
+# Top level modules:
+# 	irq
+# End time: 20:02:00 on Dec 09,2020, Elapsed time: 0:00:00
+# Errors: 0, Warnings: 0
+# Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
+# Start time: 20:02:00 on Dec 09,2020
+# vlog -reportprogress 300 -sv -hazards "+define+SIM_DEBUG" "+cover" ../../src/cpu_src/ls_fu.sv 
+# -- Compiling package ls_fu_sv_unit
+# -- Importing package functions_pkg
+# -- Importing package logic_params_pkg
+# -- Importing package cpu_params_pkg
+# -- Importing package cpu_structs_pkg
+# -- Compiling module ls_fu
+# 
+# Top level modules:
+# 	ls_fu
+# End time: 20:02:01 on Dec 09,2020, Elapsed time: 0:00:01
+# Errors: 0, Warnings: 0
+# Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
+# Start time: 20:02:01 on Dec 09,2020
+# vlog -reportprogress 300 -sv -hazards "+define+SIM_DEBUG" "+cover" ../../src/cpu_src/mem.sv 
+# -- Compiling package mem_sv_unit
+# -- Importing package functions_pkg
+# -- Importing package logic_params_pkg
+# -- Importing package cpu_params_pkg
+# -- Importing package cpu_structs_pkg
+# -- Compiling module mem
+# 
+# Top level modules:
+# 	mem
+# End time: 20:02:01 on Dec 09,2020, Elapsed time: 0:00:00
+# Errors: 0, Warnings: 0
+# Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
+# Start time: 20:02:01 on Dec 09,2020
+# vlog -reportprogress 300 -sv -hazards "+define+SIM_DEBUG" "+cover" ../../src/cpu_src/mode_irq.sv 
+# -- Compiling package mode_irq_sv_unit
+# -- Importing package functions_pkg
+# -- Importing package logic_params_pkg
+# -- Importing package cpu_params_pkg
+# -- Importing package cpu_structs_pkg
+# -- Compiling module mode_irq
+# 
+# Top level modules:
+# 	mode_irq
+# End time: 20:02:01 on Dec 09,2020, Elapsed time: 0:00:00
+# Errors: 0, Warnings: 0
+# Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
+# Start time: 20:02:01 on Dec 09,2020
+# vlog -reportprogress 300 -sv -hazards "+define+SIM_DEBUG" "+cover" ../../src/cpu_src/pipe.sv 
+# -- Compiling package pipe_sv_unit
+# -- Importing package functions_pkg
+# -- Importing package logic_params_pkg
+# -- Importing package cpu_params_pkg
+# -- Importing package cpu_structs_pkg
+# -- Compiling module pipe
+# 
+# Top level modules:
+# 	pipe
+# End time: 20:02:01 on Dec 09,2020, Elapsed time: 0:00:00
+# Errors: 0, Warnings: 0
+# Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
+# Start time: 20:02:01 on Dec 09,2020
+# vlog -reportprogress 300 -sv -hazards "+define+SIM_DEBUG" "+cover" ../../src/cpu_src/RisKy1_core.sv 
+# -- Compiling package RisKy1_core_sv_unit
+# -- Importing package functions_pkg
+# -- Importing package logic_params_pkg
+# -- Importing package cpu_params_pkg
+# -- Importing package cpu_structs_pkg
+# -- Compiling module RisKy1_core
+# 
+# Top level modules:
+# 	RisKy1_core
+# End time: 20:02:01 on Dec 09,2020, Elapsed time: 0:00:00
+# Errors: 0, Warnings: 0
+# Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
+# Start time: 20:02:01 on Dec 09,2020
+# vlog -reportprogress 300 -sv -hazards "+define+SIM_DEBUG" "+cover" ../../src/cpu_src/sdiv_N_by_N.sv 
+# -- Compiling package sdiv_N_by_N_sv_unit
+# -- Importing package functions_pkg
+# -- Compiling module sdiv_N_by_N
+# -- Compiling module priority_encoder
+# -- Compiling module onehot
+# 
+# Top level modules:
+# 	sdiv_N_by_N
+# End time: 20:02:02 on Dec 09,2020, Elapsed time: 0:00:01
+# Errors: 0, Warnings: 0
+# Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
+# Start time: 20:02:02 on Dec 09,2020
+# vlog -reportprogress 300 -sv -hazards "+define+SIM_DEBUG" "+cover" ../../src/cpu_src/spfp_fu.sv 
+# End time: 20:02:02 on Dec 09,2020, Elapsed time: 0:00:00
+# Errors: 0, Warnings: 0
+# Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
+# Start time: 20:02:02 on Dec 09,2020
+# vlog -reportprogress 300 -sv -hazards "+define+SIM_DEBUG" "+cover" ../../src/cpu_src/vedic_mult16x16.v 
+# -- Compiling module vedic_mult16x16
+# -- Compiling module vedic_mult8
+# -- Compiling module vedic_mult4
+# -- Compiling module vedic_mult2
+# -- Compiling module ha
+# 
+# Top level modules:
+# 	vedic_mult16x16
+# End time: 20:02:02 on Dec 09,2020, Elapsed time: 0:00:00
+# Errors: 0, Warnings: 0
+# Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
+# Start time: 20:02:02 on Dec 09,2020
+# vlog -reportprogress 300 -sv -hazards "+define+SIM_DEBUG" "+cover" ../../src/cpu_src/vedic_mult32x32.v 
+# -- Compiling module vedic_mult32x32
+# 
+# Top level modules:
+# 	vedic_mult32x32
+# End time: 20:02:02 on Dec 09,2020, Elapsed time: 0:00:00
+# Errors: 0, Warnings: 0
+# Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
+# Start time: 20:02:02 on Dec 09,2020
+# vlog -reportprogress 300 -sv -hazards "+define+SIM_DEBUG" "+cover" ../../src/cpu_src/wb.sv 
+# -- Compiling package wb_sv_unit
+# -- Importing package functions_pkg
+# -- Importing package logic_params_pkg
+# -- Importing package cpu_params_pkg
+# -- Importing package cpu_structs_pkg
+# -- Compiling module wb
+# 
+# Top level modules:
+# 	wb
+# End time: 20:02:02 on Dec 09,2020, Elapsed time: 0:00:00
+# Errors: 0, Warnings: 0
+# Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
+# Start time: 20:02:02 on Dec 09,2020
+# vlog -reportprogress 300 -sv -hazards "+define+SIM_DEBUG" "+cover" external_register.sv 
+# -- Compiling package external_register_sv_unit
+# -- Importing package cpu_params_pkg
+# -- Importing package functions_pkg
+# -- Importing package cpu_structs_pkg
+# -- Importing package logic_params_pkg
+# -- Compiling module external_register
+# ** Note: (vlog-143) Recognized 1 FSM in module "external_register(verilog)".
+# 
+# Top level modules:
+# 	external_register
+# End time: 20:02:03 on Dec 09,2020, Elapsed time: 0:00:01
+# Errors: 0, Warnings: 0
+# Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
+# Start time: 20:02:03 on Dec 09,2020
+# vlog -reportprogress 300 -sv -hazards "+define+SIM_DEBUG" ../../src/peripherals/peripheral_intf.sv 
+# -- Compiling package peripheral_intf_sv_unit
+# -- Importing package cpu_params_pkg
+# -- Importing package functions_pkg
+# -- Importing package cpu_structs_pkg
+# -- Compiling interface L1IC_ARB
+# -- Compiling interface L1DC_ARB
+# -- Compiling interface SysMem
+# 
+# Top level modules:
+# 	--none--
+# End time: 20:02:03 on Dec 09,2020, Elapsed time: 0:00:00
+# Errors: 0, Warnings: 0
+# Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
+# Start time: 20:02:03 on Dec 09,2020
+# vlog -reportprogress 300 -sv -hazards ../../src/peripherals/L1_dcache.sv 
+# -- Compiling package L1_dcache_sv_unit
+# -- Importing package functions_pkg
+# -- Importing package logic_params_pkg
+# -- Importing package cpu_params_pkg
+# -- Importing package cpu_structs_pkg
+# -- Compiling module L1_dcache
+# 
+# Top level modules:
+# 	L1_dcache
+# End time: 20:02:03 on Dec 09,2020, Elapsed time: 0:00:00
+# Errors: 0, Warnings: 0
+# Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
+# Start time: 20:02:03 on Dec 09,2020
+# vlog -reportprogress 300 -sv -hazards ../../src/peripherals/L1_icache.sv 
+# -- Compiling package L1_icache_sv_unit
+# -- Importing package functions_pkg
+# -- Importing package logic_params_pkg
+# -- Importing package cpu_params_pkg
+# -- Importing package cpu_structs_pkg
+# -- Compiling module L1_icache
+# 
+# Top level modules:
+# 	L1_icache
+# End time: 20:02:03 on Dec 09,2020, Elapsed time: 0:00:00
+# Errors: 0, Warnings: 0
+# Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
+# Start time: 20:02:03 on Dec 09,2020
+# vlog -reportprogress 300 -sv -hazards ../../src/peripherals/cache_arbiter.sv 
+# -- Compiling package cache_arbiter_sv_unit
+# -- Importing package functions_pkg
+# -- Importing package logic_params_pkg
+# -- Importing package cpu_params_pkg
+# -- Importing package cpu_structs_pkg
+# -- Compiling module cache_arbiter
+# 
+# Top level modules:
+# 	cache_arbiter
+# End time: 20:02:03 on Dec 09,2020, Elapsed time: 0:00:00
+# Errors: 0, Warnings: 0
+# Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
+# Start time: 20:02:03 on Dec 09,2020
+# vlog -reportprogress 300 -sv -hazards "+define+TEST_FILE="instr_tests/eio.hex"" ../../src/models/sys_mem_model.sv 
+# -- Compiling package sys_mem_model_sv_unit
+# -- Importing package functions_pkg
+# -- Importing package logic_params_pkg
+# -- Importing package cpu_params_pkg
+# -- Importing package cpu_structs_pkg
+# -- Compiling module sys_mem_model
+# 
+# Top level modules:
+# 	sys_mem_model
+# End time: 20:02:04 on Dec 09,2020, Elapsed time: 0:00:01
+# Errors: 0, Warnings: 0
+# Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
+# Start time: 20:02:04 on Dec 09,2020
+# vlog -reportprogress 300 -sv -hazards "+define+SIM_DEBUG" top_tb1.sv 
+# -- Compiling package top_tb1_sv_unit
+# -- Importing package functions_pkg
+# -- Importing package logic_params_pkg
+# -- Importing package cpu_params_pkg
+# -- Importing package cpu_structs_pkg
+# -- Compiling module top_tb1
+# 
+# Top level modules:
+# 	top_tb1
+# End time: 20:02:04 on Dec 09,2020, Elapsed time: 0:00:00
+# Errors: 0, Warnings: 0
+# Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
+# Start time: 20:02:04 on Dec 09,2020
+# vlog -reportprogress 300 -sv -hazards "+define+SIM_DEBUG" ../../src/questa_formal/property_checks/RV_EMU_params_pkg.sv 
+# -- Compiling package RV_EMU_params_pkg
+# -- Importing package cpu_params_pkg
+# -- Importing package functions_pkg
+# -- Importing package cpu_structs_pkg
+# 
+# Top level modules:
+# 	--none--
+# End time: 20:02:04 on Dec 09,2020, Elapsed time: 0:00:00
+# Errors: 0, Warnings: 0
+# Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
+# Start time: 20:02:04 on Dec 09,2020
+# vlog -reportprogress 300 -sv -hazards "+define+SIM_DEBUG" ../../src/questa_formal/property_checks/RV_EMU_core.svp 
+# ** Warning: ../../src/questa_formal/property_checks/RV_EMU_core.svp(22): (vlog-13233) Design unit "RV_EMU_core_svp_unit" already exists and will be overwritten. Design unit compiled with different set of options.
+# -- Compiling package RV_EMU_core_svp_unit
+# -- Importing package functions_pkg
+# -- Importing package logic_params_pkg
+# -- Importing package cpu_params_pkg
+# -- Importing package cpu_structs_pkg
+# -- Importing package RV_EMU_params_pkg
+# -- Compiling module RV_EMU_core
+# 
+# Top level modules:
+# 	RV_EMU_core
+# End time: 20:02:04 on Dec 09,2020, Elapsed time: 0:00:00
+# Errors: 0, Warnings: 1
+# Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
+# Start time: 20:02:04 on Dec 09,2020
+# vlog -reportprogress 300 -sv -hazards "+define+SIM_DEBUG" "+incdir+../../src/questa_formal/property_checks" ../../src/questa_formal/property_checks/RV_EMU_asserts.svp 
+# ** Warning: ../../src/questa_formal/property_checks/RV_EMU_asserts.svp(22): (vlog-13233) Design unit "RV_EMU_asserts_svp_unit" already exists and will be overwritten. Overwriting SystemVerilog $unit with different source files.
+# -- Compiling package RV_EMU_asserts_svp_unit
+# -- Importing package functions_pkg
+# -- Importing package logic_params_pkg
+# -- Importing package cpu_params_pkg
+# -- Importing package cpu_structs_pkg
+# -- Importing package RV_EMU_params_pkg
+# -- Compiling module RV_EMU_asserts
+# ** Warning: ../../src/questa_formal/property_checks/RV_EMU_asserts.svp(55): (vlog-2186) SystemVerilog testbench feature
+# (randomization, coverage or assertion) detected in the design.
+# These features are only supported in Questasim.
+# ** Warning: ../../src/questa_formal/property_checks/RV_EMU_properties.svhp(38): (vlog-2186) SystemVerilog testbench feature
+# (randomization, coverage or assertion) detected in the design.
+# These features are only supported in Questasim.
+# ** Warning: ../../src/questa_formal/property_checks/RV_EMU_properties.svhp(38): (vlog-2186) SystemVerilog testbench feature
+# (randomization, coverage or assertion) detected in the design.
+# These features are only supported in Questasim.
+# 
+# Top level modules:
+# 	RV_EMU_asserts
+# End time: 20:02:06 on Dec 09,2020, Elapsed time: 0:00:02
+# Errors: 0, Warnings: 4
+# Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
+# Start time: 20:02:06 on Dec 09,2020
+# vlog -reportprogress 300 -sv -hazards "+define+SIM_DEBUG" ../../src/sva/csr_asserts.sv 
+# -- Compiling package csr_asserts_sv_unit
+# -- Importing package functions_pkg
+# -- Importing package logic_params_pkg
+# -- Importing package cpu_params_pkg
+# -- Importing package cpu_structs_pkg
+# -- Compiling module csr_asserts
+# ** Warning: ../../src/sva/csr_asserts.sv(40): (vlog-2186) SystemVerilog testbench feature
+# (randomization, coverage or assertion) detected in the design.
+# These features are only supported in Questasim.
+# ** Warning: ../../src/sva/csr_asserts.sv(40): (vlog-2186) SystemVerilog testbench feature
+# (randomization, coverage or assertion) detected in the design.
+# These features are only supported in Questasim.
+# ** Warning: ../../src/sva/csr_asserts.sv(44): (vlog-2186) SystemVerilog testbench feature
+# (randomization, coverage or assertion) detected in the design.
+# These features are only supported in Questasim.
+# 
+# Top level modules:
+# 	csr_asserts
+# End time: 20:02:06 on Dec 09,2020, Elapsed time: 0:00:00
+# Errors: 0, Warnings: 3
+# Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
+# Start time: 20:02:06 on Dec 09,2020
+# vlog -reportprogress 300 -sv -hazards "+define+SIM_DEBUG" ../../src/sva/gpr_asserts.sv 
+# -- Compiling package gpr_asserts_sv_unit
+# -- Importing package functions_pkg
+# -- Importing package cpu_params_pkg
+# -- Compiling module gpr_asserts
+# ** Warning: ../../src/sva/gpr_asserts.sv(39): (vlog-2186) SystemVerilog testbench feature
+# (randomization, coverage or assertion) detected in the design.
+# These features are only supported in Questasim.
+# ** Warning: ../../src/sva/gpr_asserts.sv(39): (vlog-2186) SystemVerilog testbench feature
+# (randomization, coverage or assertion) detected in the design.
+# These features are only supported in Questasim.
+# ** Warning: ../../src/sva/gpr_asserts.sv(46): (vlog-2186) SystemVerilog testbench feature
+# (randomization, coverage or assertion) detected in the design.
+# These features are only supported in Questasim.
+# 
+# Top level modules:
+# 	gpr_asserts
+# End time: 20:02:06 on Dec 09,2020, Elapsed time: 0:00:00
+# Errors: 0, Warnings: 3
+# Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
+# Start time: 20:02:06 on Dec 09,2020
+# vlog -reportprogress 300 -sv -hazards "+define+SIM_DEBUG" ../../src/sva/mem_asserts.sv 
+# -- Compiling package mem_asserts_sv_unit
+# -- Importing package functions_pkg
+# -- Importing package logic_params_pkg
+# -- Importing package cpu_params_pkg
+# -- Importing package cpu_structs_pkg
+# -- Compiling module mem_asserts
+# 
+# Top level modules:
+# 	mem_asserts
+# End time: 20:02:06 on Dec 09,2020, Elapsed time: 0:00:00
+# Errors: 0, Warnings: 0
+# Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
+# Start time: 20:02:06 on Dec 09,2020
+# vlog -reportprogress 300 -sv -hazards "+define+SIM_DEBUG" ../../src/sva/wb_asserts.sv 
+# -- Compiling package wb_asserts_sv_unit
+# -- Importing package functions_pkg
+# -- Importing package logic_params_pkg
+# -- Importing package cpu_params_pkg
+# -- Importing package cpu_structs_pkg
+# -- Compiling module wb_asserts
+# 
+# Top level modules:
+# 	wb_asserts
+# End time: 20:02:06 on Dec 09,2020, Elapsed time: 0:00:00
+# Errors: 0, Warnings: 0
+# Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
+# Start time: 20:02:07 on Dec 09,2020
+# vlog -reportprogress 300 -sv -hazards "+define+SIM_DEBUG" ../../src/sva/pipe_asserts.sv 
+# -- Compiling package pipe_asserts_sv_unit
+# -- Importing package functions_pkg
+# -- Importing package logic_params_pkg
+# -- Importing package cpu_params_pkg
+# -- Importing package cpu_structs_pkg
+# -- Compiling module pipe_asserts
+# 
+# Top level modules:
+# 	pipe_asserts
+# End time: 20:02:07 on Dec 09,2020, Elapsed time: 0:00:00
+# Errors: 0, Warnings: 0
+# .main_pane.assertions.interior.cs.body
+# vsim -assertdebug -voptargs="+acc" -t 1ps top_tb1 
+# Start time: 20:02:07 on Dec 09,2020
+# Loading sv_std.std
+# Loading work.functions_pkg
+# Loading work.cpu_params_pkg
+# Loading work.cpu_structs_pkg
+# Loading work.logic_params_pkg
+# Loading work.top_tb1_sv_unit
+# Loading work.top_tb1
+# Loading work.cpu_intf_sv_unit
+# Loading work.L1IC_intf
+# Loading work.peripheral_intf_sv_unit
+# Loading work.L1IC_ARB
+# Loading work.L1_icache_sv_unit
+# Loading work.L1_icache
+# Loading work.L1DC_intf
+# Loading work.L1DC_ARB
+# Loading work.L1_dcache_sv_unit
+# Loading work.L1_dcache
+# Loading work.SysMem
+# Loading work.cache_arbiter_sv_unit
+# Loading work.cache_arbiter
+# Loading work.sys_mem_model_sv_unit
+# Loading work.sys_mem_model
+# Loading work.EIO_intf
+# Loading work.RisKy1_core_sv_unit
+# Loading work.RisKy1_core
+# Loading work.F2D_intf
+# Loading work.D2E_intf
+# Loading work.E2M_intf
+# Loading work.M2W_intf
+# Loading work.EV_EXC_intf
+# Loading work.CSR_EXE_intf
+# Loading work.CSR_NXT_intf
+# Loading work.RBUS_intf
+# Loading work.fetch_sv_unit
+# Loading work.fetch
+# Loading work.decode_sv_unit
+# Loading work.decode
+# Loading work.DCORE_intf
+# Loading work.disasm_RV_sv_unit
+# Loading work.disasm
+# Loading work.decode_core_sv_unit
+# Loading work.decode_core
+# Loading work.pipe_sv_unit
+# Loading work.pipe
+# Loading work.RCSR_intf
+# Loading work.execute_sv_unit
+# Loading work.execute
+# Loading work.AFU_intf
+# Loading work.alu_fu_sv_unit
+# Loading work.alu_fu
+# Loading work.BFU_intf
+# Loading work.br_fu_sv_unit
+# Loading work.br_fu
+# Loading work.CSRFU_intf
+# Loading work.csr_fu_sv_unit
+# Loading work.csr_fu
+# Loading work.LSFU_intf
+# Loading work.ls_fu_sv_unit
+# Loading work.ls_fu
+# Loading work.mem_sv_unit
+# Loading work.mem
+# Loading work.WB_2_CSR_wr_intf
+# Loading work.wb_sv_unit
+# Loading work.wb
+# Loading work.csr_sv_unit
+# Loading work.csr
+# Loading work.csr_av_rdata_sv_unit
+# Loading work.csr_av_rdata
+# Loading work.csr_nxt_reg_sv_unit
+# Loading work.csr_nxt_reg
+# Loading work.mode_irq_sv_unit
+# Loading work.mode_irq
+# Loading work.csr_std_wr_sv_unit
+# Loading work.csr_std_wr
+# Loading work.gpr_sv_unit
+# Loading work.gpr
+# Loading work.irq_sv_unit
+# Loading work.irq
+# Loading work.external_register_sv_unit
+# Loading work.external_register
+# ** UI-Msg: (vish-4014) No objects found matching '/top_tb1/RK1/EXE/br_pc'.
+# Executing ONERROR command at macro ./wave_tb1.do line 126
+# ** UI-Msg: (vish-4014) No objects found matching '/top_tb1/RK1/EXE/i_type'.
+# Executing ONERROR command at macro ./wave_tb1.do line 130
+# ** UI-Msg: (vish-4014) No objects found matching '/top_tb1/RK1/WB/clk_in'.
+# Executing ONERROR command at macro ./wave_tb1.do line 195
+# ** UI-Msg: (vish-4014) No objects found matching '/top_tb1/RK1/WB/i_type'.
+# Executing ONERROR command at macro ./wave_tb1.do line 201
+# ** UI-Msg: (vish-4014) No objects found matching '/top_tb1/RK1/WB/predicted_addr'.
+# Executing ONERROR command at macro ./wave_tb1.do line 211
+# ** Warning: (vsim-8315) No condition is true in the unique/priority if/case statement.
+#    Time: 0 ps  Iteration: 3  Process: /top_tb1/RK1/EXE/AFU/#implicit#unique__68 File: ../../src/cpu_src/alu_fu.sv Line: 68
+# ** Warning: (vsim-8315) No condition is true in the unique/priority if/case statement.
+#    Time: 0 ps  Iteration: 3  Process: /top_tb1/RK1/EXE/AFU/#implicit#unique__58 File: ../../src/cpu_src/alu_fu.sv Line: 58
+# Reset completed, Simulation started.
+# RisKy1 simulation is currently set to support the following:
+#    Machine mode
+#    Simulation Debugging logic
+# Simulation passed.
+# ** Note: $stop    : top_tb1.sv(82)
+#    Time: 1169 ns  Iteration: 1  Instance: /top_tb1
+# Break in Module top_tb1 at top_tb1.sv line 82
+write format wave -window .main_pane.wave.interior.cs.body.pw.wf C:/RisKy1/design/sim/eio/wave_tb1.do
+# End time: 20:03:13 on Dec 09,2020, Elapsed time: 0:01:06
+# Errors: 0, Warnings: 5
+# Closing project C:/RisKy1/design/sim/eio/eio.mpf
