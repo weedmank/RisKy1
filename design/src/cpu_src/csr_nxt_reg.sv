@@ -322,7 +322,7 @@ module csr_nxt_reg
       // ------------------------------ User Trap Handler Base address.
       // 12'h005 = 12'b0000_0000_0101  utvec                         (read-write)  user mode
       if (csr_wr & (csr_addr == 12'h005))
-         nxt_ucsr.utvec = csr_wr_data;
+         nxt_ucsr.utvec = csr_wr_data;                               // see csr.sv - value written may be masked going into register
       else
          nxt_ucsr.utvec = ucsr.utvec;                                // no change
 
@@ -485,9 +485,8 @@ module csr_nxt_reg
 
       // ------------------------------ Supervisor trap handler base address.
       // 12'h105 = 12'b0001_0000_0101  stvec       (read-write)
-      // Only MODE values of 0 or 1 - thus bit 1 forced to 0 below. Also lower 2 bit's of BASE (bits 3,2) must be 0
       if (csr_wr && csr_addr == 12'h105)
-         nxt_scsr.stvec = csr_wr_data;
+         nxt_scsr.stvec = csr_wr_data;                               // see csr.sv - value written may be masked going into register
       else
          nxt_scsr.stvec = scsr.stvec;
 
@@ -646,9 +645,8 @@ module csr_nxt_reg
 
       // ------------------------------ Machine trap-handler base address
       // 12'h305 = 12'b0011_0000_0101  mtvec                            (read-write)
-      // Only MODE values of 0 or 1 - thus bit 1 forced to 0 below. Also lower 2 bit's of BASE (bits 3,2) must be 0
       if (csr_wr & (csr_addr == 12'h305))
-         nxt_mcsr.mtvec = csr_wr_data & 32'hFFFF_FFC3;
+         nxt_mcsr.mtvec = csr_wr_data;                                  // see csr.sv - value written may be masked going into register
       else
          nxt_mcsr.mtvec = mcsr.mtvec;                                   // no change
 

@@ -67,6 +67,19 @@ import functions_pkg::*;
    // Power-up Reset Vector
    parameter   RESET_VECTOR_ADDR    = Phys_Addr_Lo;                  // Can be any address. Doesn't have to be Phys_Addr_Lo.  However, RESET_VECTOR_ADDR must be inside the Phys_Addr_xx range. See fetch.sv
 
+   // MTVEC, STVEC, UTVEC  - values loaded into registers upon reset. Note: MODE >= 2 is Reserved see p 27 risv-privileged.pdf
+   parameter   MTVEC_INIT           = 32'h0000_0000;
+   parameter   STVEC_INIT           = 32'h0000_0000;
+   parameter   UTVEC_INIT           = 32'h0000_0000;
+   
+   // MCOUNTEREN, SCOUNTEREN - init values and mask values (a 1 in a bit means the corresponding reset value will always remain the same)
+   parameter   MCNTEN_INIT          = 32'h0000_0000;
+   parameter   MCNTEN_MASK          = 32'h0000_0000;                 // all bits are writable
+   parameter   SCNTEN_INIT          = 32'h0000_0000; 
+   parameter   SCNTEN_MASK          = 32'h0000_0000;                 // all bits are writable
+   
+//   parameter   WFI_IS_NOP           = TRUE;
+   
    parameter   NUM_MHPM = 0;                                         // CSR: number of mhpmcounter's and mhpmevent's, where first one starts at mphmcounter3 if NUM_MHPM > 0
    // NOTE: Max NUM_MHPM is 29
 

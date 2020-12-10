@@ -333,8 +333,8 @@ module csr
 
    // User Trap Handler Base address.
    // 12'h005 = 12'b0000_0000_0101  utvec                         (read-write)  user mode
-   // Current design only allows MODE of 0 or 1 - thus bit 1 forced to 0 below. Also lower 2 bit's of BASE (bits 3,2) must be 0
-   csr_std_wr #(0,12'h005,RSZ,32'h0E) Utvec                       (clk_in,reset_in, mode, TRUE, nxt_ucsr.utvec, ucsr.utvec);
+   // Current design only allows MODE of 0 or 1 - thus bit 1 forced to retain it's reset value which is 0.
+   csr_std_wr #(UTVEC_INIT & ~32'd2,12'h005,RSZ,32'h0000_0002) Utvec (clk_in,reset_in, mode, TRUE, nxt_ucsr.utvec, ucsr.utvec);
 
    // ------------------------------ User Trap Handling
    // Scratch register for user trap handlers.
@@ -397,13 +397,12 @@ module csr
 
    // ------------------------------ Supervisor trap handler base address.
    // 12'h105 = 12'b0001_0000_0101  stvec                         (read-write)
-   // Read Only bits of 32'h0000_000E;  // Note: bits 3:2 are not writable and are "hardwired" to 0 (init value = 0 at reset)
-   // Current design only allows MODE of 0 or 1 - thus bit 1 will be 0. Also lower 2 bit's of BASE (bits 3,2) will be 0
-   csr_std_wr #(0,12'h105,RSZ,32'h0000_000E) Stvec                (clk_in,reset_in, mode, TRUE, nxt_scsr.stvec, scsr.stvec);
+   // Current design only allows MODE of 0 or 1 - thus bit 1 forced to retain it's reset value which is 0.
+   csr_std_wr #(STVEC_INIT & ~32'd2,12'h105,RSZ,32'h0000_0002) Stvec (clk_in,reset_in, mode, TRUE, nxt_scsr.stvec, scsr.stvec);
 
    // ------------------------------ Supervisor counter enable.
    // 12'h106 = 12'b0001_0000_0110  scounteren                    (read-write)
-   csr_std_wr #(0,12'h106,RSZ) Scounteren                         (clk_in,reset_in, mode, TRUE, nxt_scsr.scounteren, scsr.scounteren);
+   csr_std_wr #(SCNTEN_INIT,12'h106,RSZ,SCNTEN_MASK) Scounteren   (clk_in,reset_in, mode, TRUE, nxt_scsr.scounteren, scsr.scounteren);
 
    // ------------------------------ Supervisor Trap Handling
    // Scratch register for supervisor trap handlers.
@@ -490,14 +489,12 @@ module csr
 
    // ------------------------------ Machine Trap Handler Base Address
    // 12'h305 = 12'b0011_0000_0101  mtvec                         (read-write)
-   // Current design only allows MODE of 0 or 1 - thus bit 1 forced to 0 below. Also lower 2 bit's of BASE (bits 3,2) must be 0
-   // Read Only bits of 32'h0000_000E;  // Note: bits 3:1 are not writable and are "hardwired" to 0 (init value = 0 at reset)
-   // Current design only allows MODE of 0 or 1 - thus bit 1 will be 0. Also lower 2 bit's of BASE (bits 3,2) will be 0
-   csr_std_wr #(0,12'h305,RSZ,32'h0000_000E) Mtvec                (clk_in,reset_in, mode, TRUE, nxt_mcsr.mtvec, mcsr.mtvec);
+   // Current design only allows MODE of 0 or 1 - thus bit 1 forced to retain it's reset value which is 0.
+   csr_std_wr #(MTVEC_INIT & ~32'd2,12'h305,RSZ,32'h0000_0002) Mtvec (clk_in,reset_in, mode, TRUE, nxt_mcsr.mtvec, mcsr.mtvec);
 
    // ------------------------------ Machine Counter Enable
    // 12'h306 = 12'b0011_0000_0110  mcounteren                    (read-write)
-   csr_std_wr #(0,12'h306,RSZ) Mcounteren                         (clk_in,reset_in, mode, TRUE, nxt_mcsr.mcounteren, mcsr.mcounteren);
+   csr_std_wr #(MCNTEN_INIT,12'h306,RSZ,MCNTEN_MASK) Mcounteren   (clk_in,reset_in, mode, TRUE, nxt_mcsr.mcounteren, mcsr.mcounteren);
 
    // ------------------------------ Machine Counter Inhibit
    // If not implemented, set all bits to 0 => no inhibits will ocur

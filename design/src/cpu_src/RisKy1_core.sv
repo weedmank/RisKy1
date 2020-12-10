@@ -207,6 +207,14 @@ module RisKy1_core
       if (MAX_GPR != 32)                                                      $warning("RISC-V compatible designs should set MAX_GPR = 32. See cpu_params.svh");
 
       if (SET_MCOUNTINHIBIT == 1)                                             $warning("Setting SET_MCOUNTINHIBIT == 1 forces CSR to read a constant value of SET_MCOUNTINHIBIT_BITS. See cpu_params.svh");
+      
+      if (MTVEC_INIT & 2)                                                     $warning("MTVEC_INIT[1] is set.  Mode values >= 2 are Reserved. This bit will not be set");
+      `ifdef ext_S
+      if (STVEC_INIT & 2)                                                     $warning("STVEC_INIT[1] is set.  Mode values >= 2 are Reserved. This bit will not be set");
+      `endif
+      `ifdef ext_U
+      if (UTVEC_INIT & 2)                                                     $warning("UTVEC_INIT[1] is set.  Mode values >= 2 are Reserved. This bit will not be set");
+      `endif
 
       if ((Phys_Addr_Lo % 4) != 0)                                            $fatal ("Phys_Addr_Lo must be a multiple of 4. see cpu_params_pkg.sv");
       if ((Phys_Depth % 4) != 0)                                              $fatal ("Phys_Depth must be a multiple of 4. see cpu_params_pkg.sv");
