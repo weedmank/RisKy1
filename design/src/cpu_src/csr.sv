@@ -306,7 +306,7 @@ module csr
    //  31          22    21    20   19    18   17   16:15 14:13 12:11 10:9   8     7     6     5     4     3     2     1     0
    // {sd, 8'b0, 1'b0, 1'b0, 1'b0, mxr,  sum, 1'b0,   xs,   fs, 2'b0, 2'b0, 1'b0, 1'b0, 1'b0, 1'b0, upie, 1'b0, 1'b0, 1'b0, uie};
 
-   assign ucsr.ustatus = mcsr.mstatus & ~32'h7FF2_1FEE; // just a mask of the mstatus register
+   assign ucsr.ustatus = mcsr.mstatus & 32'h800D_E011;            // just a mask of the mstatus register
 
    `ifdef ext_N
    // ------------------------------ User Interrupt-Enable Register
@@ -356,7 +356,7 @@ module csr
    // in mstatus
    // 12'h100 = 12'b0001_0000_0000  sstatus        (read-write)
 
-   assign scsr.sstatus = mcsr.mstatus & 32'h7FF2_1ECC; // just a mask of the mstatus register
+   assign scsr.sstatus = mcsr.mstatus & 32'h800D_E133; // just a mask of the mstatus register
 
    // In systems with S-mode, the  medeleg and mideleg registers must exist, whereas the sedeleg and sideleg registers should only
    // exist if the N extension for user-mode interrupts is also implemented. p 28 riscv-privileged
