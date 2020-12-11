@@ -69,7 +69,7 @@ module csr_av_rdata
          12'h000:
          begin
             csr_rd_avail   = TRUE;
-            csr_rd_data    = ucsr.ustatus;
+            csr_rd_data    = ucsr.ustatus;            // see this in csr.sv
          end
 
          `ifdef ext_F
@@ -150,7 +150,7 @@ module csr_av_rdata
          12'h100:
          begin
             csr_rd_avail   = TRUE;
-            csr_rd_data    = scsr.sstatus;
+            csr_rd_data    = scsr.sstatus;   // see this in csr.sv
          end
 
          // ------------------------------ Supervisor exception delegation register.
