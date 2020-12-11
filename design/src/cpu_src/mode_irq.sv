@@ -197,69 +197,20 @@ module mode_irq
       
       trap_pc     = RESET_VECTOR_ADDR; // This should not get used. It should be set/overrriden by being set in code below to a valid location
 
-      `ifdef ext_U
-      if (mode == U_MODE)
-      begin
-         cause    = uc;
-         tvec     = ucsr.utvec;
-      end
-      `endif // ext_U
-      `ifdef ext_S
-      if (mode == S_MODE)
-      begin
-         cause    = sc;
-         tvec     = scsr.stvec;
-      end
-      `endif // ext_S
-      if (mode == M_MODE)
-      begin
-         cause    = mc;
-         tvec     = mcsr.mtvec;
-      end
+      // defaults if no delegation
+      cause       = mc;
+      tvec        = mcsr.mtvec;        // default: H_MODE should never exist
       
-      nxt_mode    = mode;      // default unless code below changes it
+      nxt_mode    = mode;              // default unless code below changes it
       
       // Traps that increase privilege level are termed vertical traps, while traps that remain at the same privilege level are termed
       // horizontal traps.The RISC-V privileged architecture provides flexible routing of traps to different privilege layers. p4 riscv-privileged.pdf
 
       // Traps never transition from a more-privileged mode to a less-privileged mode.
-      `ifdef ext_N
-      if (interrupt_flag)
-      begin
-         // In systems with all three privilege modes (M/S/U), setting a bit in medeleg or mideleg will
-         // delegate the corresponding trap in S-mode or U-mode to the S-mode trap handler. p. 28 - riscv-privileged.pdf
-         `ifdef ext_S
-            `ifdef ext_U
-            if (mcsr.mideleg[mc] && ((mode == S_MODE) || (mode == U_MODE)) )
-            begin
-               cause    = sc;
-               tvec     = scsr.stvec;
-               nxt_mode = S_MODE;
-            end
-            if (scsr.sideleg[mc] && (mode == U_MODE)) // see p. 28 riscv-privileged.pdf
-            begin
-               cause    = uc;
-               tvec     = ucsr.utvec;
-               nxt_mode = U_MODE;
-            end
-            `endif // ext_U
-         `else // !ext_S
-            // In systems with two privilege modes (M/U) and support for U-mode traps, setting a bit in medeleg or mideleg will
-            // delegate the corresponding trap in U-mode to the U-mode trap handler.
-            `ifdef ext_U
-            if (mcsr.mideleg[mc] && (mode == U_MODE))
-            begin
-               cause    = uc;
-               tvec     = ucsr.utvec;
-               nxt_mode = U_MODE;
-            end
-            `endif
-         `endif
-      end
-      else
-      `endif // ext_N
       if (exception_flag)
       begin
+         nxt_mode = M_MODE;   // default unless delegation occurs
+         
          // In systems with all three privilege modes (M/S/U), setting a bit in medeleg or mideleg will
          // delegate the corresponding trap in S-mode or U-mode to the S-mode trap handler. p. 28 - riscv-privileged.pdf
          `ifdef ext_S
@@ -290,6 +241,42 @@ module mode_irq
             `endif
          `endif
       end
+      `ifdef ext_N
+      else if (interrupt_flag)
+      begin
+         nxt_mode = M_MODE;   // default unless delegation occurs
+         
+         // In systems with all three privilege modes (M/S/U), setting a bit in medeleg or mideleg will
+         // delegate the corresponding trap in S-mode or U-mode to the S-mode trap handler. p. 28 - riscv-privileged.pdf
+         `ifdef ext_S
+            `ifdef ext_U            
+            if (mcsr.mideleg[mc] && ((mode == S_MODE) || (mode == U_MODE)) )
+            begin
+               cause    = sc;
+               tvec     = scsr.stvec;
+               nxt_mode = S_MODE;
+            end
+            if (scsr.sideleg[mc] && (mode == U_MODE)) // see p. 28 riscv-privileged.pdf
+            begin
+               cause    = uc;
+               tvec     = ucsr.utvec;
+               nxt_mode = U_MODE;
+            end
+            `endif // ext_U
+         `else // !ext_S
+            // In systems with two privilege modes (M/U) and support for U-mode traps, setting a bit in medeleg or mideleg will
+            // delegate the corresponding trap in U-mode to the U-mode trap handler.
+            `ifdef ext_U
+            if (mcsr.mideleg[mc] && (mode == U_MODE))
+            begin
+               cause    = uc;
+               tvec     = ucsr.utvec;
+               nxt_mode = U_MODE;
+            end
+            `endif
+         `endif
+      end
+      `endif // ext_N
       else if (mret)
          nxt_mode = mpp;                                    // "When executing an MRET instruction, supposing MPP holds the value y, ... the privilege mode is changed to y; ..."
       `ifdef ext_S
