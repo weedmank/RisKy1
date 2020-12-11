@@ -273,7 +273,7 @@ module csr_nxt_reg
 
       // ------------------------------ User Status Register
       // 12'h000 = 12'b0000_0000_0000  ustatus     (read-write)  user mode
-      // ustatus = mstatus & MASK - see cntrl_status_regs.sv
+      // ustatus = mstatus & MASK - see csr_av_rdata.sv
 
       `ifdef ext_F
       // ------------------------------ User Floating-Point CSRs
@@ -404,9 +404,7 @@ module csr_nxt_reg
       `ifdef ext_S
       // ==================================================================== Supervisor Mode Registers ==============================================================
 
-      // ------------------------------ Supervisor Status Register
-      // 12'h100 = 12'b0001_0000_0000  sstatus        (read-write)
-      // sstatus = mstatus & MASK - see cntrl_status_regs.sv
+      
       `ifdef ext_N
          if (reset_in)
             nxt_spp = 1'b0;                                          // spp = User?
@@ -444,6 +442,10 @@ module csr_nxt_reg
          nxt_sie    = 1'b0;
       `endif // ext_N
 
+      // ------------------------------ Supervisor Status Register
+      // 12'h100 = 12'b0001_0000_0000  sstatus        (read-write)
+      // sstatus = mstatus & MASK - see csr_av_rdata.sv
+      
       // ------------------------------ Supervisor exception delegation register.
       // 12'h102 = 12'b0001_0000_0010  sedeleg                       (read-write)
       if (csr_wr && (csr_addr == 12'h102))
