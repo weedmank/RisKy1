@@ -598,6 +598,15 @@ module csr_nxt_reg
       // In systems with only M-mode and U-mode, the medeleg and mideleg registers should only be implemented if the N extension for user-mode interrupts is implemented.
       // In systems with only M-mode, or with both M-mode and U-mode but without U-mode trap support, the medeleg and mideleg registers should not exist. seee riscv-privileged.pdf p 28
 
+      // medeleg has a bit position allocated for every synchronous exception shown in Table 3.6 on page 37,
+      // with the index of the bit position equal to the value returned in the mcause register (i.e., setting
+      // bit 8 allows user-mode environment calls to be delegated to a lower-privilege trap handler).
+      
+      // mideleg holds trap delegation bits for individual interrupts, with the layout of bits matching those
+      // in the mip register (i.e., STIP interrupt delegation control is located in bit 5).
+      // Some exceptions cannot occur at less privileged modes, and corresponding x edeleg bits should be
+      // hardwired to zero. In particular, medeleg[11] and sedeleg[11:9] are all hardwired to zero.
+
       //!!! NOTE: Don't yet know how to implement all the logic for medeleg and mideleg!!!
 
       `ifdef ext_S // "In systems with S-mode, the medeleg and mideleg registers must exist,..." p. 28 riscv-privileged.pdf

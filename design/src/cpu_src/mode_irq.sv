@@ -29,12 +29,12 @@ module mode_irq
 (
    input    logic                reset_in,
    input    logic                clk_in,
-   
+
    output   logic          [1:0] mode,
    output   logic          [1:0] nxt_mode,
-   
+
    input    logic                exception_flag,
-   
+
    `ifdef ext_U
    input    logic                uret,
    `endif
@@ -42,7 +42,7 @@ module mode_irq
    input    logic                sret,
    `endif
    input    logic                mret,
-   
+
    output   logic    [PC_SZ-1:0] trap_pc,           // Output: trap vector handler address - connects to WB stage
    `ifdef ext_N
    output   logic                interrupt_flag,    // Output: 1 = take an interrupt trap - connects to WB stage
@@ -161,12 +161,135 @@ module mode_irq
    assign mpp = mcsr.mstatus.mpp;
    assign spp = mcsr.mstatus.spp;
 
-   //U -> M: on a page fault, unaligned address, divide by zero etc, or explicit syscall/svc/sw interrupt instruction. Or hardware interrupt.
-   //M -> U: on a "return from interrupt" instruction where the saved processor status indicates the CPU should be in U mode.
+   always_ff @(posedge clk_in)
+   begin
+      if (reset_in)
+         mode <= M_MODE;          // nxt_mode == 3 during reset_in
+      else
+         mode <= nxt_mode;
+   end
+   
+   //----------------------------------------------------------------------------------------------------------------------------------------
+   //----------------------------------------------------------- Synchronous Exceptions -----------------------------------------------------
+   //----------------------------------------------------------------------------------------------------------------------------------------
+   // When MODE=Vectored, all synchronous exceptions into supervisor mode cause the pc to be set to the address in the BASE field,
+   // whereas interrupts cause the pc to be set to the address in the BASE field plus four times the interrupt cause number.
+   // For example, a supervisor-mode timer interrupt (see Table 4.2) causes the  pc to be set to BASE+0x14.
+   // Setting MODE=Vectored may impose a stricter alignment constraint on BASE.
+   logic     [GPR_ASZ-1:0] cause,mc;
+   logic         [RSZ-1:0] tvec;
+   logic             [1:0] trap_mode;
+   
+   assign mc = mcsr.mcause[GPR_ASZ-1:0];
+   
+   `ifdef ext_S
+   logic     [GPR_ASZ-1:0] sc;
+   assign sc = scsr.scause[GPR_ASZ-1:0];
+   `endif // ext_S
+   
+   `ifdef ext_U
+   logic     [GPR_ASZ-1:0] uc;
+   assign uc = ucsr.ucause[GPR_ASZ-1:0];
+   `endif // ext_U
+   
    always_comb
    begin
-      if (reset_in | exception_flag `ifdef ext_N | interrupt_flag `endif)
-         nxt_mode = 2'b11;                                  // Machine Mode
+      
+      trap_pc     = RESET_VECTOR_ADDR; // This should not get used. It should be set/overrriden by being set in code below to a valid location
+
+      `ifdef ext_U
+      if (mode == U_MODE)
+      begin
+         cause    = uc;
+         tvec     = ucsr.utvec;
+      end
+      `endif // ext_U
+      `ifdef ext_S
+      if (mode == S_MODE)
+      begin
+         cause    = sc;
+         tvec     = scsr.stvec;
+      end
+      `endif // ext_S
+      if (mode == M_MODE)
+      begin
+         cause    = mc;
+         tvec     = mcsr.mtvec;
+      end
+      
+      nxt_mode    = mode;      // default unless code below changes it
+      
+      // Traps that increase privilege level are termed vertical traps, while traps that remain at the same privilege level are termed
+      // horizontal traps.The RISC-V privileged architecture provides flexible routing of traps to different privilege layers. p4 riscv-privileged.pdf
+
+      // Traps never transition from a more-privileged mode to a less-privileged mode.
+      `ifdef ext_N
+      if (interrupt_flag)
+      begin
+         // In systems with all three privilege modes (M/S/U), setting a bit in medeleg or mideleg will
+         // delegate the corresponding trap in S-mode or U-mode to the S-mode trap handler. p. 28 - riscv-privileged.pdf
+         `ifdef ext_S
+            `ifdef ext_U
+            if (mcsr.mideleg[mc] && ((mode == S_MODE) || (mode == U_MODE)) )
+            begin
+               cause    = sc;
+               tvec     = scsr.stvec;
+               nxt_mode = S_MODE;
+            end
+            if (scsr.sideleg[mc] && (mode == U_MODE)) // see p. 28 riscv-privileged.pdf
+            begin
+               cause    = uc;
+               tvec     = ucsr.utvec;
+               nxt_mode = U_MODE;
+            end
+            `endif // ext_U
+         `else // !ext_S
+            // In systems with two privilege modes (M/U) and support for U-mode traps, setting a bit in medeleg or mideleg will
+            // delegate the corresponding trap in U-mode to the U-mode trap handler.
+            `ifdef ext_U
+            if (mcsr.mideleg[mc] && (mode == U_MODE))
+            begin
+               cause    = uc;
+               tvec     = ucsr.utvec;
+               nxt_mode = U_MODE;
+            end
+            `endif
+         `endif
+      end
+      else
+      `endif // ext_N
+      if (exception_flag)
+      begin
+         // In systems with all three privilege modes (M/S/U), setting a bit in medeleg or mideleg will
+         // delegate the corresponding trap in S-mode or U-mode to the S-mode trap handler. p. 28 - riscv-privileged.pdf
+         `ifdef ext_S
+            `ifdef ext_U
+            if (mcsr.medeleg[mc] && ((mode == S_MODE) || (mode == U_MODE)) )
+            begin
+               cause    = sc;
+               tvec     = scsr.stvec;
+               nxt_mode = S_MODE;
+            end
+            if (scsr.sedeleg[mc] && (mode == U_MODE)) // see p. 28 riscv-privileged.pdf
+            begin
+               cause    = uc;
+               tvec     = ucsr.utvec;
+               nxt_mode = U_MODE;
+            end
+            `endif // ext_U
+         `else // !ext_S
+            // In systems with two privilege modes (M/U) and support for U-mode traps, setting a bit in medeleg or mideleg will
+            // delegate the corresponding trap in U-mode to the U-mode trap handler.
+            `ifdef ext_U
+            if (mcsr.medeleg[mc] && (mode == U_MODE))
+            begin
+               cause    = uc;
+               tvec     = ucsr.utvec;
+               nxt_mode = U_MODE;
+            end
+            `endif
+         `endif
+      end
       else if (mret)
          nxt_mode = mpp;                                    // "When executing an MRET instruction, supposing MPP holds the value y, ... the privilege mode is changed to y; ..."
       `ifdef ext_S
@@ -179,50 +302,23 @@ module mode_irq
       `endif
       else // default
          nxt_mode = mode;
-   end
 
-   always_ff @(posedge clk_in)
-      mode <= nxt_mode;                                     // nxt_mode == 3 during reset_in
-
-   //----------------------------------------------------------------------------------------------------------------------------------------
-   //----------------------------------------------------------- Synchronous Exceptions -----------------------------------------------------
-   //----------------------------------------------------------------------------------------------------------------------------------------
-   // When MODE=Vectored, all synchronous exceptions into supervisor mode cause the pc to be set to the address in the BASE field,
-   // whereas interrupts cause the pc to be set to the address in the BASE field plus four times the interrupt cause number.
-   // For example, a supervisor-mode timer interrupt (see Table 4.2) causes the  pc to be set to BASE+0x14.
-   // Setting MODE=Vectored may impose a stricter alignment constraint on BASE.
-   always_comb
-   begin
-      trap_pc = '0;
       case(nxt_mode)
-         3:    // Machine Mode.     see riscv-priviledged.pdf p. 27
+         S_MODE,M_MODE:    // Machine Mode.     see riscv-priviledged.pdf p. 27
          begin
             `ifdef ext_N
-            if (interrupt_flag && (mcsr.mtvec[1:0] == 2'b01))      // Optional vectored interrupt support has been added to the mtvec and stvec CSRs. riscv_privileged.pdf p iii
-               //        BASE      +  cause             * 4
-               trap_pc = mcsr.mtvec[RSZ-1:2] + {mcsr.mcause[29:0], 2'b00};
+            if (interrupt_flag && (tvec[1:0] == 2'b01))           // Optional vectored interrupt support has been added to the mtvec and stvec CSRs. riscv_privileged.pdf p iii
+               //        BASE          +  cause        * 4
+               trap_pc = tvec[RSZ-1:2] + { {RSZ-GPR_ASZ-2{1'b0}}, cause, 2'b00 };
             else
             `endif
-            trap_pc  = mcsr.mtvec[RSZ-1:2];
+            trap_pc  = {tvec[RSZ-1:2],2'b00};
          end
-
-         `ifdef ext_S
-         1:    // Supervisor Mode.  see riscv-priviledged.pdf p. 57-58
-         begin
-            `ifdef ext_N
-            if (interrupt_flag && (scsr.stvec[1:0] == 2'b01))
-               //        BASE      +  cause             * 4
-               trap_pc = scsr.stvec[RSZ-1:2] + {scsr.scause[29:0], 2'b00};
-            else
-            `endif
-               trap_pc = scsr.stvec[RSZ-1:2];
-         end
-         `endif
 
          `ifdef ext_U
-         0:    // User Mode
+         U_MODE:    // User Mode
          begin
-            trap_pc = ucsr.utvec[RSZ-1:2];
+            trap_pc = {tvec[RSZ-1:2],2'b00};
          end
          `endif
       endcase
