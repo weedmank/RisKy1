@@ -46,22 +46,6 @@ module csr_nxt_reg
    input    logic          [1:0] mode,
    input    logic          [1:0] nxt_mode,
 
-//   `ifdef ext_U
-//   input    logic                uret,
-//   UCSR_REG_intf.slave           ucsr,             // all of the User mode Control & Status Registers
-//   UCSR_REG_intf.master          nxt_ucsr,         // all of the next User mode Control & Status Registers
-//   `endif
-//
-//   `ifdef ext_S
-//   input    logic                sret,
-//   SCSR_REG_intf.slave           scsr,             // all of the Supervisor mode Control & Status Registers
-//   SCSR_REG_intf.master          nxt_scsr,         // all of the next Supervisor mode Control & Status Registers
-//   `endif
-//
-//   input    logic                mret,
-//   MCSR_REG_intf.slave           mcsr,             // all of the Machine mode Control & Status Registers
-//   MCSR_REG_intf.master          nxt_mcsr          // all of the next Machine mode Control & Status Registers
-
    `ifdef ext_U
    input    logic                uret,
    input    var UCSR             ucsr,             // all of the User mode Control & Status Registers

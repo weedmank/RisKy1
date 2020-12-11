@@ -53,16 +53,6 @@ module csr
    CSR_NXT_intf.slave         csr_nxt_bus
 );
 
-//   `ifdef ext_U
-//   UCSR_REG_intf              nxt_ucsr();
-//   UCSR_REG_intf              ucsr();                       // all of the User mode Control & Status Registers
-//   `endif
-//   `ifdef ext_S
-//   SCSR_REG_intf              nxt_scsr();
-//   SCSR_REG_intf              scsr();                       // all of the Supervisor mode Control & Status Registers
-//   `endif
-//   MCSR_REG_intf              nxt_mcsr();
-//   MCSR_REG_intf              mcsr();                       // all of the Machine mode Control & Status Registers
    `ifdef ext_U
    UCSR              nxt_ucsr;
    UCSR              ucsr;                         // all of the User mode Control & Status Registers
@@ -143,105 +133,6 @@ module csr
    assign uret = csr_exe_bus.uret;
    `endif
 
-   // ================================================================== csr_rd_data logic ============================================================
-   // produces current values of csr_rd_data and csr_rd_avail based in input csr_rd_addr. Needed by CSR Functional Unit inside EXE stage to read
-   // a specific CSR register - i.e. csr[csr_addr]
-   csr_av_rdata car
-   (
-      .csr_rd_addr(csr_rd_addr),
-      .csr_rd_data(csr_rd_data),
-      .csr_rd_avail(csr_rd_avail),                          // 1 = register exists (available) in design
-
-      .mtime(mtime),
-      .mode(mode),
-
-      `ifdef ext_U
-      .ucsr(ucsr),                                          // all of the User Mode Control & Status Registers
-      `endif
-      `ifdef ext_S
-      .scsr(scsr),                                          // all of the Supervisor Mode Control & Status Registers
-      `endif
-      .mcsr(mcsr)                                           // all of the Machine Mode Control & Status Registers
-   );
-
-   // ================================================================== Next csr_rd_data logic ======================================================
-   // Used by CSR Functional Unit to determine what csr_rd_data for a specific CSR will be on the next clock cycle.
-   // Althouhg the logic is passed signals csr_wr, csr_wr_addr and csr_wr_data, NO physical write occurs to any CSR register. It just calculates what
-   // would be the next data woould get saved in the specific CSR[].  This is needed by the EXE stage for forwarding information because writing to
-   // a CSR does NOT mean that it will contain all the write data or even the same data that is written!
-   //
-   // Note: Forwarding of Architectural Registers is easy because what you write to them will be the same as what you later read from them. Not so
-   //       with some CSRs
-
-//   MCSR_REG_intf              nxt_CSRFU_mcsr();
-//   `ifdef ext_S
-//   SCSR_REG_intf              nxt_CSRFU_scsr();
-//   `endif
-//   `ifdef ext_U
-//   UCSR_REG_intf              nxt_CSRFU_ucsr();
-//   `endif
-   MCSR             nxt_CSRFU_mcsr;
-   `ifdef ext_S
-   SCSR             nxt_CSRFU_scsr;
-   `endif
-   `ifdef ext_U
-   UCSR             nxt_CSRFU_ucsr;
-   `endif
-   csr_nxt_reg cnr_fu (
-      .reset_in(reset_in),
-
-      `ifdef ext_N
-      .ext_irq(ext_irq),
-      .timer_irq(timer_irq),
-      `endif
-
-      .csr_addr(nxt_csr_wr_addr),
-      .csr_wr(nxt_csr_wr),
-      .csr_wr_data(nxt_csr_wr_data),
-
-      .tot_retired(tot_retired),
-      .exception(exception),                                // Input:
-      .hpm_events(hpm_events),                              // 24 different event counts (counts for this clock cycle) that can be used. 1 bit needed per event for this design (1 instruction max per clock cycle)
-
-      .mode(mode),
-      .nxt_mode(nxt_mode),
-
-      `ifdef ext_U
-      .uret(uret),
-      .ucsr(ucsr),                                          // Input: current register state of all the User Mode Control & Status Registers
-      .nxt_ucsr(nxt_CSRFU_ucsr),                            // Output: next register state of all the User Mode Control & Status Registers
-      `endif
-
-      `ifdef ext_S
-      .sret(sret),
-      .scsr(scsr),                                          // Input: current register state of all the Supervisor Mode Control & Status Registers
-      .nxt_scsr(nxt_CSRFU_scsr),                            // Output: next register state of all the Supervisor Mode Control & Status Registers
-      `endif
-
-      .mret(mret),
-      .mcsr(mcsr),                                          // Input:  current register state of all the Machine Mode Control & Status Registers
-      .nxt_mcsr(nxt_CSRFU_mcsr)                             // Output: next register state of all the Machine Mode Control & Status Registers
-   );
-
-   // Read the contents of a specific CSR and knw if it's available (exists for reading)
-   csr_av_rdata car_fu
-   (
-      .csr_rd_addr(nxt_csr_wr_addr),
-      .csr_rd_data(nxt_csr_rd_data),
-      .csr_rd_avail(),                                      // 1 = register exists (available) in design NOTE: not needed by CSR Functional Unit we only need the read result for NEXT clock cycle
-
-      .mtime(mtime),
-      .mode(mode),
-
-      `ifdef ext_U
-      .ucsr(nxt_CSRFU_ucsr),                                // all of the User Mode Control & Status Registers
-      `endif
-      `ifdef ext_S
-      .scsr(nxt_CSRFU_scsr),                                // all of the Supervisor Mode Control & Status Registers
-      `endif
-      .mcsr(nxt_CSRFU_mcsr)                                 // all of the Machine Mode Control & Status Registers
-   );
-
    // ================================================================== Next CSR Register Contents logic ======================================================
    // The state of all Control & Status egisters is determined and output as nxt_mcsr,nxt_scsr,nxt_ucsr (depending on type of CSR). These values are then
    // latched into the actual CSR FF's on the next rising clock edge as seen in csr_std_wr() registers used further below
@@ -254,32 +145,125 @@ module csr
       .timer_irq(timer_irq),
       `endif
 
-      .csr_addr(csr_wr_addr),
-      .csr_wr(csr_wr),
-      .csr_wr_data(csr_wr_data),
+      .csr_addr(csr_wr_addr),                               // Input:   CSR write address
+      .csr_wr(csr_wr),                                      // Input:   CSR write control
+      .csr_wr_data(csr_wr_data),                            // Input:   CSR write data
 
-      .tot_retired(tot_retired),
+      .tot_retired(tot_retired),                            // Input:
       .exception(exception),                                // Input:
-      .hpm_events(hpm_events),                              // 24 different event counts (counts for this clock cycle) that can be used. 1 bit needed per event for this design (1 instruction max per clock cycle)
+      .hpm_events(hpm_events),                              // Input:   24 different event counts (counts for this clock cycle) that can be used. 1 bit needed per event for this design (1 instruction max per clock cycle)
+
+      .mode(mode),                                          // Input:
+      .nxt_mode(nxt_mode),                                  // Input:
+
+      `ifdef ext_U
+      .uret(uret),                                          // Input:
+      .ucsr(ucsr),                                          // Input:   current register state of all the User Mode Control & Status Registers
+      .nxt_ucsr(nxt_ucsr),                                  // Output:  next register state of all the User Mode Control & Status Registers
+      `endif
+
+      `ifdef ext_S
+      .sret(sret),                                          // Input:
+      .scsr(scsr),                                          // Input:   current register sstate of all the Supervisor Mode Control & Status Registers
+      .nxt_scsr(nxt_scsr),                                  // Output:  next register state of all the Supervisor Mode Control & Status Registers
+      `endif
+
+      .mret(mret),                                          // Input:
+      .mcsr(mcsr),                                          // Input:   current register state of all the Machine Mode Control & Status Registers
+      .nxt_mcsr(nxt_mcsr)                                   // Output:  next register state of all the Machine Mode Control & Status Registers
+   );
+
+   // ================================================================== csr_rd_data logic ============================================================
+   // produces current values of csr_rd_data and csr_rd_avail based in input csr_rd_addr. Needed by CSR Functional Unit inside EXE stage to read
+   // a specific CSR register - i.e. csr[csr_addr]
+   csr_av_rdata car
+   (
+      .csr_rd_addr(csr_rd_addr),                            // Input:
+      .csr_rd_data(csr_rd_data),                            // Output:
+      .csr_rd_avail(csr_rd_avail),                          // Output:  1 = register exists (available) in design
+
+      .mtime(mtime),                                        // Input:
+      .mode(mode),                                          // Input:
+
+      `ifdef ext_U
+      .ucsr(ucsr),                                          // Input:   all of the User Mode Control & Status Registers
+      `endif
+      `ifdef ext_S
+      .scsr(scsr),                                          // Input:   all of the Supervisor Mode Control & Status Registers
+      `endif
+      .mcsr(mcsr)                                           // Input:   all of the Machine Mode Control & Status Registers
+   );
+
+   // ****************************************************************** Next csr_rd_data logic ******************************************************************
+   // Used by CSR Functional Unit to determine what csr_rd_data for a specific CSR will be on the next clock cycle.
+   // Althouhg the logic is passed signals csr_wr, csr_wr_addr and csr_wr_data, NO physical write occurs to any CSR register. This just calculates
+   // what the next data would be in the specific CSR[].  This is needed by the EXE stage for forwarding information because writing to
+   // a CSR does NOT mean that it will contain all the write data or even the same data that is written!
+   //
+   // Note: Forwarding of Architectural Registers is easy because what you write to them will be the same as what you later read from them. Not so
+   //       with some CSRs
+   // Read the contents of a specific CSR and know if it's available (exists for reading)
+
+   MCSR             nxt_FWD_mcsr;
+   `ifdef ext_S
+   SCSR             nxt_FWD_scsr;
+   `endif
+   `ifdef ext_U
+   UCSR             nxt_FWD_ucsr;
+   `endif
+
+   csr_nxt_reg cnr_2 (
+      .reset_in(reset_in),
+
+      `ifdef ext_N
+      .ext_irq(ext_irq),
+      .timer_irq(timer_irq),
+      `endif
+
+      .csr_addr(nxt_csr_wr_addr),                           // Input:   CSR write address
+      .csr_wr(nxt_csr_wr),                                  // Input:   CSR write control
+      .csr_wr_data(nxt_csr_wr_data),                        // Input:   CSR write data
+
+      .tot_retired(tot_retired),                            // Input:
+      .exception(exception),                                // Input:
+      .hpm_events(hpm_events),                              // Input:   24 different event counts (counts for this clock cycle) that can be used. 1 bit needed per event for this design (1 instruction max per clock cycle)
 
       .mode(mode),
       .nxt_mode(nxt_mode),
 
       `ifdef ext_U
-      .uret(uret),
-      .ucsr(ucsr),                                          // Input: current register state of all the User Mode Control & Status Registers
-      .nxt_ucsr(nxt_ucsr),                                  // Output: next register state of all the User Mode Control & Status Registers
+      .uret(uret),                                          // Input:
+      .ucsr(ucsr),                                          // Input:   current register state of all the User Mode Control & Status Registers
+      .nxt_ucsr(nxt_FWD_ucsr),                              // Output:  next register state of all the User Mode Control & Status Registers
       `endif
 
       `ifdef ext_S
-      .sret(sret),
-      .scsr(scsr),                                          // Input: current register sstate of all the Supervisor Mode Control & Status Registers
-      .nxt_scsr(nxt_scsr),                                  // Output: next register state of all the Supervisor Mode Control & Status Registers
+      .sret(sret),                                          // Input:
+      .scsr(scsr),                                          // Input:   current register state of all the Supervisor Mode Control & Status Registers
+      .nxt_scsr(nxt_FWD_scsr),                              // Output:  next register state of all the Supervisor Mode Control & Status Registers
       `endif
 
-      .mret(mret),
-      .mcsr(mcsr),                                          // Input:  current register state of all the Machine Mode Control & Status Registers
-      .nxt_mcsr(nxt_mcsr)                                   // Output: next register state of all the Machine Mode Control & Status Registers
+      .mret(mret),                                          // Input:
+      .mcsr(mcsr),                                          // Input:   current register state of all the Machine Mode Control & Status Registers
+      .nxt_mcsr(nxt_FWD_mcsr)                               // Output:  next register state of all the Machine Mode Control & Status Registers
+   );
+
+   csr_av_rdata car_2
+   (
+      .csr_rd_addr(nxt_csr_wr_addr),                        // Input:
+      .csr_rd_data(nxt_csr_rd_data),                        // Output:
+      .csr_rd_avail(),                                      // Output:  1 = register exists (available) in design NOTE: not needed by CSR Functional Unit we only need the read result for NEXT clock cycle
+
+      .mtime(mtime),                                        // Input:
+      .mode(mode),                                          // Input:
+
+      `ifdef ext_U
+      .ucsr(nxt_FWD_ucsr),                                  // Input:   all of the User Mode Control & Status Registers
+      `endif
+      `ifdef ext_S
+      .scsr(nxt_FWD_scsr),                                  // Input:   all of the Supervisor Mode Control & Status Registers
+      `endif
+      .mcsr(nxt_FWD_mcsr)                                   // Input:   all of the Machine Mode Control & Status Registers
    );
 
    // ================================================================== Mode & Interrupt Control logic ======================================================
@@ -314,7 +298,6 @@ module csr
       `endif
       .mcsr(mcsr)                                           // Input:   current register state of all the Machine Mode Control & Status Registers
    );
-
 
    // ================================================================== User Mode CSRs =====================================================================
    `ifdef ext_U
