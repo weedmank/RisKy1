@@ -264,7 +264,7 @@ import cpu_params_pkg::*;
    typedef struct packed {
       logic                   valid;
       logic                   csr_wr;
-      logic     [GPR_ASZ-1:0] csr_addr;
+      logic            [11:0] csr_addr;
       logic         [RSZ-1:0] csr_data;
    } FWD_CSR;
 
@@ -433,13 +433,13 @@ import cpu_params_pkg::*;
       logic                        [RSZ-1:0] misa;             // 12'h301
       `ifdef ext_S   // "In systems with S-mode, the medeleg and mideleg registers must exist,..." see p. 28 riscv-privileged.pdf, csr_wr_mach.svh
       logic                        [RSZ-1:0] medeleg;          // 12'h302
-      logic                        [RSZ-1:0] mideleg;          // 12'h303
-      `else // !ext_S
-         `ifdef ext_U
          `ifdef ext_N
+          logic                    [RSZ-1:0] mideleg;          // 12'h303
+          `endif
+      `elsif ext_U
          logic                     [RSZ-1:0] medeleg;          // 12'h302
+         `ifdef ext_N
          logic                     [RSZ-1:0] mideleg;          // 12'h303
-         `endif
          `endif
       `endif
       `ifdef ext_N
