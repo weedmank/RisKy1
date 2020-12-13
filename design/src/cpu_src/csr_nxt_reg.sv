@@ -59,8 +59,8 @@ module csr_nxt_reg
    `endif
 
    input    logic                mret,
-   input var MCSR  mcsr,                           // all of the Machine mode Control & Status Registers
-   output MCSR  nxt_mcsr                           // all of the next Machine mode Control & Status Registers
+   input    var MCSR             mcsr,             // all of the Machine mode Control & Status Registers
+   output   MCSR                 nxt_mcsr          // all of the next Machine mode Control & Status Registers
 );
 
    logic sd, tsr, tw, tvm, mxr, sum, mprv;
@@ -246,7 +246,7 @@ module csr_nxt_reg
          else if (exception.flag & (nxt_mode == U_MODE))
             nxt_uie  = 'd0;
          else if (uret)
-            nxt_uie  = mcsr.mstatus.mpie;                                  // "xIE is set to xPIE;"  p. 21 riscv-privileged.pdf
+            nxt_uie  = mcsr.mstatus.upie;                                  // "xIE is set to xPIE;"  p. 21 riscv-privileged.pdf
       end
       `else // !ext_N
       assign nxt_upie   = 1'b0;
@@ -268,6 +268,13 @@ module csr_nxt_reg
    always_comb
    begin
       nxt_mcsr = '{default: '0};
+      `ifdef ext_S
+      nxt_scsr = '{default: '0};
+      `endif
+      `ifdef ext_U
+      nxt_ucsr = '{default: '0};
+      `endif
+      
       `ifdef ext_U
       // ==================================================================== User Mode Registers ====================================================================
 
@@ -603,29 +610,29 @@ module csr_nxt_reg
          else
             nxt_mcsr.medeleg  = mcsr.medeleg;
 
+         `ifdef ext_N
          // Machine interrupt delegation register
          // 12'h303 = 12'b0011_0000_0011  mideleg                       (read-write)
          if (csr_wr && (csr_addr == 12'h303))
             nxt_mcsr.mideleg  = csr_wr_data;
          else
             nxt_mcsr.mideleg  = mcsr.mideleg;
-      `else // !ext_S
-         `ifdef ext_U
-            `ifdef ext_N
-            // Machine exception delegation register
-            // 12'h302 = 12'b0011_0000_0010  medeleg                    (read-write)
-            if (csr_wr && (csr_addr == 12'h302))
-               nxt_mcsr.medeleg  = csr_wr_data;
-            else
-               nxt_mcsr.medeleg  = mcsr.medeleg;
-
-            // Machine interrupt delegation register
-            // 12'h303 = 12'b0011_0000_0011  mideleg                    (read-write)
-            if (csr_wr && (csr_addr == 12'h303))
-               nxt_mcsr.mideleg  = csr_wr_data;
-            else
-               nxt_mcsr.mideleg  = mcsr.mideleg;
-            `endif
+         `endif
+      `elsif ext_U
+         // Machine exception delegation register
+         // 12'h302 = 12'b0011_0000_0010  medeleg                       (read-write)
+         if (csr_wr && (csr_addr == 12'h302))
+            nxt_mcsr.medeleg  = csr_wr_data;
+         else
+            nxt_mcsr.medeleg  = mcsr.medeleg;
+   
+         `ifdef ext_N
+         // Machine interrupt delegation register
+         // 12'h303 = 12'b0011_0000_0011  mideleg                       (read-write)
+         if (csr_wr && (csr_addr == 12'h303))
+            nxt_mcsr.mideleg  = csr_wr_data;
+         else
+            nxt_mcsr.mideleg  = mcsr.mideleg;
          `endif
       `endif
 
