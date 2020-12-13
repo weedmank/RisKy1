@@ -89,9 +89,6 @@ module mem
    logic                   inv_flag;
    logic                   is_ld;
    logic                   is_st;
-   logic                   mis;
-   logic                   ci;
-   logic       [PC_SZ-1:0] br_pc;
 
    // signals create here in MEM stage
    logic                   is_ls;                                                   // this is a Load or Store instruction
@@ -107,9 +104,6 @@ module mem
    assign inv_flag                     = E2M_bus.data.inv_flag;
    assign is_ld                        = E2M_bus.data.is_ld;
    assign is_st                        = E2M_bus.data.is_st;
-   assign mis                          = E2M_bus.data.mis;                          // misaligned, illegal CSR access...
-   assign ci                           = E2M_bus.data.ci;
-   assign br_pc                        = E2M_bus.data.br_pc;
    assign mode                         = E2M_bus.data.mode;
    
    assign is_ls                        = (is_ld | is_st);
@@ -241,7 +235,7 @@ module mem
    assign mtimecmp_hi_wr   = is_int_io & (mode == 3) & (ls_addr == (MTIMECMP_Base_Addr+4)) & is_st;
 
    `ifdef ext_N
-   assign msip_wr          = is_int_io & (mode == 3) & (ls_addr == MSIP_Base_Addr)       & is_st;
+   assign msip_wr          = is_int_io & (mode == 3) & (ls_addr == MSIP_Base_Addr) & is_st;
    `endif
 
    assign mmr_wr_data      = st_data;
