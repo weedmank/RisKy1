@@ -45,13 +45,16 @@ module csr_std_wr
    generate
       for (m = 0; m < SZ; m++)
       begin
-         always_ff @(posedge clk_in)
-         begin
-            if (reset_in)
-               csr_name[m] <= INIT_VALUE[m];
-            else if (csr_wr & (mode >= lowest_priv) & !ROmask[m])
-               csr_name[m] <= csr_data[m];
-         end
+         if (ROmask[m])
+            assign csr_name[m] = INIT_VALUE[m];          // assign a constant value for this bit
+         else // not a read only bit
+            always_ff @(posedge clk_in)                  // create a resetable, writable, Flop for this bit
+            begin
+               if (reset_in)
+                  csr_name[m] <= INIT_VALUE[m];
+               else if (csr_wr & (mode >= lowest_priv))
+                  csr_name[m] <= csr_data[m];
+            end
       end
    endgenerate
 endmodule
