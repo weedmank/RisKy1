@@ -77,8 +77,10 @@ module mode_irq
 
       // csr_mstatus info
       logic       [1:0] mpp;  // from mcsr.mstatus[12:11]
+      `ifdef ext_S
       logic             spp;  // from mcsr.mstatus[8]
-
+      `endif
+      
       // ---------------------- Interrupt Enable bits ----------------------
       // see Machine Mode Mie register 12'h304
       assign usie = mcsr.mie.usie;     // USIE - User       mode Software Interrupt Enable
@@ -159,7 +161,9 @@ module mode_irq
    //----------------------------------------------------------------------------------------------------------------------------------------
 
    assign mpp = mcsr.mstatus.mpp;
+   `ifdef ext_S
    assign spp = mcsr.mstatus.spp;
+   `endif
 
    always_ff @(posedge clk_in)
    begin
