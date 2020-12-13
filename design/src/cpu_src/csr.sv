@@ -194,9 +194,10 @@ module csr
       .mcsr(mcsr)                                           // Input:   all of the Machine Mode Control & Status Registers
    );
 
-   // ****************************************************************** Next csr_rd_data logic ******************************************************************
-   // Used by CSR Functional Unit to determine what csr_rd_data for a specific CSR will be on the next clock cycle.
-   // Althouhg the logic is passed signals csr_wr, csr_wr_addr and csr_wr_data, NO physical write occurs to any CSR register. This just calculates
+   // ************************************************************************************************************************************
+   // Used by CSR Functional Unit to determine what csr_rd_data for a specific CSR will be on the NEXT clock cycle.
+   // ************************************************************************************************************************************
+   // Althouhg the logic uses signals csr_wr, csr_wr_addr and csr_wr_data, NO physical write occurs to any CSR register. This just calculates
    // what the next data would be in the specific CSR[].  This is needed by the EXE stage for forwarding information because writing to
    // a CSR does NOT mean that it will contain all the write data or even the same data that is written!
    //
@@ -433,7 +434,7 @@ module csr
 
    assign mcsr.misa     = nxt_mcsr.misa; // currently this is just a constant
 
-   // ------------------------------ Machine Delegation Registers - under construction...
+   // ------------------------------ Machine Delegation Registers
    // In systems with only M-mode and U-mode, the medeleg and mideleg registers should only be implemented if the N extension for user-mode interrupts is implemented.
    // In systems with only M-mode, or with both M-mode and U-mode but without U-mode trap support, the medeleg and mideleg registers should not exist. seee riscv-privileged.pdf p 28
 
