@@ -59,7 +59,7 @@ module fetch
    // connections with next stage
    F2D_intf.master                     F2D_bus
 );
-   parameter   Q_DEPTH  = 2*MAX_IPCL;
+   parameter   Q_DEPTH  = 2*MAX_IPCL;                                // Must be a power of 2 value for current qip, qop logic to work.
    localparam  QP_SZ    = bit_size(Q_DEPTH-1);
    localparam  QC_SZ    = bit_size(Q_DEPTH);
 
@@ -68,8 +68,9 @@ module fetch
    // Instruction buffer (que), counters, pointers & related signals
    logic            [QC_SZ:0] qcnt, nxt_qip_cnt;
    Q_DATA       [Q_DEPTH-1:0] que, nxt_que;
-   logic          [QP_SZ-1:0] qip, nxt_qip;                          // que input pointers
-   logic          [QP_SZ-1:0] qop;                                   // que output pointers
+   logic          [QP_SZ-1:0] qip, qop;                              // que input & output pointers
+   logic          [QP_SZ-1:0] nxt_qip;                      // truncate to be same size as qip, qop
+   logic          [QC_SZ-1:0] nq, nxt_qop;                      // 1 bit bigger than qop
 
    logic                      xfer_out;
 
@@ -197,7 +198,7 @@ module fetch
    localparam MR2_SZ = bit_size(MAX_RAS);
 
    logic                [MR_SZ-1:0] ras_ptr;
-   logic                [MR_SZ-1:0] nxt_ras_ptr;
+   logic                [MR_SZ-1:0] nxt_ras_ptr;      // ras_ptr wrapping will work only if MAX_RAS is a power of 2 for current design
    logic  [MAX_RAS-1:0] [PC_SZ-1:0] ras, nxt_ras;     // Note: MAX_RAS should be a power of two for the current logic
 
    always_ff @(posedge clk_in)
@@ -277,6 +278,7 @@ module fetch
 
       nxt_ras_ptr          = ras_ptr;
 
+      nq                   = 0;
       nxt_qip              = qip;
       nxt_qip_cnt          = 0;
       nxt_que              = que;
@@ -349,7 +351,7 @@ module fetch
                rd          = i[11:7];
 
                // determine branch type
-               case ({i[15:13],i[1:0]})   // synopsys parallel_case
+               case ({i[15:13],i[1:0]})
                   5'b001_01:                                                              // C.JAL = JAL R1, offset[11:1]
                      btype[c] = 3'b011;
                   5'b101_01:                                                              // C.J   = JAL R0, offset[11:1]
@@ -391,7 +393,7 @@ module fetch
                rs1      = i[19:15];
 
                // determine branch type
-               case (i[6:2])  // synopsys parallel_case
+               case (i[6:2])
                   //!!! RV32I Standard
                   5'b11000:                                                               // BEQ/BNE/BLT/BGE/BLTU/BGEU
                      btype[c] = 3'b010;                                                   // 3'b010: branch type is conditional
@@ -526,10 +528,14 @@ module fetch
             // 4th - gather necessary data collected during this cycle for placement in que[]
             last_predicted_addr  = predicted[c].addr;                                     // used in Next_PC logic. This is either a PC + 4 value for normal instructions, or a "predicted" address for branch instructions
 
-            nxt_que[nxt_qip].ipd.instruction  = i;
-            nxt_que[nxt_qip].ipd.pc           = addr[c];
-            nxt_que[nxt_qip].predicted_addr   = predicted[c].addr;
-            nxt_qip++;                                                                    // increment que input pointer
+            nq = nxt_qip;
+            
+            nxt_que[nq].ipd.instruction  = i;
+            nxt_que[nq].ipd.pc           = addr[c];
+            nxt_que[nq].predicted_addr   = predicted[c].addr;
+            nq++;                                                                         // increment que input pointer. size must be 1 bit larger than nxt_qip.
+            nxt_qip = nq[QP_SZ-1:0];                                                      // pointer wrapping logic
+            
             nxt_qip_cnt++;                                                                // number of instructions being saved this clock cycle
             if (nxt_qip == qop)
                done = TRUE;                                                               // queue is full - can't save any more
@@ -586,7 +592,8 @@ module fetch
    //------------------------------------------------------------------------------------------------------------------------------------------
    // Update pointers
    //------------------------------------------------------------------------------------------------------------------------------------------
-
+   assign nxt_qop = qop + 1'd1;
+   
    always_ff @(posedge clk_in)
    begin
       if (reset_in | pc_reload | ic_reload)
@@ -599,12 +606,12 @@ module fetch
       if (reset_in | pc_reload | ic_reload)
          qip <= 'd0;
       else
-         qip <= nxt_qip;
+         qip <= nxt_qip;                                                                  // Circular buffer pointer. QP_SZ must be a power of 2 value!
 
       if (reset_in | pc_reload | ic_reload)
          qop <= 'd0;
       else if (xfer_out)
-         qop <= qop + 1'd1;
+         qop <= nxt_qop[QP_SZ-1:0];                                                       // Circular buffer pointer. QP_SZ must be a power of 2 value!
 
       if (reset_in | pc_reload | ic_reload)
          que <= 'd0;
