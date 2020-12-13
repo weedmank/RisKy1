@@ -312,7 +312,7 @@ module execute
    logic                   ill_csr_access;   // 1 = illegal csr access
    logic            [11:0] ill_csr_addr;
    
-   assign csr_addr                     = D2E_bus.data.imm;
+   assign csr_addr                  = D2E_bus.data.imm[11:0];
    // ----------------------------------- csr_rd_bus interface
    // Read CSR access port signals to/from CSR module (csr.sv)
    assign csr_rd_bus.csr_rd_addr    = csr_addr;                            // Output:  to csr.sv
@@ -489,7 +489,8 @@ module execute
          exe_dout.op_type           = op_type;
          exe_dout.mode              = mode;                                         // pass mode value associated with this instruction
          
-         unique case(ig_type)                                                       // select which functional unit output data is the appropriate one and save it
+         // NOTE: illegal instructions (ILL_INSTR) will cause an exception in WB stage
+         case(ig_type)                                                              // select which functional unit output data is the appropriate one and save it
             ALU_INSTR:
             begin
                exe_dout.Rd_wr    = Rd_wr & (Rd_addr != 0);                          // Writeback stage needs to know whether to write to destination register Rd
@@ -719,13 +720,13 @@ module execute
                end
                else
                begin
-                  exe_dout.Rd_wr       = Rd_wr & (Rd_addr != 0);                    // Writeback stage needs to know whether to write to destination register Rd
-                  exe_dout.Rd_addr     = Rd_addr;
-                  exe_dout.Rd_data     = csr_Rd_data;                               // value used to update Rd in WB stage
-                  exe_dout.csr_wr      = csr_wr;
-                  exe_dout.csr_addr    = csr_addr;
+                  exe_dout.Rd_wr    = Rd_wr & (Rd_addr != 0);                       // Writeback stage needs to know whether to write to destination register Rd
+                  exe_dout.Rd_addr  = Rd_addr;
+                  exe_dout.Rd_data  = csr_Rd_data;                                  // value used to update Rd in WB stage
+                  exe_dout.csr_wr   = csr_wr;
+                  exe_dout.csr_addr = csr_addr;
                   exe_dout.csr_wr_data = csr_wr_data;                               // Data to be written at WB stage
-                  exe_dout.csr_fwd_data   = nxt_csr_rd_data;                        // This is the data that should be used in forwarding as it may be different than csr_wr_data
+                  exe_dout.csr_fwd_data = nxt_csr_rd_data;                          // This is the data that should be used in forwarding as it may be different than csr_wr_data
                end
             end
 
@@ -759,7 +760,7 @@ module execute
 // need equivalent FP logic like LD_INSTR and ST_INSTR for each floating point instruction
 
             `endif
-         endcase
+         endcase // only process listed case items in EXE stage
       end
    end
 
