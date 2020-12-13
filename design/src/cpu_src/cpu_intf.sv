@@ -332,63 +332,6 @@ interface EIO_intf;
 endinterface: EIO_intf
 
 
-// ------------------------ Interrupt Requests ------------------------
-//interface IRQ_intf;
-//   logic    ext;
-//   logic    timer;
-//   logic    sw;
-//
-//   modport master(output ext, timer, sw);
-//   modport slave (input  ext, timer, sw);
-//endinterface: IRQ_intf
-
-// ------------------------ Machine mode CSRs ------------------------
-//interface MCSR_REG_intf;
-//   MCSR     mcsr;
-//   
-//   modport master(output  `ifdef ext_S medeleg, mideleg,`else `ifdef ext_U `ifdef ext_N medeleg, mideleg, `endif `endif `endif
-//                          mstatus, misa, `ifdef ext_N mie, `endif mtvec, mcounteren, mcountinhibit, `ifdef use_MHPM mhpmevent, `endif mscratch,
-//                          mepc, mcause, mtval, `ifdef ext_N mip, `endif `ifdef USE_PMPCFG pmpcfg0, pmpcfg1, pmpcfg2, pmpcfg3, `endif
-//                          `ifdef PMP_ADDR0  pmpaddr0,  `endif `ifdef PMP_ADDR1  pmpaddr1,  `endif `ifdef PMP_ADDR2  pmpaddr2,  `endif `ifdef PMP_ADDR3  pmpaddr3,  `endif
-//                          `ifdef PMP_ADDR4  pmpaddr4,  `endif `ifdef PMP_ADDR5  pmpaddr5,  `endif `ifdef PMP_ADDR6  pmpaddr6,  `endif `ifdef PMP_ADDR7  pmpaddr7,  `endif
-//                          `ifdef PMP_ADDR8  pmpaddr8,  `endif `ifdef PMP_ADDR9  pmpaddr9,  `endif `ifdef PMP_ADDR10 pmpaddr10, `endif `ifdef PMP_ADDR11 pmpaddr11, `endif
-//                          `ifdef PMP_ADDR12 pmpaddr12, `endif `ifdef PMP_ADDR13 pmpaddr13, `endif `ifdef PMP_ADDR14 pmpaddr14, `endif `ifdef PMP_ADDR15 pmpaddr15, `endif
-//                          `ifdef add_DM tselect, tdata1, tdata2, tdata3, dcsr, dpc, dscratch0, dscratch1, `endif mcycle_lo, mcycle_hi,
-//                          minstret_lo, minstret_hi, `ifdef use_MHPM mhpmcounter_lo, mhpmcounter_hi, `endif  mvendorid, marchid, mimpid, mhartid
-//                          );
-//   modport slave (input   `ifdef ext_S medeleg, mideleg,`else `ifdef ext_U `ifdef ext_N medeleg, mideleg, `endif `endif `endif
-//                          mstatus, misa, `ifdef ext_N mie, `endif mtvec, mcounteren, mcountinhibit, `ifdef use_MHPM mhpmevent, `endif mscratch,
-//                          mepc, mcause, mtval, `ifdef ext_N mip, `endif `ifdef USE_PMPCFG pmpcfg0, pmpcfg1, pmpcfg2, pmpcfg3, `endif
-//                          `ifdef PMP_ADDR0  pmpaddr0,  `endif `ifdef PMP_ADDR1  pmpaddr1,  `endif `ifdef PMP_ADDR2  pmpaddr2,  `endif `ifdef PMP_ADDR3  pmpaddr3,  `endif
-//                          `ifdef PMP_ADDR4  pmpaddr4,  `endif `ifdef PMP_ADDR5  pmpaddr5,  `endif `ifdef PMP_ADDR6  pmpaddr6,  `endif `ifdef PMP_ADDR7  pmpaddr7,  `endif
-//                          `ifdef PMP_ADDR8  pmpaddr8,  `endif `ifdef PMP_ADDR9  pmpaddr9,  `endif `ifdef PMP_ADDR10 pmpaddr10, `endif `ifdef PMP_ADDR11 pmpaddr11, `endif
-//                          `ifdef PMP_ADDR12 pmpaddr12, `endif `ifdef PMP_ADDR13 pmpaddr13, `endif `ifdef PMP_ADDR14 pmpaddr14, `endif `ifdef PMP_ADDR15 pmpaddr15, `endif
-//                          `ifdef add_DM tselect, tdata1, tdata2, tdata3, dcsr, dpc, dscratch0, dscratch1, `endif mcycle_lo, mcycle_hi,
-//                          minstret_lo, minstret_hi, `ifdef use_MHPM mhpmcounter_lo, mhpmcounter_hi, `endif  mvendorid, marchid, mimpid, mhartid
-//                          );
-//endinterface: MCSR_REG_intf
-//
-//// ------------------------ Supervisor mode CSRs ------------------------
-//interface SCSR_REG_intf;
-//   // Supervisor mode Registers
-//   SCSR     scsr;
-//
-//   modport master(output sstatus, sedeleg, `ifdef ext_N sideleg, sie, `endif stvec,
-//                         scounteren,sscratch, sepc, scause, stval, `ifdef ext_N sip, `endif satp);
-//
-//   modport slave (input  sstatus, sedeleg, `ifdef ext_N sideleg, sie, `endif stvec,
-//                         scounteren, sscratch, sepc, scause, stval, `ifdef ext_N sip, `endif satp);
-//endinterface: SCSR_REG_intf
-//
-//// ------------------------ User mode CSRs ------------------------
-//interface UCSR_REG_intf;
-//   // User mode Registers
-//   UCSR     ucsr;
-//
-//   modport master(output ucsr.ustatus, `ifdef ext_N ucsr.uie, `endif ucsr.utvec, ucsr.uscratch, ucsr.uepc, ucsr.ucause, ucsr.utval `ifdef ext_N, ucsr.uip `endif);
-//   modport slave (input  ucsr.ustatus, `ifdef ext_N ucsr.uie, `endif ucsr.utvec, ucsr.uscratch, ucsr.uepc, ucsr.ucause, ucsr.utval `ifdef ext_N, ucsr.uip `endif);
-//endinterface: UCSR_REG_intf
-
 // ------------------------ CSR - EXE interface ------------------------
 interface CSR_EXE_intf;
    // signals needed by EXE stage
