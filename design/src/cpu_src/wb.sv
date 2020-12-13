@@ -69,7 +69,6 @@ module wb
    logic                   instr_err;
    logic                   mispre;
    logic                   ci;
-   logic       [PC_SZ-1:0] br_pc;
    IG_TYPE                 ig_type;
    logic       [OP_SZ-1:0] op_type;
    logic                   mio_ack_fault;
@@ -84,7 +83,8 @@ module wb
 
    logic                   wb_csr_wr;                                               // Writeback stage needs to know whether to write to destination register Rd
    logic     [GPR_ASZ-1:0] wb_csr_addr;
-   logic         [RSZ-1:0] wb_csr_data;
+   logic         [RSZ-1:0] wb_csr_wr_data;
+   logic         [RSZ-1:0] wb_csr_fwd_data;
    // misc
    logic                   xfer_in;
 
@@ -146,11 +146,11 @@ module wb
    assign fwd_wb_csr.valid       = M2W_bus.valid;
    assign fwd_wb_csr.csr_wr      = wb_csr_wr;
    assign fwd_wb_csr.csr_addr    = wb_csr_addr;
-   assign fwd_wb_csr.csr_data    = wb_csr_data;
+   assign fwd_wb_csr.csr_data    = wb_csr_fwd_data;
 
    assign csr_wr_bus.csr_wr      = xfer_in & wb_csr_wr;                             // when to write
-   assign csr_wr_bus.csr_wr_addr = wb_Rd_addr;                                      // Which destination register
-   assign csr_wr_bus.csr_wr_data = wb_Rd_data;                                      // data for destination register
+   assign csr_wr_bus.csr_wr_addr = wb_csr_addr;                                     // Which destination register
+   assign csr_wr_bus.csr_wr_data = wb_csr_wr_data;                                  // data for destination register
 
    //------------------------------- Debugging: disassemble instruction in this stage ------------------------------------
    `ifdef SIM_DEBUG
@@ -230,7 +230,8 @@ module wb
 
       wb_csr_wr         = FALSE;                                                    // Writeback stage needs to know whether to write to destination register Rd
       wb_csr_addr       = '0;
-      wb_csr_data       = '0;
+      wb_csr_wr_data    = '0;
+      wb_csr_fwd_data   = '0;
 
       rld_pc_flag       = FALSE;
       rld_ic_flag       = FALSE;
@@ -578,7 +579,8 @@ module wb
 
                   wb_csr_wr               = M2W_bus.data.csr_wr;
                   wb_csr_addr             = M2W_bus.data.csr_addr;
-                  wb_csr_data             = M2W_bus.data.csr_fwd_data;
+                  wb_csr_wr_data          = M2W_bus.data.csr_wr_data;
+                  wb_csr_fwd_data         = M2W_bus.data.csr_fwd_data;
                end
 
                current_events.ret_cnt[CSR_RET] = 1'b1;                              // number of CSR instructions retiring this clock cycle
