@@ -46,7 +46,7 @@ module mode_irq
    output   logic    [PC_SZ-1:0] trap_pc,           // Output: trap vector handler address - connects to WB stage
    `ifdef ext_N
    output   logic                interrupt_flag,    // Output: 1 = take an interrupt trap - connects to WB stage
-   output   logic      [RSZ-1:0] interrupt_cause,   // Output: value specifying what type of interrupt - connects to WB stage
+   output   logic          [3:0] interrupt_cause,   // Output: value specifying what type of interrupt - connects to WB stage
    `endif
 
    // only a few of these CSR registers are needed by this module
@@ -180,20 +180,20 @@ module mode_irq
    // whereas interrupts cause the pc to be set to the address in the BASE field plus four times the interrupt cause number.
    // For example, a supervisor-mode timer interrupt (see Table 4.2) causes the  pc to be set to BASE+0x14.
    // Setting MODE=Vectored may impose a stricter alignment constraint on BASE.
-   logic     [GPR_ASZ-1:0] cause,mc;
+   logic             [3:0] cause, mc;
    logic         [RSZ-1:0] tvec;
    logic             [1:0] trap_mode;
    
-   assign mc = mcsr.mcause[GPR_ASZ-1:0];
+   assign mc = mcsr.mcause[3:0];
    
    `ifdef ext_S
-   logic     [GPR_ASZ-1:0] sc;
-   assign sc = scsr.scause[GPR_ASZ-1:0];
+   logic          [3:0] sc;
+   assign sc = scsr.scause[3:0];
    `endif // ext_S
    
    `ifdef ext_U
-   logic     [GPR_ASZ-1:0] uc;
-   assign uc = ucsr.ucause[GPR_ASZ-1:0];
+   logic          [3:0] uc;
+   assign uc = ucsr.ucause[3:0];
    `endif // ext_U
    
    always_comb
@@ -299,8 +299,8 @@ module mode_irq
          begin
             `ifdef ext_N
             if (interrupt_flag && (tvec[1:0] == 2'b01))           // Optional vectored interrupt support has been added to the mtvec and stvec CSRs. riscv_privileged.pdf p iii
-               //        BASE          +  cause        * 4
-               trap_pc = tvec[RSZ-1:2] + { {RSZ-GPR_ASZ-2{1'b0}}, cause, 2'b00 };
+               //        BASE          +                    cause  * 4
+               trap_pc = tvec[RSZ-1:2] + { {RSZ-4-2{1'b0}}, cause, 2'b00 };
             else
             `endif
             trap_pc  = {tvec[RSZ-1:2],2'b00};
