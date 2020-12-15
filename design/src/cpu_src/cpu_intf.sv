@@ -101,10 +101,12 @@ interface BFU_intf;
 
       logic       [PC_SZ-1:0] no_br_pc;   // address of instruction immediately following this branch instruction
       logic       [PC_SZ-1:0] br_pc;      // next PC
+      `ifndef ext_C
       logic                   mis;        // misaligned address flag
-
-      modport master (output Rs1_data, Rs2_data, pc, imm, funct3, ci, sel_x, sel_y, op, mepc, `ifdef ext_S sepc, `endif `ifdef ext_U uepc, `endif input  no_br_pc, br_pc, mis);
-      modport slave  (input  Rs1_data, Rs2_data, pc, imm, funct3, ci, sel_x, sel_y, op, mepc, `ifdef ext_S sepc, `endif `ifdef ext_U uepc, `endif output no_br_pc, br_pc, mis);
+      `endif
+      
+      modport master (output Rs1_data, Rs2_data, pc, imm, funct3, ci, sel_x, sel_y, op, mepc, `ifdef ext_S sepc, `endif `ifdef ext_U uepc, `endif input  no_br_pc, `ifndef ext_C mis, `endif br_pc);
+      modport slave  (input  Rs1_data, Rs2_data, pc, imm, funct3, ci, sel_x, sel_y, op, mepc, `ifdef ext_S sepc, `endif `ifdef ext_U uepc, `endif output no_br_pc, `ifndef ext_C mis, `endif br_pc);
 endinterface: BFU_intf
 
 `ifdef ext_M
@@ -345,7 +347,7 @@ interface CSR_EXE_intf;
    logic                         [1:0] mode;
    `ifdef ext_N
    logic                               interrupt_flag;   // 1 = take an interrupt trap
-   logic                     [RSZ-1:0] interrupt_cause;  // value specifying what type of interrupt
+   logic                         [3:0] interrupt_cause;  // value specifying what type of interrupt
    `endif
    logic                   [PC_SZ-1:0] trap_pc;          // Output:  trap vector handler address.
    
