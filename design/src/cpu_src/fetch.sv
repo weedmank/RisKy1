@@ -241,7 +241,7 @@ module fetch
    logic                      is16, is32, is48;
    logic                [4:0] lower5;
 
-   localparam  BP_SZ = bit_size(CL_LEN + CBPI)*8;                                         // last 32 bit (4 byte) instruction in a cache may overlap into next cache line by 2 bytes when ext_C enabled
+   localparam  BP_SZ = bit_size((CL_LEN + CBPI)*8);                                       // last 32 bit (4 byte) instruction in a cache may overlap into next cache line by 2 bytes when ext_C enabled
    logic          [BP_SZ-1:0] bit_pos;
 
    logic                      cl_valid;
@@ -364,10 +364,7 @@ module fetch
                   begin
                      if ((i[11:7] != 0) && (i[6:2] == 0))
                         btype[c] = 3'b001;                                                // Either C.JR or C.JALR - both have same btype[]
-                     else
-                        btype[c] = 3'b000;
                   end
-                  default: btype[c] = 3'b000;
                endcase
             end
             else
@@ -528,12 +525,10 @@ module fetch
             // 4th - gather necessary data collected during this cycle for placement in que[]
             last_predicted_addr  = predicted[c].addr;                                     // used in Next_PC logic. This is either a PC + 4 value for normal instructions, or a "predicted" address for branch instructions
 
-            nq = nxt_qip;
-            
-            nxt_que[nq].ipd.instruction  = i;
-            nxt_que[nq].ipd.pc           = addr[c];
-            nxt_que[nq].predicted_addr   = predicted[c].addr;
-            nq++;                                                                         // increment que input pointer. size must be 1 bit larger than nxt_qip.
+            nxt_que[nxt_qip].ipd.instruction  = i;
+            nxt_que[nxt_qip].ipd.pc           = addr[c];
+            nxt_que[nxt_qip].predicted_addr   = predicted[c].addr;
+            nq = nxt_qip + 1'd1;
             nxt_qip = nq[QP_SZ-1:0];                                                      // pointer wrapping logic
             
             nxt_qip_cnt++;                                                                // number of instructions being saved this clock cycle
@@ -570,7 +565,7 @@ module fetch
                done  = TRUE;
             `endif
          end // if (!done)
-//#0.1;
+//#0.2;
       end // for (c = 0; ....
    end
 
