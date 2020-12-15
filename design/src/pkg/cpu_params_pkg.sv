@@ -175,8 +175,8 @@ import functions_pkg::*;
    parameter   is_IALIGN16 = 1'b0;                                   // 32 bit instruction alignment
    `endif
 
-   localparam  XLEN        = 32;                                     // instruction word width
-   localparam  CI_SZ       = 16;                                     // compressed instruction word width
+   localparam  XLEN        = 6'd32;                                  // instruction word width
+   localparam  CI_SZ       = 5'd16;                                  // compressed instruction word width
    localparam  RSZ         = XLEN;                                   // General Purpose Register width
    localparam  MAX_GPR     = 32;                                     // maximum number of CPU General Purpose Registers
    localparam  MAX_CSR     = 4096;                                   // maximum number of CSR Registers
