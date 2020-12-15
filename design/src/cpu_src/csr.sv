@@ -108,7 +108,7 @@ module csr
    logic                   [PC_SZ-1:0] trap_pc;             // Output:  trap vector handler address.
    `ifdef ext_N
    logic                               interrupt_flag;      // 1 = take an interrupt trap
-   logic                     [RSZ-1:0] interrupt_cause;     // value specifying what type of interrupt
+   logic                         [3:0] interrupt_cause;     // value specifying what type of interrupt
    `endif
    assign csr_exe_bus.mode             = mode;
 
@@ -125,11 +125,14 @@ module csr
    assign csr_exe_bus.interrupt_cause  = interrupt_cause;
    `endif
 
+   logic    mret;
    assign mret = csr_exe_bus.mret;
    `ifdef ext_S
+   logic    sret;
    assign sret = csr_exe_bus.sret;
    `endif
    `ifdef ext_U
+   logic    uret;
    assign uret = csr_exe_bus.uret;
    `endif
 
@@ -151,8 +154,10 @@ module csr
 
       .tot_retired(tot_retired),                            // Input:
       .exception(exception),                                // Input:
+      `ifdef use_MHPM
       .hpm_events(hpm_events),                              // Input:   24 different event counts (counts for this clock cycle) that can be used. 1 bit needed per event for this design (1 instruction max per clock cycle)
-
+      `endif
+      
       .mode(mode),                                          // Input:
       .nxt_mode(nxt_mode),                                  // Input:
 
@@ -227,8 +232,10 @@ module csr
 
       .tot_retired(tot_retired),                            // Input:
       .exception(exception),                                // Input:
+      `ifdef use_MHPM
       .hpm_events(hpm_events),                              // Input:   24 different event counts (counts for this clock cycle) that can be used. 1 bit needed per event for this design (1 instruction max per clock cycle)
-
+      `endif
+      
       .mode(mode),
       .nxt_mode(nxt_mode),
 
@@ -331,7 +338,7 @@ module csr
 
    // ------------------------------ User Exception Cause
    // 12'h042 = 12'b0000_0100_0010  ucause                        (read-write)
-   csr_std_wr #(0,12'h042,RSZ) Ucause                             (clk_in,reset_in, mode, TRUE, nxt_ucsr.ucause, ucsr.ucause);
+   csr_std_wr #(0,12'h042,RSZ,32'hFFFF_FFF0) Ucause               (clk_in,reset_in, mode, TRUE, nxt_ucsr.ucause, ucsr.ucause);
 
    // ------------------------------ User Exception Trap Value    see riscv-privileged p. 38-39
    // 12'h043 = 12'b0000_0100_0011  utval                         (read-write)
@@ -398,7 +405,7 @@ module csr
 
    // ------------------------------ Supervisor Exception Cause.
    // 12'h142 = 12'b0001_0100_0010  scause                        (read-write)
-   csr_std_wr #(0,12'h142,RSZ) Scause                             (clk_in,reset_in, mode, TRUE, nxt_scsr.scause, scsr.scause);
+   csr_std_wr #(0,12'h142,RSZ,32'hFFFF_FFF0) Scause               (clk_in,reset_in, mode, TRUE, nxt_scsr.scause, scsr.scause);
 
    // ------------------------------ Supervisor Exception Trap Value                             see riscv-privileged p. 38-39
    // 12'h143 = 12'b0001_0100_0011  stval                         (read-write)
@@ -507,7 +514,7 @@ module csr
 
    // ------------------------------ Machine Exception Cause
    // 12'h342 = 12'b0011_0100_0010  mcause                        (read-write)
-   csr_std_wr #(0,12'h342,RSZ) Mcause                             (clk_in,reset_in, mode, TRUE, nxt_mcsr.mcause, mcsr.mcause);
+   csr_std_wr #(0,12'h342,RSZ,32'hFFFF_FFF0) Mcause               (clk_in,reset_in, mode, TRUE, nxt_mcsr.mcause, mcsr.mcause);
 
    // ------------------------------ Machine Exception Trap Value
    // 12'h343 = 12'b0011_0100_0011  mtval                         (read-write)
@@ -620,15 +627,17 @@ module csr
 
    // Machine instructions-retired counter.
    // The size of thefollowig counters must be large enough to hold the maximum number that can retire in a given clock cycle
-   logic             br_cnt;
-   logic             misaligned_cnt;
-
     // At most, for this pipelined design, only 1 instruction can retire per clock so just OR the retire bits (instead of adding)
    assign tot_retired      = current_events.ret_cnt[LD_RET]  | current_events.ret_cnt[ST_RET]   | current_events.ret_cnt[CSR_RET]  | current_events.ret_cnt[SYS_RET]  |
                              current_events.ret_cnt[ALU_RET] | current_events.ret_cnt[BXX_RET]  | current_events.ret_cnt[JAL_RET]  | current_events.ret_cnt[JALR_RET] |
                              current_events.ret_cnt[IM_RET]  | current_events.ret_cnt[ID_RET]   | current_events.ret_cnt[IR_RET]   | current_events.ret_cnt[HINT_RET] |
                `ifdef ext_F  current_events.ret_cnt[FLD_RET] | current_events.ret_cnt[FST_RET]  | current_events.ret_cnt[FP_RET]   | `endif
                              current_events.ret_cnt[UNK_RET];
+
+   // Just assign the hpm_events that will be used and comment those that are not used. Also adjust the number (i.e. 24 right now)
+   `ifdef use_MHPM
+   logic             br_cnt;
+   logic             misaligned_cnt;
 
    assign br_cnt           = current_events.ret_cnt[BXX_RET] | current_events.ret_cnt[JAL_RET]  | current_events.ret_cnt[JALR_RET];
    assign misaligned_cnt   = (current_events.e_flag & (current_events.e_cause == 0)) |  /* 0 = Instruction Address Misaligned */
@@ -669,6 +678,7 @@ module csr
    assign hpm_events[22]   = current_events.e_flag ? (current_events.e_cause == 8) : 0; // e_cause = 8 = User ECALL
    assign hpm_events[23]   = current_events.ext_irq;                 // this will always be a 0 or 1 count as only 1 per clock cycle can ever occur
    `endif // uxt_F
+   `endif
 
    // Note: currently there are NUM_EVENTS hpm_events as specified at the beginning of this generate block. The number can be changed if more or less event types are needed
 
