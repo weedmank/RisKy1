@@ -148,7 +148,7 @@ import cpu_params_pkg::*;
    typedef struct packed {
       logic       [PC_SZ-1:0] pc;               // new program counter due to exception
       logic         [RSZ-1:0] tval;             // trap value (information)
-      logic         [RSZ-1:0] cause;            // 0 - 15, 2 = illegal instruction
+      logic             [3:0] cause;            // 0 - 15, 2 = illegal instruction
       logic                   flag;             // 1 = take an exception trap
    } EXCEPTION;
 
@@ -192,16 +192,18 @@ import cpu_params_pkg::*;
       logic                   inv_flag;         // invalidate flag
       logic                   is_ld;            // 1 = Read from System Memory
       logic                   is_st;            // 1 = Write to System Memory
-      logic                   mis;
+      logic                   instr_err;
       logic                   mispre;
       logic                   ci;               // 1 = compressed 16-bit instruction, 0 = 32 bit instruction
+      `ifndef ext_C
       logic       [PC_SZ-1:0] br_pc;
+      `endif
       IG_TYPE                 ig_type;
       logic       [OP_SZ-1:0] op_type;
       logic             [1:0] mode;             // mode can change on any clock cycle, but we want to pass value associated with current instruction
       `ifdef ext_N
       logic                   interrupt_flag;   // 1 = take an interrupt trap
-      logic         [RSZ-1:0] interrupt_cause;  // value specifying what type of interrupt
+      logic             [3:0] interrupt_cause;  // value specifying what type of interrupt
       `endif
       logic       [PC_SZ-1:0] trap_pc;          // Output:  trap vector handler address.
 
@@ -225,17 +227,19 @@ import cpu_params_pkg::*;
       IP_Data                 ipd;              // pass instruction and program counter for debugging purposes
       logic       [PC_SZ-1:0] ls_addr;
       logic                   inv_flag;         // invalidate flag
-      logic                   mis;
+      logic                   instr_err;
       logic                   mispre;
       logic                   ci;               // 1 = compressed 16-bit instruction, 0 = 32 bit instruction
+      `ifndef ext_C
       logic       [PC_SZ-1:0] br_pc;
+      `endif
       IG_TYPE                 ig_type;
       logic       [OP_SZ-1:0] op_type;
       logic                   mio_ack_fault;
       logic             [1:0] mode;
       `ifdef ext_N
       logic                   interrupt_flag;   // 1 = take an interrupt trap
-      logic         [RSZ-1:0] interrupt_cause;  // value specifying what type of interrupt
+      logic             [3:0] interrupt_cause;  // value specifying what type of interrupt
       `endif
       logic       [PC_SZ-1:0] trap_pc;          // Output:  trap vector handler address.
 
