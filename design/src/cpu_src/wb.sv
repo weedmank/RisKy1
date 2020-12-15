@@ -68,6 +68,9 @@ module wb
    logic                   inv_flag;
    logic                   instr_err;
    logic                   mispre;
+   `ifndef ext_C
+   logic       [PC_SZ-1:0] br_pc;
+   `endif
    logic                   ci;
    IG_TYPE                 ig_type;
    logic       [OP_SZ-1:0] op_type;
@@ -82,7 +85,7 @@ module wb
    logic         [RSZ-1:0] wb_Rd_data;
 
    logic                   wb_csr_wr;                                               // Writeback stage needs to know whether to write to destination register Rd
-   logic     [GPR_ASZ-1:0] wb_csr_addr;
+   logic            [11:0] wb_csr_addr;
    logic         [RSZ-1:0] wb_csr_wr_data;
    logic         [RSZ-1:0] wb_csr_fwd_data;
    // misc
@@ -92,7 +95,7 @@ module wb
    logic       [PC_SZ-1:0] trap_pc;                                                 // Output:  trap vector handler address.
    `ifdef ext_N                                       
    logic                   interrupt_flag;                                          // 1 = take an interrupt trap
-   logic         [RSZ-1:0] interrupt_cause;                                         // value specifying what type of interrupt
+   logic             [3:0] interrupt_cause;                                         // value specifying what type of interrupt
    `endif
 
 
@@ -100,10 +103,12 @@ module wb
    assign ipd                 = M2W_bus.data.ipd;
    assign ls_addr             = M2W_bus.data.ls_addr;
    assign inv_flag            = M2W_bus.data.inv_flag;
-   assign instr_err           = M2W_bus.data.mis;                                   // misaligned, illegal CSR access...
+   assign instr_err           = M2W_bus.data.instr_err;                             // misaligned, illegal CSR access...
    assign mispre              = M2W_bus.data.mispre;
    assign ci                  = M2W_bus.data.ci;
+   `ifndef ext_C
    assign br_pc               = M2W_bus.data.br_pc;
+   `endif
    assign ig_type             = M2W_bus.data.ig_type;                               // override default values
    assign op_type             = M2W_bus.data.op_type;
    assign mio_ack_fault       = M2W_bus.data.mio_ack_fault;
@@ -356,6 +361,9 @@ module wb
                   end
 
                   // -------------- Bxx --------------
+                  `ifdef ext_C
+                  B_C,
+                  `endif
                   B_ADD:
                   begin
                      // With the addition of the C extension, no instructions can raise instruction-address-misaligned exceptions. p. 95
@@ -381,40 +389,8 @@ module wb
                      current_events.ret_cnt[BXX_RET] = 1'b1;                        // number of BXX instructions retiring this clock cycle
                   end
 
-                  // -------------- JAL --------------
-                  B_JAL:
-                  begin
-                     // With the addition of the C extension, no instructions can raise instruction-address-misaligned exceptions. p. 95
-                     `ifndef ext_C
-                     if (instr_err)
-                     begin
-                        rld_pc_flag             = TRUE;                             // flush pipeline and reload new fetch address
-                        rld_pc_addr             = trap_pc;
-
-                        exception.pc            = ipd.pc;                           // save address of current instruction
-                        exception.tval          = br_pc;                            // misaligned branch address
-                        exception.cause         = 0;                                // 0 = Instruction Address Misaligned
-                        exception.flag          = TRUE;                             // control signal to save exception.pc, exception.tval and exception.cause in csr.sv
-
-                        current_events.e_flag   = TRUE;
-                        current_events.e_cause  = exception.cause;
-                     end
-                     else
-                     `endif
-//                     if (mispre)     // JAL can't mispredict
-//                        current_events.mispredict = TRUE;                           // can't be covered using e_flag... becuase this is not an exception
-//                     else
-                     begin
-                        wb_Rd_wr                = M2W_bus.data.Rd_wr;               // Writeback stage needs to know whether to write to destination register Rd
-                        wb_Rd_addr              = M2W_bus.data.Rd_addr;             // Address of Rd register
-                        wb_Rd_data              = M2W_bus.data.Rd_data;             // Data may be written into Rd register
-                     end
-
-                     current_events.ret_cnt[JAL_RET] = 1'b1;                        // number of JAL instructions retiring this clock cycle
-                  end
-
-                  // -------------- JALR --------------
-                  B_JALR:
+                  // -------------- JAL, JALR --------------
+                  B_JAL, B_JALR:
                   begin
                      // With the addition of the C extension, no instructions can raise instruction-address-misaligned exceptions. p. 95
                      `ifndef ext_C
@@ -433,7 +409,7 @@ module wb
                      end
                      else
                      `endif
-                     if (mispre)
+                     if (mispre & (op_type == B_JALR))                                     // JAL can't mispredict
                         current_events.mispredict = TRUE;                           // can't be covered using e_flag... becuase this is not an exception
                      else
                      begin
@@ -441,7 +417,10 @@ module wb
                         wb_Rd_addr              = M2W_bus.data.Rd_addr;             // Address of Rd register
                         wb_Rd_data              = M2W_bus.data.Rd_data;             // Data may be written into Rd register
                      end
-                     current_events.ret_cnt[JALR_RET] = 1'b1;                       // number of CSR instructions retiring this clock cycle
+                     if (op_type == B_JALR)
+                        current_events.ret_cnt[JALR_RET] = 1'b1;                    // number of CSR instructions retiring this clock cycle
+                     else
+                        current_events.ret_cnt[JAL_RET] = 1'b1;                     // number of JAL instructions retiring this clock cycle
                   end
                endcase
             end
