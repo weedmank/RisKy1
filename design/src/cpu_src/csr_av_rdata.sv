@@ -286,48 +286,47 @@ module csr_av_rdata
          // In systems with only M-mode and U-mode, the medeleg and mideleg registers should only be implemented if the N extension for user-mode interrupts is implemented.
          // In systems with only M-mode, or with both M-mode and U-mode but without U-mode trap support, the medeleg and mideleg registers should not exist. seee riscv-privileged.pdf p 28
 
-         //!!! NOTE: Don't yet know how to implement all the logic for medeleg and mideleg!!!
-
          `ifdef ext_S // "In systems with S-mode, the medeleg and mideleg registers must exist,..." p. 28 riscv-privileged.pdf
-         // Machine exception delegation register.
-         // 12'h302 = 12'b0011_0000_0010  medeleg                          (read-write)
-         12'h302:
-         begin
-            csr_rd_avail   = TRUE;
-            csr_rd_data    = mcsr.medeleg;
-         end
-         // Machine interrupt delegation register.
-         // 12'h303 = 12'b0011_0000_0011  mideleg                          (read-write)
-         12'h303:
-         begin
-            csr_rd_avail   = TRUE;
-            csr_rd_data    = mcsr.mideleg;
-         end
-         `else // !ext_S
-            `ifdef ext_U
-               `ifdef ext_N
-               // Machine exception delegation register.
-               // 12'h302 = 12'b0011_0000_0010  medeleg                    (read-write)
-               12'h302:
-               begin
-                  csr_rd_avail   = TRUE;
-                  csr_rd_data    = mcsr.medeleg;
-               end
-
+            // Machine exception delegation register.
+            // 12'h302 = 12'b0011_0000_0010  medeleg                          (read-write)
+            12'h302:
+            begin
+               csr_rd_avail   = TRUE;
+               csr_rd_data    = mcsr.medeleg;
+            end
+            
+            `ifdef ext_N
                // Machine interrupt delegation register.
-               // 12'h303 = 12'b0011_0000_0011  mideleg                    (read-write)
+               // 12'h303 = 12'b0011_0000_0011  mideleg                       (read-write)
                12'h303:
                begin
                   csr_rd_avail   = TRUE;
                   csr_rd_data    = mcsr.mideleg;
                end
-               `endif
             `endif
-         `endif
+         `elsif ext_U
+            // Machine exception delegation register.
+            // 12'h302 = 12'b0011_0000_0010  medeleg                          (read-write)
+            12'h302:
+            begin
+               csr_rd_avail   = TRUE;
+               csr_rd_data    = mcsr.medeleg;
+            end
+      
+            `ifdef ext_N
+               // Machine interrupt delegation register.
+               // 12'h303 = 12'b0011_0000_0011  mideleg                       (read-write)
+               12'h303:
+               begin
+                  csr_rd_avail   = TRUE;
+                  csr_rd_data    = mcsr.mideleg;
+               end
+            `endif // ext_N
+         `endif // ext_U
 
          `ifdef ext_N
          // Machine interrupt-enable register.
-         // 12'h304 = 12'b0011_0000_0100  mie                              (read-write)
+         // 12'h304 = 12'b0011_0000_0100  mie                                 (read-write)
          12'h304:
          begin
             csr_rd_avail   = TRUE;
