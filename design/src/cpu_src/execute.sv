@@ -565,8 +565,8 @@ module execute
                      `ifndef ext_C
                      if (brfu_bus.mis)
                      begin
-                        exe_dout.mis   = brfu_bus.mis;                              // Misaligned Addresses Trap
-                        exe_dout.br_pc = brfu_bus.br_pc;                            // Exception Trap info for use in MEM stage
+                        exe_dout.instr_err   = brfu_bus.mis;                        // Misaligned Addresses Trap
+                        exe_dout.br_pc       = brfu_bus.br_pc;                      // Exception Trap info for use in MEM stage
                      end
                      else
                      `endif
@@ -579,14 +579,14 @@ module execute
                      end
                   end
 
-                  // -------------- JAL --------------
-                  B_JAL:
+                  // -------------- JAL,JALR --------------
+                  B_JAL, B_JALR:
                   begin
                      // With the addition of the C extension, no instructions can raise instruction-address-misaligned exceptions. p. 95
                      `ifndef ext_C
                      if (brfu_bus.mis)
                      begin
-                        exe_dout.mis         = brfu_bus.mis;
+                        exe_dout.instr_err   = brfu_bus.mis;
                         exe_dout.br_pc       = brfu_bus.br_pc;
                      end
                      else
@@ -601,32 +601,6 @@ module execute
                      else
                      begin
                         exe_dout.Rd_wr       = Rd_wr & (Rd_addr != 0);              // Writeback stage needs to know whether to write to destination register Rd
-                        exe_dout.Rd_addr     = Rd_addr;
-                        exe_dout.Rd_data     = brfu_bus.no_br_pc;                   // address of instruction immediately after this branch instruction
-                     end
-                  end
-
-                  // -------------- JALR --------------
-                  B_JALR:
-                  begin
-                     // With the addition of the C extension, no instructions can raise instruction-address-misaligned exceptions. p. 95
-                     `ifndef ext_C
-                     if (brfu_bus.mis)
-                     begin
-                        exe_dout.mis         = brfu_bus.mis;
-                     end
-                     else
-                     `endif
-                     if (predicted_addr != brfu_bus.br_pc)
-                     begin
-                        exe_dout.mispre      = TRUE;
-
-                        rld_pc_flag          = TRUE;
-                        rld_pc_addr          = brfu_bus.br_pc;
-                     end
-                     else
-                     begin
-                        exe_dout.Rd_wr       = Rd_wr & (Rd_addr != 0);              // Writeback stage needs to know whether to write to destination register Rd for this jump
                         exe_dout.Rd_addr     = Rd_addr;
                         exe_dout.Rd_data     = brfu_bus.no_br_pc;                   // address of instruction immediately after this branch instruction
                      end
@@ -715,7 +689,7 @@ module execute
             begin
                if (ill_csr_access)
                begin
-                  exe_dout.mis         = TRUE;
+                  exe_dout.instr_err   = TRUE;
                   exe_dout.Rd_data     = ill_csr_addr;                              // save in Rd_data for use in mem.sv
                end
                else
@@ -739,7 +713,7 @@ module execute
                exe_dout.is_ld       = TRUE;
                exe_dout.ls_addr     = lsfu_bus.ls_addr;
                exe_dout.size        = lsfu_bus.size;                                // 0 byte default, 1 byte, 2 byte, or 4 byte
-               exe_dout.mis         = lsfu_bus.mis;
+               exe_dout.instr_err   = lsfu_bus.mis;
             end
 
             ST_INSTR:
@@ -752,7 +726,7 @@ module execute
                exe_dout.size        = lsfu_bus.size;                                // 0 byte default, 1 byte, 2 byte, or 4 byte
                exe_dout.zero_ext    = lsfu_bus.zero_ext;                            // 1 = LBU or LHU instruction - zero extend
                exe_dout.inv_flag    = (lsfu_bus.ls_addr >= L1_IC_Lo) && (lsfu_bus.ls_addr <= L1_IC_Hi);  // write will also occur in the L1 I$ address space
-               exe_dout.mis         = lsfu_bus.mis;
+               exe_dout.instr_err   = lsfu_bus.mis;
             end
 
             `ifdef ext_F
