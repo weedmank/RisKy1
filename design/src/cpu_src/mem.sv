@@ -149,10 +149,12 @@ module mem
    assign mem_dout.ipd                 = E2M_bus.data.ipd;
    assign mem_dout.ls_addr             = E2M_bus.data.ls_addr;
    assign mem_dout.inv_flag            = E2M_bus.data.inv_flag;
-   assign mem_dout.mis                 = E2M_bus.data.mis;                          // misaligned, illegal CSR access...
+   assign mem_dout.instr_err           = E2M_bus.data.instr_err;                    // misaligned, illegal CSR access...
    assign mem_dout.mispre              = E2M_bus.data.mispre;
    assign mem_dout.ci                  = E2M_bus.data.ci;
+   `ifndef ext_C
    assign mem_dout.br_pc               = E2M_bus.data.br_pc;
+   `endif
    assign mem_dout.ig_type             = E2M_bus.data.ig_type;
    assign mem_dout.op_type             = E2M_bus.data.op_type;
    //     mem_dout.mio_ack_fault       is created in always block below
@@ -229,13 +231,13 @@ module mem
    assign L1DC_bus.req_data.inv_flag   = inv_flag;          // invalidate flag
    assign L1DC_bus.req                 = is_phy_mem;
 
-   assign mtime_lo_wr      = is_int_io & (mode == 3) & (ls_addr ==  MTIME_Base_Addr)       & is_st;
-   assign mtime_hi_wr      = is_int_io & (mode == 3) & (ls_addr == (MTIME_Base_Addr+4))    & is_st;
-   assign mtimecmp_lo_wr   = is_int_io & (mode == 3) & (ls_addr == MTIMECMP_Base_Addr)     & is_st;
-   assign mtimecmp_hi_wr   = is_int_io & (mode == 3) & (ls_addr == (MTIMECMP_Base_Addr+4)) & is_st;
+   assign mtime_lo_wr      = is_int_io & (mode == M_MODE) & (ls_addr ==  MTIME_Base_Addr)       & is_st;
+   assign mtime_hi_wr      = is_int_io & (mode == M_MODE) & (ls_addr == (MTIME_Base_Addr+4))    & is_st;
+   assign mtimecmp_lo_wr   = is_int_io & (mode == M_MODE) & (ls_addr == MTIMECMP_Base_Addr)     & is_st;
+   assign mtimecmp_hi_wr   = is_int_io & (mode == M_MODE) & (ls_addr == (MTIMECMP_Base_Addr+4)) & is_st;
 
    `ifdef ext_N
-   assign msip_wr          = is_int_io & (mode == 3) & (ls_addr == MSIP_Base_Addr) & is_st;
+   assign msip_wr          = is_int_io & (mode == M_MODE) & (ls_addr == MSIP_Base_Addr)         & is_st;
    `endif
 
    assign mmr_wr_data      = st_data;
@@ -292,7 +294,7 @@ module mem
       // ************************** Internal I/O accesses **************************
       else if (is_int_io)                                                  // Internal I/O address space
       begin
-         if (mode == 3)                                                    // These CPU internal I/O accesses can only be done in machine mode.
+         if (mode == M_MODE)                                               // These CPU internal I/O accesses can only be done in machine mode.
          begin
             if (ls_addr == MTIME_Base_Addr)
             begin
