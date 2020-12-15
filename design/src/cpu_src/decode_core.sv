@@ -33,7 +33,6 @@ module decode_core
    // RISC_V Decode Logic
    // ----------------------------------------------------------------------------------------------------------
    logic     [XLEN-1:0] i;
-   logic    [PC_SZ-1:0] pc;
 
    logic      [RSZ-1:0] s_imm;
    logic      [RSZ-1:0] i_imm;
@@ -67,7 +66,6 @@ module decode_core
    ROM_Data             cntrl_sigs;
 
    assign   i  = dcore_bus.fet_data.ipd.instruction;
-   assign   pc = dcore_bus.fet_data.ipd.pc;
 
    // The two values 0x00000000 and 0xFFFFFFFF are specified as “illegal instructions” and will cause an “illegal
    // instruction exception” if fetched and executed.
