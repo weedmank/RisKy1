@@ -512,9 +512,7 @@ module execute
                   B_URET:                                                           // URET
                   begin // "OK to use in all modes though maybe technically nonsensical in S or M mode"
                      if (predicted_addr != uepc)
-                     begin
-                        exe_dout.mispre   = TRUE;
-
+                     begin // this instruction and newer are flushed from the pipeline
                         rld_pc_flag       = TRUE;
                         rld_pc_addr       = uepc;                                   // reload PC and flush pipeline
                      end
@@ -528,9 +526,7 @@ module execute
                      if (mode >= S_MODE)                                            // if not, an exception will be taken in WB stage
                      begin
                         if (predicted_addr != sepc)
-                        begin
-                           exe_dout.mispre   = TRUE;
-
+                        begin // this instruction and newer are flushed from the pipeline
                            rld_pc_flag       = TRUE;
                            rld_pc_addr       = sepc;                                // reload PC and flush pipeline
                         end
@@ -544,9 +540,7 @@ module execute
                      if (mode == M_MODE)                                            // if not, an exception will be taken in WB stage
                      begin
                         if (predicted_addr != mepc)
-                        begin
-                           exe_dout.mispre   = TRUE;
-
+                        begin // this instruction and newer are flushed from the pipeline
                            rld_pc_flag       = TRUE;                                // flush pipeline and reload new fetch address
                            rld_pc_addr       = mepc;                                // reload PC and flush pipeline
                         end
@@ -570,9 +564,7 @@ module execute
                      else
                      `endif
                      if (predicted_addr != brfu_bus.br_pc)
-                     begin
-                        exe_dout.mispre      = TRUE;
-
+                     begin // this instruction and newer are flushed from the pipeline
                         rld_pc_flag          = TRUE;
                         rld_pc_addr          = brfu_bus.br_pc;
                      end
@@ -591,9 +583,7 @@ module execute
                      else
                      `endif
                      if (predicted_addr != brfu_bus.br_pc)
-                     begin
-                        exe_dout.mispre      = TRUE;
-
+                     begin // this instruction and newer are flushed from the pipeline
                         rld_pc_flag          = TRUE;
                         rld_pc_addr          = brfu_bus.br_pc;
                      end
