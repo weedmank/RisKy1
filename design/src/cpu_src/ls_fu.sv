@@ -32,7 +32,7 @@ module ls_fu
 );
 
    // Load/Store logic
-   assign lsfu_bus.ls_addr    = lsfu_bus.Rs1_data + lsfu_bus.imm;             // op_x = 0 (Rs1Data), op_y = 2 (imm)
+   assign lsfu_bus.ls_addr    = PC_SZ ' (lsfu_bus.Rs1_data + lsfu_bus.imm);   // op_x = 0 (Rs1Data), op_y = 2 (imm)
    assign lsfu_bus.st_data    = lsfu_bus.Rs2_data;                            // Store Data
 
    // Loads
