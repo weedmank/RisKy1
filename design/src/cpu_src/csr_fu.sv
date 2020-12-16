@@ -52,11 +52,10 @@ module csr_fu
 
    // ----------------------------------- csr_nxt_bus interface
    assign csr_nxt_bus.nxt_csr_wr       = csr_wr;
-// assign csr_nxt_bus.nxt_csr_rd       = csr_rd;
    assign csr_nxt_bus.nxt_csr_wr_addr  = csr_addr;
    assign csr_nxt_bus.nxt_csr_wr_data  = csr_wr_data;
 
-   assign nxt_csr_rd_data = csr_nxt_bus.nxt_csr_rd_data;
+   assign nxt_csr_rd_data = csr_nxt_bus.nxt_csr_rd_data;          // data from csr_nxt_bus.nxt_csr_wr_addr is returned
 
    // ----------------------------------- csrfu_bus.slave interface
    assign csr_valid                    = csrfu_bus.csr_valid;     // Input:   valid == 1 - a CSR rad & write happens this clock cycle
