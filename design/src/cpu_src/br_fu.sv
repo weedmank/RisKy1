@@ -42,7 +42,7 @@ module br_fu
    logic    [PC_SZ-1:0] pc;
    logic      [RSZ-1:0] imm;
    logic          [2:0] funct3;
-   logic                ci;            // 1 = compressed 16-bit instructions
+   logic                ci;               // 1 = compressed 16-bit instructions
    BR_SEL_TYPE          sel_x;
    BR_SEL_TYPE          sel_y;
    BR_OP_TYPE           op;
@@ -54,7 +54,7 @@ module br_fu
    logic    [PC_SZ-1:0] uepc;
    `endif
 
-   logic    [PC_SZ-1:0] no_br_pc;       // PC + 4 (32 bit instruction) or PC + 2 (compressed 16 bit instruction)
+   logic    [PC_SZ-1:0] no_br_pc;         // PC + 4 (32 bit instruction) or PC + 2 (compressed 16 bit instruction)
 
    // pull out the signals
    assign Rs1_data   = brfu_bus.Rs1_data;
@@ -97,9 +97,9 @@ module br_fu
    logic             branch_taken;
    logic [PC_SZ-1:0] addxy;
 
-   assign addxy = mux_x + mux_y;
+   assign addxy = PC_SZ'(mux_x + mux_y);
 
-   assign no_br_pc = ci ? (pc + 3'd2) : (pc + 3'd4);   // Address of the instruction immediately after this branch instruction
+   assign no_br_pc = ci ? PC_SZ'(pc + 3'd2) : PC_SZ'(pc + 3'd4);   // Address of the instruction immediately after this branch instruction
 
    // Branch ALU Functions
    always_comb
