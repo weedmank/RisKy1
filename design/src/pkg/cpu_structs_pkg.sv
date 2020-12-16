@@ -163,7 +163,6 @@ import cpu_params_pkg::*;
 //   `endif
    
    typedef struct packed {                      // each entry contains count of how many instructions  of that typeretired this clock cycle
-      logic                   mispredict;       // Branch Mispredict count          - not one of the faults but usefull information
       logic                   ext_irq;          // External Interrutp Request count - not one of the faults but usefull information - only 1 of these can ever occur during a clock cycle
 //    logic   [RET_SZ:0] [n-1:0] ret_cnt;       // general format to use if more than 1 instruction retires per clock cycle - where n is the number of bits needed to hold maximum count
       logic        [RET_SZ:0] ret_cnt;          // only 1 instruction maximum retires per clock cycle in this pipelined RV32imc... design
@@ -193,7 +192,6 @@ import cpu_params_pkg::*;
       logic                   is_ld;            // 1 = Read from System Memory
       logic                   is_st;            // 1 = Write to System Memory
       logic                   instr_err;
-      logic                   mispre;
       logic                   ci;               // 1 = compressed 16-bit instruction, 0 = 32 bit instruction
       `ifndef ext_C
       logic       [PC_SZ-1:0] br_pc;
@@ -228,7 +226,6 @@ import cpu_params_pkg::*;
       logic       [PC_SZ-1:0] ls_addr;
       logic                   inv_flag;         // invalidate flag
       logic                   instr_err;
-      logic                   mispre;
       logic                   ci;               // 1 = compressed 16-bit instruction, 0 = 32 bit instruction
       `ifndef ext_C
       logic       [PC_SZ-1:0] br_pc;
