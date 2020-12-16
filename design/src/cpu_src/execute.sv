@@ -712,6 +712,7 @@ module execute
                exe_dout.is_ld       = TRUE;
                exe_dout.ls_addr     = lsfu_bus.ls_addr;
                exe_dout.size        = lsfu_bus.size;                                // 0 byte default, 1 byte, 2 byte, or 4 byte
+               exe_dout.zero_ext    = lsfu_bus.zero_ext;                            // 1 = LBU or LHU instruction - zero extend
                exe_dout.instr_err   = lsfu_bus.mis;
             end
 
@@ -723,7 +724,6 @@ module execute
                exe_dout.ls_addr     = lsfu_bus.ls_addr;
                exe_dout.st_data     = lsfu_bus.st_data;
                exe_dout.size        = lsfu_bus.size;                                // 0 byte default, 1 byte, 2 byte, or 4 byte
-               exe_dout.zero_ext    = lsfu_bus.zero_ext;                            // 1 = LBU or LHU instruction - zero extend
                exe_dout.inv_flag    = (lsfu_bus.ls_addr >= L1_IC_Lo) && (lsfu_bus.ls_addr <= L1_IC_Hi);  // write will also occur in the L1 I$ address space
                exe_dout.instr_err   = lsfu_bus.mis;
             end
