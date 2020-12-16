@@ -458,7 +458,7 @@ import cpu_params_pkg::*;
 
       logic                        [RSZ-1:0] mscratch;         // 12'h340
       logic                      [PC_SZ-1:0] mepc;             // 12'h341
-      logic                        [RSZ-1:0] mcause;           // 12'h342
+      logic                            [3:0] mcause;           // 12'h342
       logic                        [RSZ-1:0] mtval;            // 12'h343
       `ifdef ext_N
       MIP_SIGS                               mip;              // 12'h344
@@ -560,7 +560,7 @@ import cpu_params_pkg::*;
       logic                        [RSZ-1:0] scounteren;       // 12'h106
       logic                        [RSZ-1:0] sscratch;         // 12'h140
       logic                      [PC_SZ-1:0] sepc;             // 12'h141
-      logic                        [RSZ-1:0] scause;           // 12'h142
+      logic                            [3:0] scause;           // 12'h142
       logic                        [RSZ-1:0] stval;            // 12'h143
       `ifdef ext_N
       SIP_SIGS                               sip;              // 12'h144
@@ -578,7 +578,7 @@ import cpu_params_pkg::*;
       logic                        [RSZ-1:0] utvec;            // 12'h005
       logic                        [RSZ-1:0] uscratch;         // 12'h040
       logic                      [PC_SZ-1:0] uepc;             // 12'h041
-      logic                        [RSZ-1:0] ucause;           // 12'h042
+      logic                            [3:0] ucause;           // 12'h042
       logic                        [RSZ-1:0] utval;            // 12'h043
       `ifdef ext_N
       UIP_SIGS                               uip;              // 12'h044
