@@ -205,9 +205,9 @@ module csr_nxt_reg
          if (reset_in)
             nxt_ucsr.uepc     =  '0;
          else if (exception.flag & (nxt_mode == U_MODE))                // An exception in MEM stage has priority over a csr_wr (in EXE stage)
-            nxt_ucsr.uepc     = {exception.pc[RSZ-1:1], 1'b0};          // save exception pc - low bit is always 0
+            nxt_ucsr.uepc     = exception.pc;                           // save exception pc - low bit is always 0 (see csr.sv)
          else if (csr_wr && (csr_addr == 12'h041))                      // All modes can write to this CSR
-            nxt_ucsr.uepc     = {csr_wr_data[RSZ-1:1], 1'b0};           // Software settable - low bit is always 0
+            nxt_ucsr.uepc     = csr_wr_data;                            // Software settable - low bit is always 0 (see csr.sv)
          else
             nxt_ucsr.uepc     = ucsr.uepc;                              // no change
 
@@ -394,9 +394,9 @@ module csr_nxt_reg
          if (reset_in)
             nxt_scsr.sepc  =  '0;
          else if ((exception.flag) & (nxt_mode == S_MODE))
-            nxt_scsr.sepc  = {exception.pc[RSZ-1:1], 1'b0};             // save exception pc - low bit is always 0
+            nxt_scsr.sepc  = exception.pc;                              // save exception pc - low bit is always 0 (see csr.sv)
          else if (csr_wr && (csr_addr == 12'h141) & (mode >= S_MODE))   // Only >= Supervisor mode can write to this CSR
-            nxt_scsr.sepc  = {csr_wr_data[RSZ-1:1], 1'b0};              // Software settable - low bit is always 0
+            nxt_scsr.sepc  = csr_wr_data;                               // Software settable  - low bit is always 0 (see csr.sv)
          else
             nxt_scsr.sepc  = scsr.sepc;                                 // don't change
 
