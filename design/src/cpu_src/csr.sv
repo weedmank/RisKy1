@@ -338,7 +338,7 @@ module csr
 
    // ------------------------------ User Exception Cause
    // 12'h042 = 12'b0000_0100_0010  ucause                        (read-write)
-   csr_std_wr #(0,12'h042,RSZ,32'hFFFF_FFF0) Ucause               (clk_in,reset_in, mode, TRUE, nxt_ucsr.ucause, ucsr.ucause);
+   csr_std_wr #(0,12'h042,4) Ucause                               (clk_in,reset_in, mode, TRUE, nxt_ucsr.ucause, ucsr.ucause); // ucause is currently 4 bits wide
 
    // ------------------------------ User Exception Trap Value    see riscv-privileged p. 38-39
    // 12'h043 = 12'b0000_0100_0011  utval                         (read-write)
@@ -405,7 +405,7 @@ module csr
 
    // ------------------------------ Supervisor Exception Cause.
    // 12'h142 = 12'b0001_0100_0010  scause                        (read-write)
-   csr_std_wr #(0,12'h142,RSZ,32'hFFFF_FFF0) Scause               (clk_in,reset_in, mode, TRUE, nxt_scsr.scause, scsr.scause);
+   csr_std_wr #(0,12'h142,4) Scause                               (clk_in,reset_in, mode, TRUE, nxt_scsr.scause, scsr.scause);   // scause is currently 4 bits wide
 
    // ------------------------------ Supervisor Exception Trap Value                             see riscv-privileged p. 38-39
    // 12'h143 = 12'b0001_0100_0011  stval                         (read-write)
@@ -434,7 +434,20 @@ module csr
    //  31        22   21  20   19   18   17   16:15 14:13 12:11  10:9    8    7     6     5     4      3     2     1    0
    // {sd, 8'b0, tsr, tw, tvm, mxr, sum, mprv,   xs,   fs,  mpp, 2'b0,  spp, mpie, 1'b0, spie, upie,  mie, 1'b0,  sie, uie};
 
-   csr_std_wr #(0,12'h300,RSZ,32'h7FC0_0644) Mstatus              (clk_in,reset_in, mode, TRUE, nxt_mcsr.mstatus, mcsr.mstatus);
+   // additional RO masks when no interrupt logic is used - determines if bits remain at reset INIT value = 0
+   `ifdef ext_N
+      parameter MSTAT_UMSK_IE = 32'h0;    // don't mask upie, uie bits in mstatus register
+   `else
+      parameter MSTAT_UMSK_IE = 32'h11;   // upie, uie bits are RO - remain at 0 (reset INIT value)
+   `endif
+   
+   `ifdef ext_N
+      parameter MSTAT_SMSK_IE = 32'h0;    // don't mask spp, spie, sie bits in mstatus register
+   `else
+      parameter MSTAT_SMSK_IE = 32'h122;  // spp, spie, sie bits are RO - remain at 0 (reset INIT value)
+   `endif
+
+   csr_std_wr #(0,12'h300,RSZ,(32'h7FC0_0644 | MSTAT_UMSK_IE | MSTAT_SMSK_IE)) Mstatus (clk_in,reset_in, mode, TRUE, nxt_mcsr.mstatus, mcsr.mstatus);
 
    // ------------------------------ Machine ISA Register
 
@@ -510,11 +523,11 @@ module csr
    // ------------------------------ Machine Exception Program Counter
    // Used by MRET instruction at end of Machine mode trap handler
    // 12'h341 = 12'b0011_0100_0001  mepc                          (read-write)   see riscv-privileged p 36
-   csr_std_wr #(0,12'h341,RSZ) Mepc                               (clk_in,reset_in, mode, TRUE, nxt_mcsr.mepc, mcsr.mepc);
+   csr_std_wr #(0,12'h341,RSZ,32'h1) Mepc                         (clk_in,reset_in, mode, TRUE, nxt_mcsr.mepc, mcsr.mepc);    // LSbit always remains at 0 (reset init value)
 
    // ------------------------------ Machine Exception Cause
    // 12'h342 = 12'b0011_0100_0010  mcause                        (read-write)
-   csr_std_wr #(0,12'h342,RSZ,32'hFFFF_FFF0) Mcause               (clk_in,reset_in, mode, TRUE, nxt_mcsr.mcause, mcsr.mcause);
+   csr_std_wr #(0,12'h342,4) Mcause                               (clk_in,reset_in, mode, TRUE, nxt_mcsr.mcause, mcsr.mcause);   // mcause is currently 4 bits wide
 
    // ------------------------------ Machine Exception Trap Value
    // 12'h343 = 12'b0011_0100_0011  mtval                         (read-write)
