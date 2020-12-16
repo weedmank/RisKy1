@@ -220,7 +220,7 @@ module decode_core
                      if (Rd_addr == 0)
                      begin
                         if (c_imm == 0)
-                           cntrl_sigs =      '{1'b0,  1'b0,  1'b0, 1'b0,  1'b0,  1'b0,  ALU_INSTR,  AM_RS1, AM_IMM, A_ADD,  1'b1, c_imm        };    // nop - The code point with both rd=x0 and nzimm=0 encodes the C.NOP instruction p 104
+                           cntrl_sigs =      '{1'b0,  1'b0,  1'b0, 1'b0,  1'b0,  1'b0,  ALU_INSTR,  AM_RS1, AM_IMM, A_ADD,  1'b1, 32'd0        };    // nop - The code point with both rd=x0 and nzimm=0 encodes the C.NOP instruction p 104
                         `ifdef H_C_NOP
                         else // if ((Rd_addr == 0) && (c_imm != 0))
                            cntrl_sigs =      '{1'b0,  1'b0,  1'b0, 1'b0,  1'b0,  1'b0,  HINT_INSTR, 2'd0,   2'd0,   4'd0,   1'b1, HINT_C_NOP   };    // HINT
