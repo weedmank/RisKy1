@@ -150,7 +150,6 @@ module mem
    assign mem_dout.ls_addr             = E2M_bus.data.ls_addr;
    assign mem_dout.inv_flag            = E2M_bus.data.inv_flag;
    assign mem_dout.instr_err           = E2M_bus.data.instr_err;                    // misaligned, illegal CSR access...
-   assign mem_dout.mispre              = E2M_bus.data.mispre;
    assign mem_dout.ci                  = E2M_bus.data.ci;
    `ifndef ext_C
    assign mem_dout.br_pc               = E2M_bus.data.br_pc;

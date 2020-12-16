@@ -67,7 +67,6 @@ module wb
    logic       [PC_SZ-1:0] ls_addr;
    logic                   inv_flag;
    logic                   instr_err;
-   logic                   mispre;
    `ifndef ext_C
    logic       [PC_SZ-1:0] br_pc;
    `endif
@@ -104,7 +103,6 @@ module wb
    assign ls_addr             = M2W_bus.data.ls_addr;
    assign inv_flag            = M2W_bus.data.inv_flag;
    assign instr_err           = M2W_bus.data.instr_err;                             // misaligned, illegal CSR access...
-   assign mispre              = M2W_bus.data.mispre;
    assign ci                  = M2W_bus.data.ci;
    `ifndef ext_C
    assign br_pc               = M2W_bus.data.br_pc;
@@ -309,9 +307,6 @@ module wb
                   `ifdef ext_U
                   B_URET:                                                           // URET
                   begin // "OK to use in all modes though maybe technically nonsensical in S or M mode"
-                     if (mispre)
-                        current_events.mispredict = TRUE;                           // can't be covered using e_flag... becuase this is not an exception
-
                      current_events.ret_cnt[BXX_RET] = 1'b1;                        // number of BXX instructions retiring this clock cycle
                   end
                   `endif // ext_U
@@ -332,8 +327,6 @@ module wb
                         current_events.e_flag   = TRUE;
                         current_events.e_cause  = exception.cause;
                      end
-                     else if (mispre)
-                        current_events.mispredict = TRUE;                           // can't be covered using e_flag... becuase this is not an exception
 
                      current_events.ret_cnt[BXX_RET] = 1'b1;                        // number of BXX instructions retiring this clock cycle
                   end
@@ -354,8 +347,6 @@ module wb
                         current_events.e_flag   = TRUE;
                         current_events.e_cause  = exception.cause;
                      end
-                     else if (mispre)
-                        current_events.mispredict = TRUE;                           // can't be covered using e_flag... becuase this is not an exception
 
                      current_events.ret_cnt[BXX_RET] = 1'b1;                        // number of BXX instructions retiring this clock cycle
                   end
@@ -383,8 +374,6 @@ module wb
                      end
                      else
                      `endif
-                     if (mispre)
-                        current_events.mispredict = TRUE;                           // can't be covered using e_flag... becuase this is not an exception
 
                      current_events.ret_cnt[BXX_RET] = 1'b1;                        // number of BXX instructions retiring this clock cycle
                   end
@@ -409,9 +398,6 @@ module wb
                      end
                      else
                      `endif
-                     if (mispre & (op_type == B_JALR))                                     // JAL can't mispredict
-                        current_events.mispredict = TRUE;                           // can't be covered using e_flag... becuase this is not an exception
-                     else
                      begin
                         wb_Rd_wr                = M2W_bus.data.Rd_wr;               // Writeback stage needs to know whether to write to destination register Rd
                         wb_Rd_addr              = M2W_bus.data.Rd_addr;             // Address of Rd register
@@ -638,7 +624,7 @@ module wb
                   begin                                                             // This is NOT an exception, but just need to flush pipe and reload I$ due to Load/Store in I$ space
                      rld_pc_flag          = TRUE;
                      rld_ic_flag          = TRUE;
-                     rld_pc_addr          = ipd.pc + (ci ? 2'd2 : 3'd4);            // reload PC address after this STORE instruction due to I$ invalidation logic
+                     rld_pc_addr          = PC_SZ'(ipd.pc + (ci ? 2'd2 : 3'd4));    // reload PC address after this STORE instruction due to I$ invalidation logic
                   end
                   // Store does not write any info to GPR registers
                   current_events.ret_cnt[ST_RET] = 1'b1;                            // number of Store instructions retiring this clock cycle
