@@ -68,7 +68,7 @@ module irq
       else if (mtime_hi_wr)
          mtime[RSZ*2-1:RSZ] <= mmr_wr_data;              // upper half of counter
       else                                               // if (mtimecmp != 0) // don't let it count if mtimecmp is 0
-         mtime <= mtime + 'd1;                           // otherwise increment counter
+         mtime <= RSZ ' (mtime + 'd1);                   // otherwise increment counter - cast result to RSZ bits before assigning
       //!!! ??? platform must provide a mechanism for determining the timebase of mtime.   p. 30
 
       // ------------------------------ Time Compare Register
