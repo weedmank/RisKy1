@@ -69,8 +69,6 @@ module csr_nxt_reg
    logic sd, tsr, tw, tvm, mxr, sum, mprv;
    logic [1:0] xs, fs, mpp;
    logic mpie, mie;
-   logic spp, spie, sie;
-   logic upie, uie;
 
    //!!!!!!!!!!!!!!!!!!!! Mstatus Bits To Be Updated As Needed !!!!!!!!!!!!!!!!!!!!
    assign sd      = 1'b0;
@@ -86,15 +84,14 @@ module csr_nxt_reg
    logic    [1:0] nxt_mpp;
    logic          nxt_mpie, nxt_mie;
    logic          nxt_spp, nxt_spie, nxt_sie;
+   logic                   nxt_upie, nxt_uie;
 
    `ifdef use_MHPM
    logic         [NUM_MHPM-1:0] [RSZ-1:0] mhpmcounter_lo;   // 12'hB03 - 12'B1F
    logic         [NUM_MHPM-1:0] [RSZ-1:0] mhpmcounter_hi;   // 12'hB83 - 12'B9F
    logic   [NUM_MHPM-1:0] [EV_SEL_SZ-1:0] mhpmevent;        // 12'h323 - 12'h33F, mhpmevent3 - mhpmevent31
    `endif
-
-   logic nxt_upie, nxt_uie;
-
+   
    `ifdef ext_N
    logic nxt_msip, nxt_mtip, nxt_meip;
    logic nxt_seip, nxt_stip, nxt_ssip;                      // used in csr_super_av_rdata_nxt.sv, csr_mach_av_rdata_nxt.sv
@@ -104,21 +101,21 @@ module csr_nxt_reg
    always_comb
    begin
       nxt_mcsr = '{default: '0};
+      
+      nxt_upie = 1'b0;
+      nxt_uie  = 1'b0;
+      nxt_spp  = 1'b0;
+      nxt_spie = 1'b0;
+      nxt_sie  = 1'b0;
 
       `ifdef ext_U
       // ==================================================================== User Mode Registers ====================================================================
+         // ------------------------------ User Status Register
+         // 12'h000 = 12'b0000_0000_0000  ustatus     (read-write)  user mode
+         // ustatus = mstatus & MASK - see csr.sv
          nxt_ucsr    = '{default: '0};
-         nxt_upie    = 1'b0;
-         nxt_uie     = 1'b0;           // defaults unless overriden
-         `ifdef ext_N
-            nxt_usip = FALSE;
-            nxt_utip = FALSE;
-            nxt_ueip = FALSE;
 
-            // ------------------------------ User Status Register
-            // 12'h000 = 12'b0000_0000_0000  ustatus     (read-write)  user mode
-            // ustatus = mstatus & MASK - see csr_av_rdata.sv
-            // User Status Register bits
+         `ifdef ext_N
             // p. 21. To support nested traps, each privilege mode x has a two-level stack of interrupt-enable
             //        bits and privilege modes. xPIE holds the value of the interrupt-enable bit active
             //        prior to the trap, and xPP holds the previous privilege mode.
@@ -133,7 +130,7 @@ module csr_nxt_reg
             if (reset_in)
                nxt_upie  = 1'b0;
             else if (exception.flag & (nxt_mode == U_MODE))
-               nxt_upie  = mcsr.mstatus..uie;
+               nxt_upie  = mcsr.mstatus.uie;
             else if (uret)
                nxt_upie  = 1'b1;
             else
@@ -217,11 +214,11 @@ module csr_nxt_reg
          // ------------------------------ User Exception Cause
          // 12'h042 = 12'b0000_0100_0010  ucause                        (read-write)
          if (reset_in)
-            nxt_ucsr.ucause   =  'b0;
+            nxt_ucsr.ucause   =  '0;
          else if (exception.flag & (nxt_mode == U_MODE))                // An exception in MEM stage has priority over a csr_wr (in EXE stage)
             nxt_ucsr.ucause   = exception.cause;                        // save code for exception cause
          else if (csr_wr && (csr_addr == 12'h042))
-            nxt_ucsr.ucause   = csr_wr_data;                            // Sotware settable
+            nxt_ucsr.ucause   = csr_wr_data[3:0];                       // Sotware settable
          else
             nxt_ucsr.ucause   = ucsr.ucause;                            // no change
 
@@ -276,16 +273,10 @@ module csr_nxt_reg
       `endif // ext_U
 
       // ==================================================================== Supervisor Mode Registers ==============================================================
-      nxt_spp    = 1'b0;   // defaults unless overriden
-      nxt_spie   = 1'b0;
-      nxt_sie    = 1'b0;
       `ifdef ext_S
          nxt_scsr   = '{default: '0};    // defaults unless overrriden
-         `ifdef ext_N
-            nxt_seip    = FALSE;       // defaults unless overrriden
-            nxt_stip    = FALSE;
-            nxt_ssip    = FALSE;
 
+         `ifdef ext_N
             // Supervisor Interrupt-Pending Register bits
             if (reset_in)  // Software Interrupts
                nxt_ssip    = FALSE;
@@ -350,8 +341,9 @@ module csr_nxt_reg
 
          // ------------------------------ Supervisor Status Register
          // 12'h100 = 12'b0001_0000_0000  sstatus        (read-write)
-         // sstatus = mstatus & MASK - see csr_av_rdata.sv
-
+         // sstatus = mstatus & MASK - see csr.sv
+         // nxt_scsr.status = .... not needed
+         
          // ------------------------------ Supervisor exception delegation register.
          // 12'h102 = 12'b0001_0000_0010  sedeleg                       (read-write)
          if (csr_wr && (csr_addr == 12'h102))
@@ -415,7 +407,7 @@ module csr_nxt_reg
          else if (exception.flag & (nxt_mode == S_MODE))
             nxt_scsr.scause   = exception.cause;                        // save code for exception cause
          else if (csr_wr && (csr_addr == 12'h142) & (mode >= S_MODE))   // Only >= Supervisor mode can write to this CSR
-            nxt_scsr.scause   = csr_wr_data;                            // Sotware settable
+            nxt_scsr.scause   = csr_wr_data[3:0];                       // Sotware settable - currently scause is only 4 bits wide
          else
             nxt_scsr.scause   = scsr.scause;                            // don't change
 
@@ -497,7 +489,7 @@ module csr_nxt_reg
 
       // 12'h300 = 12'b0011_0000_0000  mstatus     (read-write)
       //                      31        22   21  20   19   18   17   16:15 14:13  12:11    10:9    8        7         6     5         4         3        2     1        0
-      nxt_mcsr.mstatus  = {sd, 8'b0, tsr, tw, tvm, mxr, sum, mprv,   xs,   fs, nxt_mpp, 2'b0,  nxt_spp, nxt_mpie, 1'b0, nxt_spie, nxt_upie, nxt_mie, 1'b0, nxt_sie, nxt_uie};
+      nxt_mcsr.mstatus  = {sd, 8'b0, tsr, tw, tvm, mxr, sum, mprv,   xs,   fs, nxt_mpp, 2'b0,  nxt_spp, nxt_mpie, 1'b0, nxt_spie, nxt_upie, nxt_mie, 1'b0, nxt_sie, nxt_uie}; // see mask 32'h7FC0_0644 in csr.sv
 
       // -------------------------------------- MISA -------------------------------------
       // ISA and extensions
@@ -614,9 +606,9 @@ module csr_nxt_reg
       if (reset_in)
          nxt_mcsr.mepc     =  '0;
       else if ((exception.flag) & (nxt_mode == M_MODE))
-         nxt_mcsr.mepc     = {exception.pc[RSZ-1:1], 1'b0};             // save exception pc - low bit is always 0
+         nxt_mcsr.mepc     = exception.pc;                              // save exception pc - low bit is always 0 (see csr.sv)
       else if (csr_wr && (csr_addr == 12'h341) & (mode == M_MODE))      // Only Machine mode can write to this CSR
-         nxt_mcsr.mepc     = {csr_wr_data[RSZ-1:1], 1'b0};              // Software settable - low bit is always 0
+         nxt_mcsr.mepc     = csr_wr_data;                               // Software settable - low bit is always 0 (see csr.sv)
       else
          nxt_mcsr.mepc     = mcsr.mepc;                                 // don't change
 
@@ -627,7 +619,7 @@ module csr_nxt_reg
       else if (exception.flag & (nxt_mode == M_MODE))
          nxt_mcsr.mcause   = exception.cause;                           // save code for exception cause
       else if (csr_wr && (csr_addr == 12'h342) & (mode == M_MODE))
-         nxt_mcsr.mcause   = csr_wr_data;                               // Sotware settable
+         nxt_mcsr.mcause   = csr_wr_data[3:0];                          // Sotware settable - currently mcause is only 4 bits wide
       else
          nxt_mcsr.mcause   = mcsr.mcause;                               // don't change
 
