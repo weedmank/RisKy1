@@ -334,7 +334,7 @@ module csr
 
    // ------------------------------ User Exception Program Counter
    // 12'h041 = 12'b0000_0100_0001  uepc                          (read-write)
-   csr_std_wr #(0,12'h041,RSZ) Uepc                               (clk_in,reset_in, mode, TRUE, nxt_ucsr.uepc, ucsr.uepc);
+   csr_std_wr #(0,12'h041,RSZ,32'h1) Uepc                         (clk_in,reset_in, mode, TRUE, nxt_ucsr.uepc, ucsr.uepc); // ls-bit is RO so it remains at 0 after reset
 
    // ------------------------------ User Exception Cause
    // 12'h042 = 12'b0000_0100_0010  ucause                        (read-write)
@@ -401,7 +401,7 @@ module csr
 
    // ------------------------------ Supervisor Exception Program Counter.
    // 12'h141 = 12'b0001_0100_0001  sepc                          (read-write)
-   csr_std_wr #(0,12'h141,RSZ) Sepc                               (clk_in,reset_in, mode, TRUE, nxt_scsr.sepc, scsr.sepc);
+   csr_std_wr #(0,12'h141,RSZ,32'h1) Sepc                         (clk_in,reset_in, mode, TRUE, nxt_scsr.sepc, scsr.sepc); // ls-bit is RO so it remains at 0 after reset
 
    // ------------------------------ Supervisor Exception Cause.
    // 12'h142 = 12'b0001_0100_0010  scause                        (read-write)
@@ -678,7 +678,7 @@ module csr
    assign hpm_events[13]   = current_events.ret_cnt[UNK_RET];        // Unknown Instructions
    assign hpm_events[14]   = current_events.e_flag ? (current_events.e_cause == 0) : 0; // e_cause = 0 = Instruction Address Misaligned
    assign hpm_events[15]   = current_events.e_flag ? (current_events.e_cause == 1) : 0; // e_cause = 1 = Instruction Access Fault
-   assign hpm_events[16]   = current_events.mispredict;              // branch mispredictions
+   assign hpm_events[16]   = current_events.e_flag ? (current_events.e_cause == 2) : 0; // e_cause = 2 = Illegal Instruction
    assign hpm_events[17]   = br_cnt;                                 // all bxx, jal, jalr instructions
    assign hpm_events[18]   = misaligned_cnt;                         // all misaligned instructions
    assign hpm_events[19]   = tot_retired;                            // total of all instructions retired this clock cycle
@@ -688,8 +688,8 @@ module csr
    assign hpm_events[22]   = current_events.ret_cnt[FP_RET];         // single precision Floating Point operation retired
    assign hpm_events[23]   = current_events.ext_irq;                 // this will always be a 0 or 1 count as only 1 per clock cycle can ever occur
    `else
-   assign hpm_events[20]   = current_events.e_flag ? (current_events.e_cause == 2) : 0; // e_cause = 2 = Illegal Instruction
-   assign hpm_events[21]   = current_events.e_flag ? (current_events.e_cause == 3) : 0; // e_cause = 3 = Environment Break
+   assign hpm_events[20]   = current_events.e_flag ? (current_events.e_cause == 3) : 0; // e_cause = 3 = Environment Break
+   assign hpm_events[21]   = current_events.e_flag ? (current_events.e_cause == 6) : 0; // e_cause = 6 = Store Address Misaligned
    assign hpm_events[22]   = current_events.e_flag ? (current_events.e_cause == 8) : 0; // e_cause = 8 = User ECALL
    assign hpm_events[23]   = current_events.ext_irq;                 // this will always be a 0 or 1 count as only 1 per clock cycle can ever occur
    `endif // uxt_F
