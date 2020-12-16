@@ -104,7 +104,6 @@ module execute
    logic                        [RSZ-1:0] Fs2D;                            // data is either from Fs2_data or forwarding data
    `endif
 
-   logic                        [RSZ-1:0] csr_rd_data;                     // csr[csr_addr]
    logic                        [RSZ-1:0] CSD;                             // data is either from csr_rd_data or forwarding data
 
    // These signal when a particular functional unit is completed
@@ -131,7 +130,7 @@ module execute
    logic                   ci;
 
 
-   logic                   mode;
+   logic             [1:0] mode;
    logic       [PC_SZ-1:0] mepc;
    `ifdef ext_S
    logic       [PC_SZ-1:0] sepc;
