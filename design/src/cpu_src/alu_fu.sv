@@ -55,7 +55,9 @@ module alu_fu
 
    always_comb
    begin
-      unique case(sel_x)
+//    unique case(sel_x) - currently not unique because other values of sel_x go to other FU's
+      mux_x = '0;
+      case(sel_x)
          AM_RS1:  mux_x = Rs1_data;
          AM_RS2:  mux_x = Rs2_data;
          AM_IMM:  mux_x = imm;
@@ -65,7 +67,9 @@ module alu_fu
 
    always_comb
    begin
-      unique case(sel_y)
+//    unique case(sel_y) - currently not unique because other values of sel_y go to other FU's
+      mux_y = '0;
+      case(sel_y)
          AM_RS1:  mux_y = Rs1_data;
          AM_RS2:  mux_y = Rs2_data;
          AM_IMM:  mux_y = imm;
@@ -76,13 +80,15 @@ module alu_fu
    // ALU Functions
    always_comb
    begin
-      unique case(op)
+//    unique case(op) - currently not unique because other values of sel_y go to other FU's
+      afu_bus.Rd_data = '0;
+      case(op)
          A_AND:   afu_bus.Rd_data = mux_x & mux_y;
-         A_OR:    afu_bus.Rd_data = mux_x | mux_y;             // see lui
+         A_OR:    afu_bus.Rd_data = mux_x | mux_y;                // see lui
          A_XOR:   afu_bus.Rd_data = mux_x ^ mux_y;
-         A_ADD:   afu_bus.Rd_data = mux_x + mux_y;             // see auipc
-         A_SUB:   afu_bus.Rd_data = mux_x - mux_y;
-         A_SLL:   afu_bus.Rd_data = mux_x << mux_y[4:0];
+         A_ADD:   afu_bus.Rd_data = RSZ ' (mux_x + mux_y);        // cast result to RSZ bits before assigning
+         A_SUB:   afu_bus.Rd_data = RSZ ' (mux_x - mux_y);        // cast result to RSZ bits before assigning
+         A_SLL:   afu_bus.Rd_data = RSZ ' (mux_x << mux_y[4:0]);  // cast result to RSZ bits before assigning
          A_SRL:   afu_bus.Rd_data = mux_x >> mux_y[4:0];
          A_SRA:   afu_bus.Rd_data = mux_x >>> mux_y[4:0];
          A_SLT:   afu_bus.Rd_data = ($signed(mux_x) < $signed(mux_y)) ? 'd1 : 'd0; // signed compare
