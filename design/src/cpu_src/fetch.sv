@@ -197,8 +197,8 @@ module fetch
    localparam MR2_SZ = bit_size(MAX_RAS);
 
    logic                [MR_SZ-1:0] ras_ptr;
-   logic                [MR_SZ-1:0] nxt_ras_ptr;      // ras_ptr wrapping will work only if MAX_RAS is a power of 2 for current design
-   logic  [MAX_RAS-1:0] [PC_SZ-1:0] ras, nxt_ras;     // Note: MAX_RAS should be a power of two for the current logic
+   logic                [MR_SZ-1:0] nxt_ras_ptr;                     // ras_ptr wrapping will work only if MAX_RAS is a power of 2 for current design
+   logic  [MAX_RAS-1:0] [PC_SZ-1:0] ras, nxt_ras;                    // Note: MAX_RAS should be a power of two for the current logic
 
    always_ff @(posedge clk_in)
    begin
@@ -429,7 +429,7 @@ module fetch
 
             //************** 3rd - determine predicted address based on each instruction
             bt[c]                = FALSE;                                                 // default is no branching
-            predicted[c].addr    = addr[c] + instr_sz[c];                                 // default is to continue sequentially with next address (i.e. no branching)
+            predicted[c].addr    = PC_SZ'(addr[c] + instr_sz[c]);                         // default is to continue sequentially with next address (i.e. no branching)
 
             // npw check to see if we need to override(replace) the default values of bt[c] and predicted[c].addr
             unique case (btype[c])
@@ -456,18 +456,18 @@ module fetch
                   // "JALR instructions should push/pop a RAS as shown in the Table 2.1"
                   case ({link_rd,link_rs1})                                               // use RISC-V hints to determine whether to push, pop or pop_then_push   see riscv-spec.pdf p 22
                      2'b01:   // pop
-                        nxt_ras_ptr = MR_SZ ' (nxt_ras_ptr - 1'd1);                       // pre decrement - cast result to MR_SZ bits before assigning
+                        nxt_ras_ptr = MR_SZ'(nxt_ras_ptr - 1'd1);                         // pre decrement - cast result to MR_SZ bits before assigning
                      2'b10:   // push
                      begin
-                        nxt_ras[nxt_ras_ptr] = addr[c] + instr_sz[c];                     // save return address
-                        nxt_ras_ptr = MR_SZ ' (nxt_ras_ptr + 1'd1);                       // post increment - cast result to MR_SZ bits before assigning
+                        nxt_ras[nxt_ras_ptr] = PC_SZ'(addr[c] + instr_sz[c]);             // save return address - cast to PC_SZ
+                        nxt_ras_ptr = MR_SZ'(nxt_ras_ptr + 1'd1);                         // post increment - cast result to MR_SZ bits before assigning
                      end
                      2'b11:   // pop then push
                      begin
                         if (rs1 != rd) // pop
-                           nxt_ras_ptr = MR_SZ ' (nxt_ras_ptr - 1'd1);                    // pre decrement - cast result to MR_SZ bits before assigning
-                        nxt_ras[nxt_ras_ptr] = addr[c] + instr_sz[c];                     // save return address
-                        nxt_ras_ptr = MR_SZ ' (nxt_ras_ptr + 1'd1);                       // post increment - cast result to MR_SZ bits before assigning
+                           nxt_ras_ptr = MR_SZ'(nxt_ras_ptr - 1'd1);                      // pre decrement - cast result to MR_SZ bits before assigning
+                        nxt_ras[nxt_ras_ptr] =  PC_SZ'(addr[c] + instr_sz[c]);            // save return address - cast to PC_SZ
+                        nxt_ras_ptr = MR_SZ'(nxt_ras_ptr + 1'd1);                         // post increment - cast result to MR_SZ bits before assigning
                      end
                   endcase
                end
@@ -482,7 +482,7 @@ module fetch
 
                   // !!!!!!!!! We'll make an initial guesss (until branch prediction logic is created and used here) that backward branch addresses will be taken. !!!!!!!!!!!!
 
-                  predicted[c].addr    = b_imm[31] ? (addr[c] + b_imm) : (addr[c] + instr_sz[c]);
+                  predicted[c].addr    = b_imm[31] ? PC_SZ'(addr[c] + b_imm) : PC_SZ'(addr[c] + instr_sz[c]);
                   bt[c]                = b_imm[31] ? TRUE : FALSE;                        // Neg direction = TRUE: Pos direction = FALSE
                end
 
@@ -490,15 +490,15 @@ module fetch
                begin
                   predicted[c].is_br   = TRUE;
                   // NOTE: No branch prediction needed. This branch is ALWAYS taken and address is known
-                  predicted[c].addr    = addr[c] + j_imm;                                 // we know the address at this time
+                  predicted[c].addr    = PC_SZ'(addr[c] + j_imm);                         // we know the address at this time - cast addition to PC_SZ
                   bt[c]                = TRUE;                                            // jumps are always taken
                   done                 = TRUE;                                            // We're done with any other instructions immediately after this one
 
                   // "A JAL instruction should push the return address onto a return-address ras (RAS) only when rd=x1/x5" p 22 of risv-spec-v2.2
                   if ((rd == 1)  | (rd == 5))
                   begin
-                     nxt_ras[nxt_ras_ptr] = addr[c] + instr_sz[c];                        // save return address
-                     nxt_ras_ptr = MR_SZ ' (nxt_ras_ptr + 1'd1);                          // post increment - cast result to MR_SZ bits before assigning
+                     nxt_ras[nxt_ras_ptr] = PC_SZ'(addr[c] + instr_sz[c]);                // save return address - cast addition to PC_SZ
+                     nxt_ras_ptr = MR_SZ'(nxt_ras_ptr + 1'd1);                            // post increment - cast result to MR_SZ bits before assigning
                   end
                end
 
@@ -506,7 +506,7 @@ module fetch
                begin
                   predicted[c].is_br   = TRUE;                                            // This is a procedure return, so let branch_prediction.sv know
 
-                  nxt_ras_ptr = MR_SZ ' (nxt_ras_ptr - 1'd1);                             // remove last entry on stack - cast result to MR_SZ bits before assigning
+                  nxt_ras_ptr = MR_SZ'(nxt_ras_ptr - 1'd1);                               // remove last entry on stack - cast result to MR_SZ bits before assigning
                   predicted[c].addr    = nxt_ras[nxt_ras_ptr];
                   bt[c]                = TRUE;
                end
@@ -527,7 +527,7 @@ module fetch
             nxt_que[nxt_qip].ipd.pc           = addr[c];
             nxt_que[nxt_qip].predicted_addr   = predicted[c].addr;
             
-            nxt_qip = QP_SZ ' (nxt_qip + 1'd1);                                           // cast result to QP_SZ bits before assigning
+            nxt_qip = QP_SZ'(nxt_qip + 1'd1);                                             // cast result to QP_SZ bits before assigning
             
             nxt_qip_cnt++;                                                                // number of instructions being saved this clock cycle
             if (nxt_qip == qop)
@@ -585,16 +585,16 @@ module fetch
    //------------------------------------------------------------------------------------------------------------------------------------------
    // Update pointers
    //------------------------------------------------------------------------------------------------------------------------------------------
-   assign nxt_qop = QP_SZ ' (qop + 1'd1);                                                 // cast result to QP_SZ bits before assigning
+   assign nxt_qop = QP_SZ'(qop + 1'd1);                                                   // cast result to QP_SZ bits before assigning
    
    always_ff @(posedge clk_in)
    begin
       if (reset_in | pc_reload | ic_reload)
          qcnt <= 'd0;
       else if (xfer_out)                                                                  // update qcnt whenever an instruction gets transfered to the Decode Stage
-         qcnt <= qcnt + nxt_qip_cnt - 1'd1;                                               // include any incoming data in the calculation
+         qcnt <= QC_SZ'(qcnt + nxt_qip_cnt - 1'd1);                                       // include any incoming data in the calculation
       else
-         qcnt <= qcnt + nxt_qip_cnt;                                                      // update to qcnt whenever no output data gets transfered to the Decode Stage
+         qcnt <= QC_SZ'(qcnt + nxt_qip_cnt);                                              // update to qcnt whenever no output data gets transfered to the Decode Stage
 
       if (reset_in | pc_reload | ic_reload)
          qip <= 'd0;
