@@ -69,8 +69,7 @@ module fetch
    logic            [QC_SZ:0] qcnt, nxt_qip_cnt;
    Q_DATA       [Q_DEPTH-1:0] que, nxt_que;
    logic          [QP_SZ-1:0] qip, qop;                              // que input & output pointers
-   logic          [QP_SZ-1:0] nxt_qip;                      // truncate to be same size as qip, qop
-   logic          [QC_SZ-1:0] nq, nxt_qop;                      // 1 bit bigger than qop
+   logic          [QP_SZ-1:0] nxt_qip, nxt_qop;                      // truncate to be same size as qip, qop
 
    logic                      xfer_out;
 
@@ -278,7 +277,6 @@ module fetch
 
       nxt_ras_ptr          = ras_ptr;
 
-      nq                   = 0;
       nxt_qip              = qip;
       nxt_qip_cnt          = 0;
       nxt_que              = que;
@@ -458,18 +456,18 @@ module fetch
                   // "JALR instructions should push/pop a RAS as shown in the Table 2.1"
                   case ({link_rd,link_rs1})                                               // use RISC-V hints to determine whether to push, pop or pop_then_push   see riscv-spec.pdf p 22
                      2'b01:   // pop
-                        nxt_ras_ptr--;                                                    // pre decrement
+                        nxt_ras_ptr = MR_SZ ' (nxt_ras_ptr - 1'd1);                       // pre decrement - cast result to MR_SZ bits before assigning
                      2'b10:   // push
                      begin
                         nxt_ras[nxt_ras_ptr] = addr[c] + instr_sz[c];                     // save return address
-                        nxt_ras_ptr++;                                                    // post increment
+                        nxt_ras_ptr = MR_SZ ' (nxt_ras_ptr + 1'd1);                       // post increment - cast result to MR_SZ bits before assigning
                      end
                      2'b11:   // pop then push
                      begin
                         if (rs1 != rd) // pop
-                           nxt_ras_ptr--;                                                 // remove last entry on stack
+                           nxt_ras_ptr = MR_SZ ' (nxt_ras_ptr - 1'd1);                    // pre decrement - cast result to MR_SZ bits before assigning
                         nxt_ras[nxt_ras_ptr] = addr[c] + instr_sz[c];                     // save return address
-                        nxt_ras_ptr++;                                                    // post increment
+                        nxt_ras_ptr = MR_SZ ' (nxt_ras_ptr + 1'd1);                       // post increment - cast result to MR_SZ bits before assigning
                      end
                   endcase
                end
@@ -500,7 +498,7 @@ module fetch
                   if ((rd == 1)  | (rd == 5))
                   begin
                      nxt_ras[nxt_ras_ptr] = addr[c] + instr_sz[c];                        // save return address
-                     nxt_ras_ptr++;                                                       // post increment
+                     nxt_ras_ptr = MR_SZ ' (nxt_ras_ptr + 1'd1);                          // post increment - cast result to MR_SZ bits before assigning
                   end
                end
 
@@ -508,7 +506,7 @@ module fetch
                begin
                   predicted[c].is_br   = TRUE;                                            // This is a procedure return, so let branch_prediction.sv know
 
-                  nxt_ras_ptr--;                                                          // remove last entry on stack
+                  nxt_ras_ptr = MR_SZ ' (nxt_ras_ptr - 1'd1);                             // remove last entry on stack - cast result to MR_SZ bits before assigning
                   predicted[c].addr    = nxt_ras[nxt_ras_ptr];
                   bt[c]                = TRUE;
                end
@@ -528,8 +526,8 @@ module fetch
             nxt_que[nxt_qip].ipd.instruction  = i;
             nxt_que[nxt_qip].ipd.pc           = addr[c];
             nxt_que[nxt_qip].predicted_addr   = predicted[c].addr;
-            nq = nxt_qip + 1'd1;
-            nxt_qip = nq[QP_SZ-1:0];                                                      // pointer wrapping logic
+            
+            nxt_qip = QP_SZ ' (nxt_qip + 1'd1);                                           // cast result to QP_SZ bits before assigning
             
             nxt_qip_cnt++;                                                                // number of instructions being saved this clock cycle
             if (nxt_qip == qop)
@@ -587,7 +585,7 @@ module fetch
    //------------------------------------------------------------------------------------------------------------------------------------------
    // Update pointers
    //------------------------------------------------------------------------------------------------------------------------------------------
-   assign nxt_qop = qop + 1'd1;
+   assign nxt_qop = QP_SZ ' (qop + 1'd1);                                                 // cast result to QP_SZ bits before assigning
    
    always_ff @(posedge clk_in)
    begin
@@ -606,7 +604,7 @@ module fetch
       if (reset_in | pc_reload | ic_reload)
          qop <= 'd0;
       else if (xfer_out)
-         qop <= nxt_qop[QP_SZ-1:0];                                                       // Circular buffer pointer. QP_SZ must be a power of 2 value!
+         qop <= nxt_qop;                                                                  // Circular buffer pointer
 
       if (reset_in | pc_reload | ic_reload)
          que <= 'd0;
