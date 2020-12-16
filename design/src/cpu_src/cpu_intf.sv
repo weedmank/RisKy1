@@ -353,12 +353,12 @@ interface CSR_EXE_intf;
    
    // signals from EXE stage - Note: partial pipeline flush will occur when xret == TRUE & PC reloads
    `ifdef ext_S
-   logic                     [RSZ-1:0] sret;             // Supervisor Mode return flag
+   logic                               sret;             // Supervisor Mode return flag
    `endif
    `ifdef ext_U
-   logic                     [RSZ-1:0] uret;             // User Mode return flag
+   logic                               uret;             // User Mode return flag
    `endif
-   logic                     [RSZ-1:0] mret;             // Machine mode return flag
+   logic                               mret;             // Machine mode return flag
    
    modport master(output   mepc, `ifdef ext_S sepc, `endif `ifdef ext_U uepc, `endif mode, `ifdef ext_N interrupt_flag, interrupt_cause, `endif trap_pc,
                   input  `ifdef ext_S sret, `endif `ifdef ext_U uret, `endif mret);
