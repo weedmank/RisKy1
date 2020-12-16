@@ -66,20 +66,20 @@ module csr_nxt_reg
    output   MCSR                 nxt_mcsr          // all of the next Machine mode Control & Status Registers
 );
 
-   logic sd, tsr, tw, tvm, mxr, sum, mprv;
-   logic [1:0] xs, fs, mpp;
-   logic mpie, mie;
+    logic mpie, mie;
 
-   //!!!!!!!!!!!!!!!!!!!! Mstatus Bits To Be Updated As Needed !!!!!!!!!!!!!!!!!!!!
-   assign sd      = 1'b0;
-   assign tsr     = 1'b0;
-   assign tw      = 1'b0;
-   assign tvm     = 1'b0;
-   assign mxr     = 1'b0;
-   assign sum     = 1'b0;
-   assign mprv    = 1'b0;
-   assign xs      = 2'b0;
-   assign fs      = 2'b0;
+//   //!!!!!!!!!!!!!!!!!!!! Mstatus Bits To Be Updated As Needed - be sure to change RO mask in csr.sv!!!!!!!!!!!!!!!!!!!!
+//   logic sd, tsr, tw, tvm, mxr, sum, mprv;
+//   logic [1:0] xs, fs, mpp;
+//   assign sd      = 1'b0;
+//   assign tsr     = 1'b0;
+//   assign tw      = 1'b0;
+//   assign tvm     = 1'b0;
+//   assign mxr     = 1'b0;
+//   assign sum     = 1'b0;
+//   assign mprv    = 1'b0;
+//   assign xs      = 2'b0;
+//   assign fs      = 2'b0;
 
    logic    [1:0] nxt_mpp;
    logic          nxt_mpie, nxt_mie;
@@ -319,7 +319,7 @@ module csr_nxt_reg
             if (reset_in)                                               // spie
                nxt_spie = 'd0;
             else if (exception.flag & (nxt_mode == S_MODE))
-               nxt_spie = sie;                                          // spie <= sie
+               nxt_spie = mcsr.mstatus.sie;                             // spie <= sie
             else if (sret)
                nxt_spie = TRUE;                                         // "xPIE is set to 1"
             else
@@ -488,8 +488,9 @@ module csr_nxt_reg
          nxt_mie  = mcsr.mstatus.mie;  // keep current value
 
       // 12'h300 = 12'b0011_0000_0000  mstatus     (read-write)
-      //                      31        22   21  20   19   18   17   16:15 14:13  12:11    10:9    8        7         6     5         4         3        2     1        0
-      nxt_mcsr.mstatus  = {sd, 8'b0, tsr, tw, tvm, mxr, sum, mprv,   xs,   fs, nxt_mpp, 2'b0,  nxt_spp, nxt_mpie, 1'b0, nxt_spie, nxt_upie, nxt_mie, 1'b0, nxt_sie, nxt_uie}; // see mask 32'h7FC0_0644 in csr.sv
+      //                   31    30:23 22    21    20     19    18    17     16:15 14:13 12:11    10:9   8        7         6     5         4         3        2     1        0
+//    nxt_mcsr.mstatus  = {sd,   8'b0, tsr,  tw,   tvm,   mxr,  sum,  mprv,  xs,   fs,   nxt_mpp, 2'b0,  nxt_spp, nxt_mpie, 1'b0, nxt_spie, nxt_upie, nxt_mie, 1'b0, nxt_sie, nxt_uie}; // see mask 32'h7FC0_0644 in csr.sv
+      nxt_mcsr.mstatus  = {                                                              nxt_mpp, 2'b0,  nxt_spp, nxt_mpie, 1'b0, nxt_spie, nxt_upie, nxt_mie, 1'b0, nxt_sie, nxt_uie}; // see mask 32'h7FC0_0644 in csr.sv
 
       // -------------------------------------- MISA -------------------------------------
       // ISA and extensions
@@ -858,7 +859,7 @@ module csr_nxt_reg
       else if (csr_wr && (csr_addr == 12'hB80) && (mode == M_MODE))
          {nxt_mcsr.mcycle_hi,nxt_mcsr.mcycle_lo}   = {csr_wr_data,mcsr.mcycle_lo};
       else if (!mcsr.mcountinhibit[0])
-         {nxt_mcsr.mcycle_hi,nxt_mcsr.mcycle_lo}   = {mcsr.mcycle_hi,mcsr.mcycle_lo} + 'd1;  // increment counter/timer
+         {nxt_mcsr.mcycle_hi,nxt_mcsr.mcycle_lo}   = 2*RSZ ' ({mcsr.mcycle_hi,mcsr.mcycle_lo} + 'd1);  // increment counter/timer - cast result to 2*RSZ bits before assigning
       else
          {nxt_mcsr.mcycle_hi,nxt_mcsr.mcycle_lo}   = {mcsr.mcycle_hi,mcsr.mcycle_lo};        // don't change
 
@@ -878,7 +879,7 @@ module csr_nxt_reg
       else if (csr_wr && (csr_addr == 12'hB82) && (mode == 3))
          {nxt_mcsr.minstret_hi,nxt_mcsr.minstret_lo}  = {csr_wr_data,mcsr.minstret_lo};
       else if (!mcsr.mcountinhibit[2])
-         {nxt_mcsr.minstret_hi,nxt_mcsr.minstret_lo}  = {mcsr.minstret_hi,mcsr.minstret_lo} + tot_retired;
+         {nxt_mcsr.minstret_hi,nxt_mcsr.minstret_lo}  = 2*RSZ ' ({mcsr.minstret_hi,mcsr.minstret_lo} + tot_retired);    // cast result to 2*RSZ bits before assigning
       else
          {nxt_mcsr.minstret_hi,nxt_mcsr.minstret_lo}  = {mcsr.minstret_hi,mcsr.minstret_lo}; // don't change
 
@@ -948,7 +949,7 @@ module csr_nxt_reg
                {mhpmcounter_hi[n], mhpmcounter_lo[n]} = {csr_wr_data,mcsr.mhpmcounter_lo[n]};
             else
                {mhpmcounter_hi[n], mhpmcounter_lo[n]}  = mcsr.mcountinhibit[n+3] ? {mcsr.mhpmcounter_hi[n], mcsr.mhpmcounter_lo[n]} :
-                                                                                                     {mcsr.mhpmcounter_hi[n], mcsr.mhpmcounter_lo[n]} + hpm_events[mcsr.mhpmevent[n]];
+                                                                                             2*RSZ ' ({mcsr.mhpmcounter_hi[n], mcsr.mhpmcounter_lo[n]} + hpm_events[mcsr.mhpmevent[n]]); // cast result to 2*RSZ bits before assigning
          end
       end
    endgenerate
