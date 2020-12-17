@@ -349,7 +349,7 @@ interface CSR_EXE_intf;
    logic                               interrupt_flag;   // 1 = take an interrupt trap
    logic                         [3:0] interrupt_cause;  // value specifying what type of interrupt
    `endif
-   logic                   [PC_SZ-1:0] trap_pc;          // Output:  trap vector handler address.
+   logic                   [PC_SZ-1:2] trap_pc;          // Output:  trap vector handler address. 4 byte alignment
    
    // signals from EXE stage - Note: partial pipeline flush will occur when xret == TRUE & PC reloads
    `ifdef ext_S
