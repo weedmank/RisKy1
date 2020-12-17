@@ -203,7 +203,7 @@ import cpu_params_pkg::*;
       logic                   interrupt_flag;   // 1 = take an interrupt trap
       logic             [3:0] interrupt_cause;  // value specifying what type of interrupt
       `endif
-      logic       [PC_SZ-1:0] trap_pc;          // Output:  trap vector handler address.
+      logic       [PC_SZ-1:2] trap_pc;          // Output:  trap vector handler address. 4 byte alignmen
 
       // GPR/FPR information (gets pased to MEM stage which passes it to WB stage)
       `ifdef ext_F
@@ -238,7 +238,7 @@ import cpu_params_pkg::*;
       logic                   interrupt_flag;   // 1 = take an interrupt trap
       logic             [3:0] interrupt_cause;  // value specifying what type of interrupt
       `endif
-      logic       [PC_SZ-1:0] trap_pc;          // Output:  trap vector handler address.
+      logic       [PC_SZ-1:2] trap_pc;          // Output:  trap vector handler address. 4 byte alignment
 
       // GPR/FPR information
       `ifdef ext_F
