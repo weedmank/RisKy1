@@ -43,7 +43,7 @@ module mode_irq
    `endif
    input    logic                mret,
 
-   output   logic    [PC_SZ-1:0] trap_pc,           // Output: trap vector handler address - connects to WB stage
+   output   logic    [PC_SZ-1:2] trap_pc,           // Output: trap vector handler address - connects to WB stage. minimum 2 byte alignment
    `ifdef ext_N
    output   logic                interrupt_flag,    // Output: 1 = take an interrupt trap - connects to WB stage
    output   logic          [3:0] interrupt_cause,   // Output: value specifying what type of interrupt - connects to WB stage
@@ -197,7 +197,7 @@ module mode_irq
 
    always_comb
    begin
-      trap_pc     = RESET_VECTOR_ADDR; // This should not get used. It should be set/overrriden by being set in code below to a valid location
+      trap_pc     = RESET_VECTOR_ADDR[PC_SZ-1:2]; // This should not get used. It should be set/overrriden by being set in code below to a valid location
 
       // defaults if no delegation
       cause       = mc;
@@ -292,11 +292,10 @@ module mode_irq
       else // default
          nxt_mode = mode;
 
-      trap_pc = {tvec[RSZ-1:2],2'b00};                      // default trap_pc
+      trap_pc = tvec[RSZ-1:2];                              // default trap_pc - 4 byte alignment (lower two bits not needed for passing this variable)
       `ifdef ext_N
       if ((nxt_mode > U_MODE) && interrupt_flag && (tvec[1:0] == 2'b01))   // Optional vectored interrupt support has been added to the mtvec and stvec CSRs. riscv_privileged.pdf p iii
-         //        BASE          +                    cause  * 4
-         trap_pc = tvec[RSZ-1:2] + { {RSZ-4-2{1'b0}}, cause, 2'b00 };
+         trap_pc = PC_SZ-2'(tvec[RSZ-1:2] + cause); // 4 byte aligment - since lower 2 bits are 0, no need to pass them
       `endif
    end
 endmodule
