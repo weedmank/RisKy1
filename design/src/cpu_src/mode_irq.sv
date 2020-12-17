@@ -80,7 +80,7 @@ module mode_irq
       `ifdef ext_S
       logic             spp;  // from mcsr.mstatus[8]
       `endif
-      
+
       // ---------------------- Interrupt Enable bits ----------------------
       // see Machine Mode Mie register 12'h304
       assign usie = mcsr.mie.usie;     // USIE - User       mode Software Interrupt Enable
@@ -172,7 +172,7 @@ module mode_irq
       else
          mode <= nxt_mode;
    end
-   
+
    //----------------------------------------------------------------------------------------------------------------------------------------
    //----------------------------------------------------------- Synchronous Exceptions -----------------------------------------------------
    //----------------------------------------------------------------------------------------------------------------------------------------
@@ -182,31 +182,29 @@ module mode_irq
    // Setting MODE=Vectored may impose a stricter alignment constraint on BASE.
    logic             [3:0] cause, mc;
    logic         [RSZ-1:0] tvec;
-   logic             [1:0] trap_mode;
-   
+
    assign mc = mcsr.mcause[3:0];
-   
+
    `ifdef ext_S
    logic          [3:0] sc;
    assign sc = scsr.scause[3:0];
    `endif // ext_S
-   
+
    `ifdef ext_U
    logic          [3:0] uc;
    assign uc = ucsr.ucause[3:0];
    `endif // ext_U
-   
+
    always_comb
    begin
-      
       trap_pc     = RESET_VECTOR_ADDR; // This should not get used. It should be set/overrriden by being set in code below to a valid location
 
       // defaults if no delegation
       cause       = mc;
       tvec        = mcsr.mtvec;        // default: H_MODE should never exist
-      
+
       nxt_mode    = mode;              // default unless code below changes it
-      
+
       // Traps that increase privilege level are termed vertical traps, while traps that remain at the same privilege level are termed
       // horizontal traps.The RISC-V privileged architecture provides flexible routing of traps to different privilege layers. p4 riscv-privileged.pdf
 
@@ -214,7 +212,7 @@ module mode_irq
       if (exception_flag)
       begin
          nxt_mode = M_MODE;   // default unless delegation occurs
-         
+
          // In systems with all three privilege modes (M/S/U), setting a bit in medeleg or mideleg will
          // delegate the corresponding trap in S-mode or U-mode to the S-mode trap handler. p. 28 - riscv-privileged.pdf
          `ifdef ext_S
@@ -249,11 +247,11 @@ module mode_irq
       else if (interrupt_flag)
       begin
          nxt_mode = M_MODE;   // default unless delegation occurs
-         
+
          // In systems with all three privilege modes (M/S/U), setting a bit in medeleg or mideleg will
          // delegate the corresponding trap in S-mode or U-mode to the S-mode trap handler. p. 28 - riscv-privileged.pdf
          `ifdef ext_S
-            `ifdef ext_U            
+            `ifdef ext_U
             if (mcsr.mideleg[mc] && ((mode == S_MODE) || (mode == U_MODE)) )
             begin
                cause    = sc;
@@ -294,24 +292,11 @@ module mode_irq
       else // default
          nxt_mode = mode;
 
-      case(nxt_mode)
-         S_MODE,M_MODE:    // Machine Mode.     see riscv-priviledged.pdf p. 27
-         begin
-            `ifdef ext_N
-            if (interrupt_flag && (tvec[1:0] == 2'b01))           // Optional vectored interrupt support has been added to the mtvec and stvec CSRs. riscv_privileged.pdf p iii
-               //        BASE          +                    cause  * 4
-               trap_pc = tvec[RSZ-1:2] + { {RSZ-4-2{1'b0}}, cause, 2'b00 };
-            else
-            `endif
-            trap_pc  = {tvec[RSZ-1:2],2'b00};
-         end
-
-         `ifdef ext_U
-         U_MODE:    // User Mode
-         begin
-            trap_pc = {tvec[RSZ-1:2],2'b00};
-         end
-         `endif
-      endcase
+      trap_pc = {tvec[RSZ-1:2],2'b00};                      // default trap_pc
+      `ifdef ext_N
+      if ((nxt_mode > U_MODE) && interrupt_flag && (tvec[1:0] == 2'b01))   // Optional vectored interrupt support has been added to the mtvec and stvec CSRs. riscv_privileged.pdf p iii
+         //        BASE          +                    cause  * 4
+         trap_pc = tvec[RSZ-1:2] + { {RSZ-4-2{1'b0}}, cause, 2'b00 };
+      `endif
    end
 endmodule
