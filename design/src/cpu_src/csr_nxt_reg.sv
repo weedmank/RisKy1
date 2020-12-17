@@ -66,8 +66,6 @@ module csr_nxt_reg
    output   MCSR                 nxt_mcsr          // all of the next Machine mode Control & Status Registers
 );
 
-    logic mpie, mie;
-
 //   //!!!!!!!!!!!!!!!!!!!! Mstatus Bits To Be Updated As Needed - be sure to change RO mask in csr.sv!!!!!!!!!!!!!!!!!!!!
 //   logic sd, tsr, tw, tvm, mxr, sum, mprv;
 //   logic [1:0] xs, fs, mpp;
