@@ -105,7 +105,7 @@ module csr
    assign csr_rd_bus.csr_rd_avail   = csr_rd_avail;
 
    // ----------------------------------- signals shared between csr.sv and EXE stage
-   logic                   [PC_SZ-1:0] trap_pc;             // Output:  trap vector handler address.
+   logic                   [PC_SZ-1:2] trap_pc;             // Output:  trap vector handler address.
    `ifdef ext_N
    logic                               interrupt_flag;      // 1 = take an interrupt trap
    logic                         [3:0] interrupt_cause;     // value specifying what type of interrupt
