@@ -142,18 +142,13 @@ module execute
    // --------------------------------- csr_exe_bus signal assignments
    // signals to csr.sv
    logic                   mret;
-   `ifdef ext_S
-   logic                   sret;
-   `endif
-   `ifdef ext_U
-   logic                   uret;
-   `endif
-
    assign csr_exe_bus.mret    = mret;
    `ifdef ext_S
+   logic                   sret;
    assign csr_exe_bus.sret    = sret;
    `endif
    `ifdef ext_U
+   logic                   uret;
    assign csr_exe_bus.uret    = uret;
    `endif
 
@@ -516,7 +511,8 @@ module execute
                         rld_pc_flag       = TRUE;
                         rld_pc_addr       = uepc;                                   // reload PC and flush pipeline
                      end
-                     uret  = TRUE;                                                  // notify csr.sv
+                     else
+                        uret  = TRUE;                                               // notify csr.sv
                   end
                   `endif // ext_U
 
@@ -530,7 +526,8 @@ module execute
                            rld_pc_flag       = TRUE;
                            rld_pc_addr       = sepc;                                // reload PC and flush pipeline
                         end
-                        sret  = TRUE;                                               // notify csr.sv
+                        else
+                           sret  = TRUE;                                            // notify csr.sv
                      end
                   end
                   `endif // ext_S
@@ -544,7 +541,8 @@ module execute
                            rld_pc_flag       = TRUE;                                // flush pipeline and reload new fetch address
                            rld_pc_addr       = mepc;                                // reload PC and flush pipeline
                         end
-                        mret  = TRUE;                                               // notify csr.sv
+                        else
+                           mret  = TRUE;                                            // notify csr.sv
                      end
                   end
 
