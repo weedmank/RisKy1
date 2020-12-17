@@ -180,7 +180,6 @@ module mem
       mem_dout.Rd_data                 = E2M_bus.data.Rd_data;
       mem_dout.mio_ack_fault           = FALSE;
 
-      // Note: All Exceptions are associated with trap_pc
       if (E2M_bus.valid)                                                            // should this instruction be processed by this stage?
       begin
          // signals to update Rd/Fd in WB stage
