@@ -32,7 +32,7 @@ module wb
    `ifdef ext_N
    output   logic                         trigger_wfi,                              // WFI instruction may trigger a CPU halt
    `endif
-   
+
    // Fetch PC reload signals
    output   logic                         rld_pc_flag,                              // Output:  Cause the Fetch unit to reload the PC
    output   logic                         rld_ic_flag,                              // Output:  A STORE to L1 D$ also wrote to L1 I$ address space
@@ -92,7 +92,7 @@ module wb
 
    logic             [1:0] mode;                                                    // CPU mode when this instruction was in EXE stage
    logic       [PC_SZ-1:0] trap_pc;                                                 // Output:  trap vector handler address.
-   `ifdef ext_N                                       
+   `ifdef ext_N
    logic                   interrupt_flag;                                          // 1 = take an interrupt trap
    logic             [3:0] interrupt_cause;                                         // value specifying what type of interrupt
    `endif
@@ -267,7 +267,7 @@ module wb
          end
          else
          `endif
-         unique case(ig_type)                                                       // select which functional unit output data is the appropriate one to process
+            case(ig_type)                                                           // select which functional unit output data is the appropriate one to process
             ILL_INSTR:
             begin
                rld_pc_flag             = TRUE;                                      // flush pipeline and reload new fetch address
@@ -428,9 +428,9 @@ module wb
                wb_Rd_data           = M2W_bus.data.Rd_data;                         // Data may be written into Rd register
 
                if (op_type inside {REM, REMU})
-                  current_events.ret_cnt[ID_RET] = 1'b1;                            // number of CSR instructions retiring this clock cycle
+                  current_events.ret_cnt[IR_RET] = 1'b1;                            // number of REM, REMU instructions retiring this clock cycle
                else
-                  current_events.ret_cnt[IR_RET] = 1'b1;                            // number of CSR instructions retiring this clock cycle
+                  current_events.ret_cnt[ID_RET] = 1'b1;                            // number of DIV, DIVUinstructions retiring this clock cycle
             end
             `endif // ext_M
 
