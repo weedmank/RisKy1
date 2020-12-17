@@ -111,7 +111,7 @@ module wb
    assign op_type             = M2W_bus.data.op_type;
    assign mio_ack_fault       = M2W_bus.data.mio_ack_fault;
    assign mode                = M2W_bus.data.mode;
-   assign trap_pc             = M2W_bus.data.trap_pc;
+   assign trap_pc             = {M2W_bus.data.trap_pc, 2'b00};
    `ifdef ext_N
    assign interrupt_flag      = M2W_bus.data.interrupt_flag;
    assign interrupt_cause     = M2W_bus.data.interrupt_cause;
