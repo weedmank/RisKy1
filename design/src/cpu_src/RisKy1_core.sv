@@ -207,7 +207,7 @@ module RisKy1_core
       if (MAX_GPR != 32)                                                      $warning("RISC-V compatible designs should set MAX_GPR = 32. See cpu_params.svh");
 
       if (SET_MCOUNTINHIBIT == 1)                                             $warning("Setting SET_MCOUNTINHIBIT == 1 forces CSR to read a constant value of SET_MCOUNTINHIBIT_BITS. See cpu_params.svh");
-      
+
       if (MTVEC_INIT & 2)                                                     $warning("MTVEC_INIT[1] is set.  Mode values >= 2 are Reserved. This bit will not be set");
       `ifdef ext_S
       if (STVEC_INIT & 2)                                                     $warning("STVEC_INIT[1] is set.  Mode values >= 2 are Reserved. This bit will not be set");
@@ -394,13 +394,6 @@ module RisKy1_core
    );
 
    // 3rd Stage = Execute Stage
-   `ifdef ext_U
-   logic uret;
-   `endif
-   `ifdef ext_S
-   logic sret;
-   `endif
-   logic mret;
 
    RCSR_intf csr_rd_bus();
 
