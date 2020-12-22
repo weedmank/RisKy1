@@ -199,7 +199,7 @@ module RisKy1_core
       `endif
    `endif
 
-   `ifndef VIVADO // silly Vivado 2019.2 is not IEEE1800-2009 compliant and thus can't handle the following compile time checks to make sure design is within bounds
+   `ifndef VIVADO // Vivado 2019.2 is not IEEE1800-2009 compliant and thus can't handle the following compile time checks to make sure design is within bounds
    generate
       `ifdef use_MHPM_CNTRS
       if (NUM_MHPM == 0)                                                      $error ("use_MHPM_CNTRS is defined but NUM_MHPM is still 0. Change NUM_MHPM value in cpu_params.svh");
@@ -208,14 +208,23 @@ module RisKy1_core
 
       if (SET_MCOUNTINHIBIT == 1)                                             $warning("Setting SET_MCOUNTINHIBIT == 1 forces CSR to read a constant value of SET_MCOUNTINHIBIT_BITS. See cpu_params.svh");
 
-      if (MTVEC_INIT & 2)                                                     $warning("MTVEC_INIT[1] is set.  Mode values >= 2 are Reserved. This bit will not be set");
+      if (MTVEC_INIT & 2)                                                     $warning("MTVEC_INIT[1] is set.  Mode values >= 2 are Reserved. This bit will be set to 0");
       `ifdef ext_S
-      if (STVEC_INIT & 2)                                                     $warning("STVEC_INIT[1] is set.  Mode values >= 2 are Reserved. This bit will not be set");
+      if (STVEC_INIT & 2)                                                     $warning("STVEC_INIT[1] is set.  Mode values >= 2 are Reserved. This bit will be set to 0");
       `endif
       `ifdef ext_U
-      if (UTVEC_INIT & 2)                                                     $warning("UTVEC_INIT[1] is set.  Mode values >= 2 are Reserved. This bit will not be set");
+      if (UTVEC_INIT & 2)                                                     $fatal("UTVEC_INIT[1] is set.  Mode values >= 2 are Reserved. Fix UTVEC_INIT[1]");
       `endif
 
+      if (MISA_MASK != 32'hFFFF_FFFF)                                         $fatal ("Currently, no logic is implemented to allow dynamic change of this register mask");
+
+      if (MEDLG_INIT[11] != FALSE)                                            $fatal ("medeleg[11] should be hardwired to 0. See p 29 riscv-privileged.pdf");
+      if (SEDLG_INIT[11:9] != 3'b0)                                           $fatal ("sedeleg[11:9] should be hardwired to 0. See p 29 riscv-privileged.pdf");
+      if (MEDLG_INIT & MEDLG_MASK)                                            $fatal ("An implementation shall not hardwaire any delegation bits to one. see p 28 riscv-privilege.pdf.\n See parameters MEDLG_INIT and MEDLG_MASK in cpu_params_pkg.sv");
+      if (MIDLG_INIT & MIDLG_MASK)                                            $fatal ("An implementation shall not hardwaire any delegation bits to one. see p 28 riscv-privilege.pdf.\n See parameters MIDLG_INIT and MIDLG_MASK in cpu_params_pkg.sv");
+      if (SEDLG_INIT & SEDLG_MASK)                                            $fatal ("An implementation shall not hardwaire any delegation bits to one. see p 28 riscv-privilege.pdf.\n See parameters SEDLG_INIT and SEDLG_MASK in cpu_params_pkg.sv");
+      if (SIDLG_INIT & SIDLG_MASK)                                            $fatal ("An implementation shall not hardwaire any delegation bits to one. see p 28 riscv-privilege.pdf.\n See parameters SIDLG_INIT and SIDLG_MASK in cpu_params_pkg.sv");
+      
       if ((Phys_Addr_Lo % 4) != 0)                                            $fatal ("Phys_Addr_Lo must be a multiple of 4. see cpu_params_pkg.sv");
       if ((Phys_Depth % 4) != 0)                                              $fatal ("Phys_Depth must be a multiple of 4. see cpu_params_pkg.sv");
 
@@ -320,12 +329,12 @@ module RisKy1_core
 
    logic                               mtime_lo_wr, mtime_hi_wr, mtimecmp_lo_wr, mtimecmp_hi_wr;
    logic                   [2*RSZ-1:0] mtime, mtimecmp;
-   logic                     [RSZ-1:0] msip_reg;
    logic                     [RSZ-1:0] mmr_wr_data;
 
    `ifdef ext_N
    logic                               msip_wr;
-   logic                               timer_irq, sw_irq;
+   logic                               timer_irq;
+   logic                               sw_irq;
    `endif
 
    // GPR signals
@@ -402,7 +411,10 @@ module RisKy1_core
       .clk_in(clk_in), .reset_in(reset_in),                                   // Inputs:  system clock and reset
 
       .cpu_halt(cpu_halt),                                                    // Input:   Cause the CPU to stop processing instructions and data
-
+      `ifdef ext_N
+      .sw_irq(sw_irq),                                                        // Input:   Software Interrupt Pending. used in csr_fu.sv. then passed on to MEM and WB/CSR
+      `endif
+      
       // signals shared between CSR and EXE stage
       .csr_exe_bus(csr_exe_bus),                                              // Input:   mepc,sepc,uepc,mert,sret,uret,mode
 
@@ -466,7 +478,6 @@ module RisKy1_core
       // Internal I/O Read Data - in case it's a Load instruction wanting to read the contents of the following registers
       .mtime(mtime),                                                          // Input:   contents of mtime register
       .mtimecmp(mtimecmp),                                                    // Input:   contents of mtimecmp register
-      .msip_reg(msip_reg),                                                    // Input:   contents of msip_reg register
 
       // misprediction signals
       .pipe_flush(pipe_flush_mem),                                            // Input:   1 = flush pipeline
@@ -533,7 +544,7 @@ module RisKy1_core
       .csr_wr_bus(csr_wr_bus),                                                // writes data to a specific CSR
 
       // signals from WB stage
-      .EV_EXC_bus(EV_EXC_bus)                                                 // master -> needed by CSR
+      .EV_EXC_bus(EV_EXC_bus)                                                 // master -> signals needed by CSR
    );
 
    csr CSREGS
@@ -543,16 +554,16 @@ module RisKy1_core
 
       `ifdef ext_N
       .ext_irq(ext_irq),                                                      // Input:   External Interrupt
-      .timer_irq(timer_irq),                                                  // Input:   Timer Interrupt from clint.sv
+      .timer_irq(timer_irq),                                                  // Input:   Timer & Software Interrupt from clint.sv
       `endif
 
       // signals shared between CSR and EXE stage
       .csr_exe_bus(csr_exe_bus),
 
       // signals from WB stage
-      .EV_EXC_bus(EV_EXC_bus),                                                // Input: needed by CSR logic
+      .EV_EXC_bus(EV_EXC_bus),                                                // Input:   signals needed by CSR logic
 
-      .mtime(mtime),                                                          // Input: mtime counter from irq module can be read through CSRs
+      .mtime(mtime),                                                          // Input:   mtime counter from irq module can be read through CSRs
 
       .csr_wr_bus(csr_wr_bus),                                                // slave <- Write port used by WB stage
 
@@ -602,8 +613,7 @@ module RisKy1_core
      .timer_irq(timer_irq), .sw_irq(sw_irq),                                  // Outputs: Timer and Software Interrupts (1 bit each)
      `endif
 
-     .mtime(mtime), .mtimecmp(mtimecmp),                                      // Outputs: 64 bit mtime & mtimecmp registers
-     .msip_reg(msip_reg)                                                      // Output:  Software Interrupt Pending register (1 bit)
+     .mtime(mtime), .mtimecmp(mtimecmp)                                       // Outputs: 64 bit mtime & mtimecmp registers
    );
 
    //---------------------------------------------------------------------------
