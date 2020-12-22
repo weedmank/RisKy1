@@ -67,6 +67,18 @@ import functions_pkg::*;
    // Power-up Reset Vector
    parameter   RESET_VECTOR_ADDR    = Phys_Addr_Lo;                  // Can be any address. Doesn't have to be Phys_Addr_Lo.  However, RESET_VECTOR_ADDR must be inside the Phys_Addr_xx range. See fetch.sv
 
+   // MEDELEG, SEDELEG, MIDELEG, SIDELEG - init values loaded into registers upon reset. _MASK defines read only bits
+   // Some exceptions cannot occur at less privileged modes, and corresponding x edeleg bits should be
+   // hardwired to zero. In particular, medeleg[11] and sedeleg[11:9] are all hardwired to zero.
+   parameter   MEDLG_INIT           = 32'h0000_0000;
+   parameter   MEDLG_MASK           = 32'h0000_0000;
+   parameter   MIDLG_INIT           = 32'h0000_0000;
+   parameter   MIDLG_MASK           = 32'h0000_0000;
+   parameter   SEDLG_INIT           = 32'h0000_0000;
+   parameter   SEDLG_MASK           = 32'h0000_0000;
+   parameter   SIDLG_INIT           = 32'h0000_0000;
+   parameter   SIDLG_MASK           = 32'h0000_0000;
+   
    // MTVEC, STVEC, UTVEC  - values loaded into registers upon reset. Note: MODE >= 2 is Reserved see p 27 risv-privileged.pdf
    parameter   MTVEC_INIT           = 32'h0000_0000;
    parameter   STVEC_INIT           = 32'h0000_0000;
@@ -93,6 +105,8 @@ import functions_pkg::*;
 // `define     PMP_ADDR0                                             //      tell code to generate pmpaddr0, pmpaddr9 and pmpaddr15 registers
 // `define     PMP_ADDR9
 // `define     PMP_ADDR15
+
+// `define     MM_MSIP                                               // create a memory mapped register for the MSIP bit of CSR MIP register
 
    // parameters related to Memory, L1 D$ and L1 I$
    parameter   CL_LEN   = 32; // cache line length in bytes
@@ -122,6 +136,8 @@ import functions_pkg::*;
    `endif
    ;//                         ZY XWVU TSRQ PONM LKJI HGFE DCBA
 
+   parameter   MISA_MASK = 32'hFFFF_FFFF; // each bit == 1 specifies Read Only. Currently, no logic is implemented to allow dynamic change of this register
+   
 // Options to add user enabled HINTs and RESERVEs.  See decode_core.sv
 // Logic related to each specific hint will need to be decoded and added to file execute.sv
 // Example: if "`define H_C_NOP" line below is uncommented then the C.NOP related HINT logic (in decode_core.sv) will be included during the RTL compile. The user will
