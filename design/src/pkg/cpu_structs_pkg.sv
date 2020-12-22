@@ -27,7 +27,7 @@ import cpu_params_pkg::*;
 
    typedef enum logic [2:0] {CSRRW=1,CSRRS,CSRRC,CSRRWI=5,CSRRSI,CSRRCI} CSR_TYPE;  // see funct3 bits in Zicsr table - riscv-spec.pdf p. 131
 
-   // ----------------------------------------------- Operation types -----------------------------------------------
+   // ------------------------------------- Operation types ---------------------------------------------------------
    // Note: size of field in DEC_2_EXE structure must be the largest size of SYS_OP_TYPE, ALU_OP_TYPE, or SPFP_OP_TYPE
    typedef enum logic [2:0] {ECALL, EBREAK, FENCE, FENCEI, WFI} SYS_OP_TYPE;
 
@@ -67,7 +67,7 @@ import cpu_params_pkg::*;
    localparam OP_SZ  = (OP3_SZ > SPFP_OP_SZ) ? OP3_SZ : SPFP_OP_SZ;
    `endif
 
-   // ----------------------------------------------- Selection types -----------------------------------------------
+   // ------------------------------------- Selection types ---------------------------------------------------------
    // ALU selection (i.e. sel_x or sel_y) is as follows
    typedef enum logic [1:0] {AM_RS1, AM_IMM, AM_RS2, AM_PC } ALU_SEL_TYPE;
 
@@ -83,13 +83,13 @@ import cpu_params_pkg::*;
       BR_SEL_TYPE    br_sel;
       SPFP_SEL_TYPE  spfp_sel;
    } SEL_TYPE;
-//------------------------------------------ structures initialized in fetch.sv -------------------------------------------
+   // ------------------------------------- structures initialized in fetch.sv --------------------------------------
    typedef struct packed {
       logic        [XLEN-1:0] instruction;
       logic       [PC_SZ-1:0] pc;
    } IP_Data;
 
-//------------------------------------------ Predecode data structure for fetch.sv ------------------------------------------
+   // ------------------------------------- Predecode data structure for fetch.sv -----------------------------------
    typedef struct packed {
       logic       [PC_SZ-1:0] addr;                // Branch prediction address for TAKEN or NOT_TAKEN
       logic                   is_br;               // 1 = this is a branch instruction
@@ -104,7 +104,7 @@ import cpu_params_pkg::*;
       IP_Data                 ipd;
       logic       [PC_SZ-1:0] predicted_addr;
    } FET_2_DEC;
-//------------------------------------------ structures initialized in decode.sv ------------------------------------------
+   // ------------------------------------- structures initialized in decode.sv -------------------------------------
    typedef struct packed {
       logic                   Fs1_rd;
       logic                   Fs2_rd;
@@ -256,7 +256,7 @@ import cpu_params_pkg::*;
       logic         [RSZ-1:0] csr_fwd_data;     // This data must used in forwarding, not csr_wr_data
    } MEM_2_WB;
 
-   // ********************************** Forwarding Info *********************************************
+   // *********************************************** Forwarding Info ***********************************************
    typedef struct packed {
       logic                   valid;
       logic                   Rd_wr;
