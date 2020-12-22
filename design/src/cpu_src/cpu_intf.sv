@@ -187,7 +187,10 @@ interface CSRFU_intf;
       logic         [RSZ-1:0] Rs1_data;
       logic             [2:0] funct3;
       logic             [1:0] mode;             // Current CPU mode: Machine, Supervisor, or Use
-
+      `ifdef ext_N
+      logic                   sw_irq;           // Software Interrupt Pending
+      `endif
+      
       logic                   csr_wr;
       logic                   csr_rd;
       logic         [RSZ-1:0] Rd_data;          // data for R[Rd]
@@ -196,9 +199,9 @@ interface CSRFU_intf;
       logic                   ill_csr_access;   // 1 = illegal csr access
       logic            [11:0] ill_csr_addr;
 
-      modport master (output csr_valid, csr_addr, csr_avail, csr_rd_data, Rd_addr, Rs1_addr, Rs1_data, funct3, mode,
+      modport master (output csr_valid, csr_addr, csr_avail, csr_rd_data, Rd_addr, Rs1_addr, Rs1_data, funct3, mode, `ifdef ext_N sw_irq, `endif
                       input  csr_wr, csr_rd, Rd_data, csr_wr_data, nxt_csr_rd_data, ill_csr_access, ill_csr_addr);
-      modport slave  (input  csr_valid, csr_addr, csr_avail, csr_rd_data, Rd_addr, Rs1_addr, Rs1_data, funct3, mode,
+      modport slave  (input  csr_valid, csr_addr, csr_avail, csr_rd_data, Rd_addr, Rs1_addr, Rs1_data, funct3, mode, `ifdef ext_N sw_irq, `endif
                       output csr_wr, csr_rd, Rd_data, csr_wr_data, nxt_csr_rd_data, ill_csr_access, ill_csr_addr);
 endinterface: CSRFU_intf
 
@@ -296,11 +299,12 @@ endinterface: L1DC_intf
 
 //------------------------ information shared betwee CSR Functional Unit and WB stage ------------------------
 interface EV_EXC_intf;
+      logic                   sw_irq;           // msip_reg[3] = Software Interrupt Pending - from EXE stage. see csr_fu.sv
       EXCEPTION               exception;
       EVENTS                  current_events;   // number of retired instructions for current clock cycle
 
-      modport master (output exception, current_events);
-      modport slave  (input  exception, current_events);
+      modport master (output `ifdef ext_N sw_irq, `endif exception, current_events);
+      modport slave  (input  `ifdef ext_N sw_irq, `endif exception, current_events);
 
 endinterface: EV_EXC_intf
 
