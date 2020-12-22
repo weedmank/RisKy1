@@ -87,6 +87,7 @@ module wb
    logic            [11:0] wb_csr_addr;
    logic         [RSZ-1:0] wb_csr_wr_data;
    logic         [RSZ-1:0] wb_csr_fwd_data;
+
    // misc
    logic                   xfer_in;
 
@@ -172,7 +173,6 @@ module wb
    assign EV_EXC_bus.current_events    = current_events;                            // number of retired instructions for current clock cycle
 
 
-
    //------------------- CPU Halt Logic ------------------
    `ifdef ext_N
    assign trigger_wfi = FALSE;      //!!!!!!!!!!!!!!!!! temporary !!!!!!!!!!!!!!!!!!!!
@@ -235,6 +235,10 @@ module wb
       wb_csr_addr       = '0;
       wb_csr_wr_data    = '0;
       wb_csr_fwd_data   = '0;
+
+      `ifdef ext_N
+      EV_EXC_bus.sw_irq = '0;                                                       // msip_reg[3] = Software Interrupt Pending - from EXE stage
+      `endif
 
       rld_pc_flag       = FALSE;
       rld_ic_flag       = FALSE;
@@ -546,6 +550,10 @@ module wb
                   wb_csr_addr             = M2W_bus.data.csr_addr;
                   wb_csr_wr_data          = M2W_bus.data.csr_wr_data;
                   wb_csr_fwd_data         = M2W_bus.data.csr_fwd_data;
+
+                  `ifdef ext_N
+                  EV_EXC_bus.sw_irq       = M2W_bus.data.sw_irq;                    // msip_reg[3] = Software Interrupt Pending - from EXE stage. see csr_fu.sv
+                  `endif
                end
 
                current_events.ret_cnt[CSR_RET] = 1'b1;                              // number of CSR instructions retiring this clock cycle
