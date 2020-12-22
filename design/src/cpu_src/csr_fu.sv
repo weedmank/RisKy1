@@ -30,22 +30,25 @@ module csr_fu
    CSRFU_intf.slave     csrfu_bus,
    CSR_NXT_intf.master  csr_nxt_bus
 );
-   logic                   csr_valid;                             // 1 = Read & Write from/to csr[csr_addr] will occur this clock cylce
-   logic            [11:0] csr_addr;                              // R/W address
-   logic     [GPR_ASZ-1:0] Rd_addr;                               // Rd address
-   logic     [GPR_ASZ-1:0] Rs1_addr;                              // Rs1 address
-   logic         [RSZ-1:0] Rs1_data;                              // Contents of R[rs1]
-   logic             [2:0] funct3;
-   logic             [1:0] mode;                                  // CPU mode: Machine, Supervisor, or User
+   logic                   csr_valid;                             // Input:   1 = Read & Write from/to csr[csr_addr] will occur this clock cylce
+   logic            [11:0] csr_addr;                              // Input:   R/W address
+   logic     [GPR_ASZ-1:0] Rd_addr;                               // Input:   Rd address
+   logic     [GPR_ASZ-1:0] Rs1_addr;                              // Input:   Rs1 address
+   logic         [RSZ-1:0] Rs1_data;                              // Input:   Contents of R[rs1]
+   logic             [2:0] funct3;                                  
+   logic             [1:0] mode;                                  // Input:   CPU mode: Machine, Supervisor, or User
+   `ifdef ext_N
+   logic                   sw_irq;                                // Input:   Software Interrupt Pending
+   `endif
 
-   logic                   csr_wr;
-   logic                   csr_rd;
-   logic                   csr_avail;
-   logic         [RSZ-1:0] csr_rd_data;
-   logic         [RSZ-1:0] Rd_data;                               // based on current CSR[csr_addr] and function to perform. This is the value to write into Destination Register Rd in WB stage
-   logic         [RSZ-1:0] csr_wr_data;                           // write data to csr[csr_addr]
-   logic         [RSZ-1:0] nxt_csr_rd_data;                       // data that will be in CSR[csr_addr] after write - may be different that data being written but it can be determined
-   logic                   ill_csr_access;                        // 1 = illegal csr access
+   logic                   csr_wr;                                // Output: 
+   logic                   csr_rd;                                // Output: 
+   logic                   csr_avail;                             // Output: 
+   logic         [RSZ-1:0] csr_rd_data;                           // Output: 
+   logic         [RSZ-1:0] Rd_data;                               // Output:  based on current CSR[csr_addr] and function to perform. This is the value to write into Destination Register Rd in WB stage
+   logic         [RSZ-1:0] csr_wr_data;                           // Output:  write data to csr[csr_addr]
+   logic         [RSZ-1:0] nxt_csr_rd_data;                       // Output:  data that will be in CSR[csr_addr] after write - may be different that data being written but it can be determined
+   logic                   ill_csr_access;                        // Output:  1 = illegal csr access
    logic            [11:0] ill_csr_addr;
 
    logic         [RSZ-1:0] imm_data;                              // immediate data
@@ -67,7 +70,10 @@ module csr_fu
    assign Rs1_data                     = csrfu_bus.Rs1_data;      // Input:   R[rs1]
    assign funct3                       = csrfu_bus.funct3;        // Input:   type of CSR R/W
    assign mode                         = csrfu_bus.mode;          // Input:   current CPU mode
-
+   `ifdef ext_N
+   assign sw_irq                       = csrfu_bus.sw_irq;        // Input:   Software Interrupt Pending
+   `endif
+   
    assign csrfu_bus.csr_wr             = csr_wr;                  // Output:   1 = write csr_wr_data to CSR[csr_addr]
    assign csrfu_bus.csr_rd             = csr_rd;                  // Output:   1 = read csr_rd_data from CSR[csr_addr]
    assign csrfu_bus.Rd_data            = Rd_data;                 // Output:  data, based on current CSR[csr_addr] and operation to perform, that will be written to Destination Register Rd in WB stage
@@ -114,10 +120,16 @@ module csr_fu
       writable    = (csr_addr[11:10] != 2'b11);          // read/write (00, 01, or 10) or read-only (11)
       lowest_priv = csr_addr[9:8];
 
+      // see riscv-spec.pdf p 54
       if (csr_valid)
       begin
-         // see riscv-spec.pdf p 54
-         case(funct3)   // synopsys parallel_case    {CSRRW,CSRRS,CSRRC,CSRRWI,CSRRSI,CSRRCI}
+         // When the SEIP bit is read with a CSRRW, CSRRS, or CSRRC instruction, the value returned in the
+         // rd destination register contains the logical-OR of the software writable bit and the interrupt
+         // signal from the interrupt controller. However, the value used in the read-modify-write sequence
+         // of a CSRRS or CSRRC instruction is only the software-writable SEIP bit, ignoring the interrupt
+         // value from the external interrupt controller. p. 30 riscv-privileged.pdf  see csr_fu.sv for implementation
+
+         case(funct3)   // {CSRRW,CSRRS,CSRRC,CSRRWI,CSRRSI,CSRRCI}
             CSRRW: // 1
             begin      // If rd=x0, then the instruction shall not read the CSR and shall not cause any of the side effects that might occur on a CSR read. riscv-spec p 53-54
                if (((mode < lowest_priv) || !csr_avail || !writable))
@@ -139,7 +151,14 @@ module csr_fu
                else
                begin
                   csr_rd = (Rd_addr != 0); // if Rd = X0, don't allow any "side affects" due to read
-                  if (csr_rd) Rd_data = csr_rd_data;
+                  if (csr_rd)
+                  begin
+                     Rd_data = csr_rd_data;
+                     `ifdef ext_N
+                     if (csr_addr == 12'h344)   // Machine Interrupt Pending register - Mip
+                        Rd_data |= {28'b0,sw_irq,3'b0};     // mip.????
+                     `endif
+                  end
                end
             end
             // For both CSRRS and CSRRC, if rs1=x0, then the instruction will not write to the CSR at all, and
