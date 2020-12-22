@@ -45,18 +45,12 @@ module mode_irq
 
    output   logic    [PC_SZ-1:2] trap_pc,           // Output: trap vector handler address - connects to WB stage. minimum 2 byte alignment
    `ifdef ext_N
+   input    logic                ext_irq,
    output   logic                interrupt_flag,    // Output: 1 = take an interrupt trap - connects to WB stage
    output   logic          [3:0] interrupt_cause,   // Output: value specifying what type of interrupt - connects to WB stage
    `endif
 
    // only a few of these CSR registers are needed by this module
-//   `ifdef ext_U
-//   UCSR_REG_intf                 ucsr,              // Input:   current register state of all the User Mode Control & Status Registers
-//   `endif
-//   `ifdef ext_S
-//   SCSR_REG_intf                 scsr,              // Input:   current register state of all the Supervisor Mode Control & Status Registers
-//   `endif
-//   MCSR_REG_intf                 mcsr               // Input:   current register state of all the Machine Mode Control & Status Registers
    `ifdef ext_U
    input var UCSR                  ucsr,              // Input:   current register state of all the User Mode Control & Status Registers
    `endif
@@ -69,6 +63,11 @@ module mode_irq
    //----------------------------------------------------------------------------------------------------------------------------------------
    //------------------------------------- "N" Standard Extension for User_Level Interrupts, Version 1.1 ------------------------------------
    //----------------------------------------------------------------------------------------------------------------------------------------
+
+   // Delegated interrupts result in the interrupt being masked at the delegator privilege level. For
+   // example, if the supervisor timer interrupt (STI) is delegated to S-mode by setting mideleg[5], STIs
+   // will not be taken when executing in M-mode. By contrast, if mideleg[5] is clear, STIs can be taken
+   // in any mode and regardless of current mode will transfer control to M-mode. p 28-29 <-------------- WARNING: Not implemented yet 12/19/2020 !!!!!!!!!!!!!!!!!!!!
 
    `ifdef ext_N
       logic          m_irq, s_irq, u_irq;
@@ -83,31 +82,35 @@ module mode_irq
 
       // ---------------------- Interrupt Enable bits ----------------------
       // see Machine Mode Mie register 12'h304
-      assign usie = mcsr.mie.usie;     // USIE - User       mode Software Interrupt Enable
-      assign ssie = mcsr.mie.ssie;     // SSIE - Supervisor mode Software Interrupt Enable
-      assign msie = mcsr.mie.msie;     // MSIE - Machine    mode Software Interrupt Enable
+      assign usie = mcsr.mie.usie;           // USIE - User       mode Software Interrupt Enable
+      assign ssie = mcsr.mie.ssie;           // SSIE - Supervisor mode Software Interrupt Enable
+      assign msie = mcsr.mie.msie;           // MSIE - Machine    mode Software Interrupt Enable
 
-      assign utie = mcsr.mie.utie;     // UTIE - User       mode Timer    Interrupt Enable
-      assign stie = mcsr.mie.stie;     // STIE - Supervisor mode Timer    Interrupt Enable
-      assign mtie = mcsr.mie.mtie;     // MTIE - Machine    mode Timer    Interrupt Enable
-                                       //
-      assign ueie = mcsr.mie.ueie;     // UEIE - User       mode External Interrupt Enable
-      assign seie = mcsr.mie.seie;     // SEIE - Supervisor mode External Interrupt Enable
-      assign meie = mcsr.mie.meie;     // MEIE - Machine    mode External Interrupt Enable
+      assign utie = mcsr.mie.utie;           // UTIE - User       mode Timer    Interrupt Enable
+      assign stie = mcsr.mie.stie;           // STIE - Supervisor mode Timer    Interrupt Enable
+      assign mtie = mcsr.mie.mtie;           // MTIE - Machine    mode Timer    Interrupt Enable
+                                             //
+      assign ueie = mcsr.mie.ueie;           // UEIE - User       mode External Interrupt Enable
+      assign seie = mcsr.mie.seie;           // SEIE - Supervisor mode External Interrupt Enable
+      assign meie = mcsr.mie.meie;           // MEIE - Machine    mode External Interrupt Enable
 
-      assign usip = mcsr.mip.usip;     // USIP - User       mode Software Interrupt Pending
-      assign ssip = mcsr.mip.ssip;     // SSIP - Supervisor mode Software Interrupt Pending
-      assign msip = mcsr.mip.msip;     // MSIP - Machine    mode Software Interrupt Pending
-
+      // ---------------------- Interrupt Pending bits ----------------------
       // see Machine Mode Mip register 12'h344
-      assign utip = mcsr.mip.utip;     // UTIP - User       mode Timer    Interrupt Pending
-      assign stip = mcsr.mip.stip;     // STIP - Supervisor mode Timer    Interrupt Pending
-      assign mtip = mcsr.mip.mtip;     // MTIP - Machine    mode Timer    Interrupt Pending
+      assign usip = mcsr.mip.usip;           // USIP - User       mode Software Interrupt Pending
+      assign ssip = mcsr.mip.ssip;           // SSIP - Supervisor mode Software Interrupt Pending
+      assign msip = mcsr.mip.msip;           // MSIP - Machine    mode Software Interrupt Pending
 
-      assign ueip = mcsr.mip.ueip;     // UEIP - User       mode External Interrupt Pending
-      assign seip = mcsr.mip.seip;     // SEIP - Supervisor mode External Interrupt Pending
-      assign meip = mcsr.mip.meip;     // MEIP - Machine    mode External Interrupt Pending
+      assign utip = mcsr.mip.utip;           // UTIP - User       mode Timer    Interrupt Pending
+      assign stip = mcsr.mip.stip;           // STIP - Supervisor mode Timer    Interrupt Pending
+      assign mtip = mcsr.mip.mtip;           // MTIP - Machine    mode Timer    Interrupt Pending
 
+      assign ueip = mcsr.mip.ueip;           // UEIP - User       mode External Interrupt Pending
+      // The logical-OR of the software-writable bit and the signal from the external interrupt
+      // controller is used to generate external interrupts to the supervisor. see p 30 riscv-privileged.pdf
+      assign seip = mcsr.mip.seip & ext_irq; // SEIP - Supervisor mode External Interrupt Pending
+      assign meip = mcsr.mip.meip;           // MEIP - Machine    mode External Interrupt Pending
+
+      // ---------------------- IRQs ----------------------
       assign m_irq = (msip & msie) | (mtip & mtie) | (meip & meie);  // any of the machine mode interrupts
       assign s_irq = (ssip & ssie) | (stip & stie) | (seip & seie);  // any of the supervisor mode interrupts
       assign u_irq = (usip & usie) | (utip & utie) | (ueip & ueie);  // any of the user mode interrupts
@@ -182,6 +185,7 @@ module mode_irq
    // Setting MODE=Vectored may impose a stricter alignment constraint on BASE.
    logic             [3:0] cause, mc;
    logic         [RSZ-1:0] tvec;
+   logic                   mdlg,sdlg;
 
    assign mc = mcsr.mcause[3:0];
 
@@ -199,86 +203,70 @@ module mode_irq
    begin
       trap_pc     = RESET_VECTOR_ADDR[PC_SZ-1:2]; // This should not get used. It should be set/overrriden by being set in code below to a valid location
 
+      // By default, all traps at any privilege level are handled in machine mode, though a machine-mode
+      // handler can redirect traps back to the appropriate level with the MRET instruction
+      nxt_mode    = mode;              // no change from last clock cycle, unless code below changes it
+
       // defaults if no delegation
       cause       = mc;
       tvec        = mcsr.mtvec;        // default: H_MODE should never exist
 
-      nxt_mode    = mode;              // default unless code below changes it
+      mdlg        = FALSE;             // default flag is that no delegation will take place
+      sdlg        = FALSE;
 
-      // Traps that increase privilege level are termed vertical traps, while traps that remain at the same privilege level are termed
-      // horizontal traps.The RISC-V privileged architecture provides flexible routing of traps to different privilege layers. p4 riscv-privileged.pdf
-
-      // Traps never transition from a more-privileged mode to a less-privileged mode.
-      if (exception_flag)
+      if (exception_flag)              // higher priority than interrupts
       begin
-         nxt_mode = M_MODE;   // default unless delegation occurs
-
-         // In systems with all three privilege modes (M/S/U), setting a bit in medeleg or mideleg will
-         // delegate the corresponding trap in S-mode or U-mode to the S-mode trap handler. p. 28 - riscv-privileged.pdf
-         `ifdef ext_S
-            `ifdef ext_U
-            if (mcsr.medeleg[mc] && ((mode == S_MODE) || (mode == U_MODE)) )
-            begin
-               cause    = sc;
-               tvec     = scsr.stvec;
-               nxt_mode = S_MODE;
-            end
-            if (scsr.sedeleg[mc] && (mode == U_MODE)) // see p. 28 riscv-privileged.pdf
-            begin
-               cause    = uc;
-               tvec     = ucsr.utvec;
-               nxt_mode = U_MODE;
-            end
-            `endif // ext_U
-         `else // !ext_S
-            // In systems with two privilege modes (M/U) and support for U-mode traps, setting a bit in medeleg or mideleg will
-            // delegate the corresponding trap in U-mode to the U-mode trap handler.
-            `ifdef ext_U
-            if (mcsr.medeleg[mc] && (mode == U_MODE))
-            begin
-               cause    = uc;
-               tvec     = ucsr.utvec;
-               nxt_mode = U_MODE;
-            end
-            `endif
-         `endif
+         nxt_mode = M_MODE;            // default unless delegation occurs
+         mdlg     = mcsr.medeleg[mc];  // Machine    delegation bit based on mcause
+         sdlg     = scsr.sedeleg[sc];  // Supervisor delegation bit based on scause
       end
       `ifdef ext_N
       else if (interrupt_flag)
       begin
-         nxt_mode = M_MODE;   // default unless delegation occurs
+         nxt_mode = M_MODE;            // default unless delegation occurs
+         mdlg     = mcsr.mideleg[mc];
+         sdlg     = scsr.sideleg[sc];
+      end
+      `endif
 
-         // In systems with all three privilege modes (M/S/U), setting a bit in medeleg or mideleg will
-         // delegate the corresponding trap in S-mode or U-mode to the S-mode trap handler. p. 28 - riscv-privileged.pdf
+      // Traps that increase privilege level are termed vertical traps, while traps that remain at the same privilege level are termed
+      // horizontal traps.The RISC-V privileged architecture provides flexible routing of traps to different privilege layers. p4 riscv-privileged.pdf
+
+      // Traps never transition from a more-privileged mode to a less-privileged mode. p.28
+      if (mdlg | sdlg)  // possible delegation?
+      begin
          `ifdef ext_S
             `ifdef ext_U
-            if (mcsr.mideleg[mc] && ((mode == S_MODE) || (mode == U_MODE)) )
+            // In systems with all three privilege modes (M/S/U), setting a bit in medeleg or mideleg will
+            // delegate the corresponding trap in S-mode or U-mode to the S-mode trap handler. p. 28 - riscv-privileged.pdf
+            if (mdlg && (mode <= S_MODE))
             begin
                cause    = sc;
                tvec     = scsr.stvec;
-               nxt_mode = S_MODE;
+               nxt_mode = S_MODE;   // will cause scsr.scause, scsr.sepc, and scsr.stval to be updated with exception information. see csr_nxt_reg.sv
             end
-            if (scsr.sideleg[mc] && (mode == U_MODE)) // see p. 28 riscv-privileged.pdf
+            // If U-mode traps are supported, S-mode may in turn set corresponding bits in the sedeleg and sideleg registers
+            // to delegate traps that occur in U-mode to the U-mode trap handler.  see p. 28 riscv-privileged.pdf
+            if (sdlg && (mode == U_MODE))
             begin
                cause    = uc;
                tvec     = ucsr.utvec;
-               nxt_mode = U_MODE;
+               nxt_mode = U_MODE;   // will cause ucsr.ucause, ucsr.uepc, and ucsr.utval to be updated with exception information. see csr_nxt_reg.sv
             end
             `endif // ext_U
          `else // !ext_S
             // In systems with two privilege modes (M/U) and support for U-mode traps, setting a bit in medeleg or mideleg will
             // delegate the corresponding trap in U-mode to the U-mode trap handler.
             `ifdef ext_U
-            if (mcsr.mideleg[mc] && (mode == U_MODE))
+            if (mdlg && (mode == U_MODE))
             begin
                cause    = uc;
                tvec     = ucsr.utvec;
-               nxt_mode = U_MODE;
+               nxt_mode = U_MODE;   // will cause ucsr.ucause, ucsr.uepc, and ucsr.utval to be updated with exception information. see csr_nxt_reg.sv
             end
             `endif
          `endif
       end
-      `endif // ext_N
       else if (mret)
          nxt_mode = mpp;                                    // "When executing an MRET instruction, supposing MPP holds the value y, ... the privilege mode is changed to y; ..."
       `ifdef ext_S
@@ -289,13 +277,11 @@ module mode_irq
       else if (uret)
          nxt_mode = 2'b00;                                  // "When executing an URET instruction, ... the privilege mode is changed to User; ..."
       `endif
-      else // default
-         nxt_mode = mode;
 
       trap_pc = tvec[RSZ-1:2];                              // default trap_pc - 4 byte alignment (lower two bits not needed for passing this variable)
       `ifdef ext_N
       if ((nxt_mode > U_MODE) && interrupt_flag && (tvec[1:0] == 2'b01))   // Optional vectored interrupt support has been added to the mtvec and stvec CSRs. riscv_privileged.pdf p iii
-         trap_pc = PC_SZ-2'(tvec[RSZ-1:2] + cause); // 4 byte aligment - since lower 2 bits are 0, no need to pass them
+         trap_pc = PC_SZ-2'(tvec[RSZ-1:2] + cause); // 4 byte aligment - since lower 2 bits are 0, no need to pass them. i.e logic [PC_SZ-1:2] trap_pc
       `endif
    end
 endmodule
