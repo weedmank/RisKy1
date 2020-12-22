@@ -73,6 +73,7 @@ module csr
 
    assign exception        = EV_EXC_bus.exception;
    assign current_events   = EV_EXC_bus.current_events;
+   assign sw_irq           = EV_EXC_bus.sw_irq;
 
    // ----------------------------------- csr_nxt_bus interface
    logic             nxt_csr_wr;
@@ -146,6 +147,7 @@ module csr
       `ifdef ext_N
       .ext_irq(ext_irq),
       .timer_irq(timer_irq),
+      .sw_irq(sw_irq),
       `endif
 
       .csr_addr(csr_wr_addr),                               // Input:   CSR write address
@@ -224,6 +226,7 @@ module csr
       `ifdef ext_N
       .ext_irq(ext_irq),
       .timer_irq(timer_irq),
+      .sw_irq(sw_irq),                                      // captured value of sw_irq in EXE stage (i.e. csr_fu.sv)
       `endif
 
       .csr_addr(nxt_csr_wr_addr),                           // Input:   CSR write address
@@ -294,6 +297,7 @@ module csr
 
       .trap_pc(trap_pc),                                    // Output:  needed in WB logic
       `ifdef ext_N
+      .ext_irq(ext_irq),
       .interrupt_flag(interrupt_flag),                      // Output:  needed in WB logic
       .interrupt_cause(interrupt_cause),                    // Output:  needed in WB logic
       `endif
@@ -313,19 +317,18 @@ module csr
    // 12'h000 = 12'b0000_0000_0000  ustatus     (read-write)  user mode
    //  31          22    21    20   19    18   17   16:15 14:13 12:11 10:9   8     7     6     5     4     3     2     1     0
    // {sd, 8'b0, 1'b0, 1'b0, 1'b0, mxr,  sum, 1'b0,   xs,   fs, 2'b0, 2'b0, 1'b0, 1'b0, 1'b0, 1'b0, upie, 1'b0, 1'b0, 1'b0, uie};
-
-   assign ucsr.ustatus = mcsr.mstatus & 32'h800D_E011;            // just a mask of the mstatus register
+   csr_std_wr #(0,12'h100,5,32'hFFFF_FFEE) Ustatus                (clk_in,reset_in, mode, TRUE, nxt_ucsr.ustatus, ucsr.ustatus); // only lower 5 bits implemented so far 12/21/2020
 
    `ifdef ext_N
    // ------------------------------ User Interrupt-Enable Register
    // 12'h004 = 12'b0000_0000_0100  uie                           (read-write)  user mode
-   csr_std_wr #(0,12'h004,RSZ) Uie                                (clk_in,reset_in, mode, TRUE, nxt_ucsr.uie, ucsr.uie);
+   csr_std_wr #(0,12'h004,RSZ,32'hFFFF_FEEE) Uie                  (clk_in,reset_in, mode, TRUE, nxt_ucsr.uie, ucsr.uie);
    `endif // ext_N
 
    // User Trap Handler Base address.
    // 12'h005 = 12'b0000_0000_0101  utvec                         (read-write)  user mode
    // Current design only allows MODE of 0 or 1 - thus bit 1 forced to retain it's reset value which is 0.
-   csr_std_wr #(UTVEC_INIT & ~32'd2,12'h005,RSZ,32'h0000_0002) Utvec (clk_in,reset_in, mode, TRUE, nxt_ucsr.utvec, ucsr.utvec);
+   csr_std_wr #(UTVEC_INIT,12'h005,RSZ,32'h0000_0002) Utvec       (clk_in,reset_in, mode, TRUE, nxt_ucsr.utvec, ucsr.utvec);
 
    // ------------------------------ User Trap Handling
    // Scratch register for user trap handlers.
@@ -349,7 +352,7 @@ module csr
    // 12'h044 = 12'b0000_0100_0100  uip                           (read-write)
    //        31:10   9     8         7:6   5     4         3:2   1     0
    // uip = {22'b0, 1'b0, nxt_ueip, 2'b0, 1'b0, nxt_utip, 2'b0, 1'b0, nxt_usip};
-   assign ucsr.uip = mcsr.mip & 32'h0000_0111;
+   csr_std_wr #(0,12'h044,9,32'hFFFF_FEEE) Uip                    (clk_in,reset_in, mode, TRUE, nxt_ucsr.uip, ucsr.uip);
    `endif
 
    `endif // ext_U
@@ -362,9 +365,11 @@ module csr
    // The sstatus register is a subset of the mstatus register. In a straightforward implementation,
    // reading or writing any field in sstatus is equivalent to reading or writing the homonymous field
    // in mstatus
-   // 12'h100 = 12'b0001_0000_0000  sstatus        (read-write)
-
-   assign scsr.sstatus = mcsr.mstatus & 32'h800D_E133; // just a mask of the mstatus register
+   // 12'h100 = 12'b0001_0000_0000  sstatus                       (read-write)
+   // 31 30:20 19    18  17   16:15   14:13   12:9 8   7    6   5    4    3:2  1   0
+   // SD WPRI  MXR   SUM WPRI XS[1:0] FS[1:0] WPRI SPP WPRI UBE SPIE UPIE WPRI SIE UIE
+   // 1  11    1     1   1    2       2       4    1   1    1   1    1    2    1   1
+   csr_std_wr #(0,12'h100,9,32'hFFFF_FECC) Sstatus                (clk_in,reset_in, mode, TRUE, nxt_scsr.sstatus, scsr.sstatus); // only lower 9 implemented so far 12/21/2020
 
    // In systems with S-mode, the  medeleg and mideleg registers must exist, whereas the sedeleg and sideleg registers should only
    // exist if the N extension for user-mode interrupts is also implemented. p 28 riscv-privileged
@@ -372,12 +377,12 @@ module csr
 
    // ------------------------------ Supervisor exception delegation register.
    // 12'h102 = 12'b0001_0000_0010  sedeleg                       (read-write)
-   csr_std_wr #(0,12'h102,RSZ) Sedeleg                            (clk_in,reset_in, mode, TRUE, nxt_scsr.sedeleg, scsr.sedeleg);
+   csr_std_wr #(SEDLG_INIT,12'h102,RSZ,SEDLG_MASK) Sedeleg        (clk_in,reset_in, mode, TRUE, nxt_scsr.sedeleg, scsr.sedeleg);
 
    `ifdef ext_N
    // ------------------------------ Supervisor interrupt delegation register.
    // 12'h103 = 12'b0001_0000_0011  sideleg                       (read-write)
-   csr_std_wr #(0,12'h103,RSZ) Sideleg                            (clk_in,reset_in, mode, TRUE, nxt_scsr.sideleg, scsr.sideleg);
+   csr_std_wr #(SIDLG_INIT,12'h103,RSZ,SIDLG_MASK) Sideleg        (clk_in,reset_in, mode, TRUE, nxt_scsr.sideleg, scsr.sideleg);
 
    // ------------------------------ Supervisor interrupt-enable register.
    // 12'h104 = 12'b0001_0000_0100  sie                           (read-write)
@@ -434,26 +439,13 @@ module csr
    //  31        22   21  20   19   18   17   16:15 14:13 12:11 10:9  8    7     6     5     4      3     2     1    0
    // {sd, 8'b0, tsr, tw, tvm, mxr, sum, mprv,   xs fs,   mpp,  2'b0, spp, mpie, 1'b0, spie, upie,  mie, 1'b0,  sie, uie};
 
-   // additional RO masks when no interrupt logic is used - determines if bits remain at reset INIT value = 0
-   `ifdef ext_N
-      parameter MSTAT_UMSK_IE = 32'h0;    // don't mask upie, uie bits in mstatus register
-   `else
-      parameter MSTAT_UMSK_IE = 32'h11;   // upie, uie bits are RO - remain at 0 (reset INIT value)
-   `endif
-   
-   `ifdef ext_N
-      parameter MSTAT_SMSK_IE = 32'h0;    // don't mask spp, spie, sie bits in mstatus register
-   `else
-      parameter MSTAT_SMSK_IE = 32'h122;  // spp, spie, sie bits are RO - remain at 0 (reset INIT value)
-   `endif
-
-   // register currently creates flops for bits 12:0
-// csr_std_wr #(0,12'h300,RSZ,(32'hFFFF_E644 | MSTAT_UMSK_IE | MSTAT_SMSK_IE)) Mstatus (clk_in,reset_in, mode, TRUE, nxt_mcsr.mstatus, mcsr.mstatus);
-   csr_std_wr #(0,12'h300,13,(13'h0644 | MSTAT_UMSK_IE | MSTAT_SMSK_IE)) Mstatus (clk_in,reset_in, mode, TRUE, nxt_mcsr.mstatus, mcsr.mstatus);
+   // register currently creates flops for bits 12:11,8,7,5,4,3,1,0
+   csr_std_wr #(0,12'h300,13,32'hFFFF_E644) Mstatus               (clk_in,reset_in, mode, TRUE, nxt_mcsr.mstatus, mcsr.mstatus); // only lower 13 bits implemented 12/21/2020
 
    // ------------------------------ Machine ISA Register
 
-   assign mcsr.misa     = nxt_mcsr.misa; // currently this is just a constant
+   // currently this is just a constant (all bits R0)
+   csr_std_wr #(MISA,12'h301,RSZ,MISA_MASK) Misa                  (clk_in,reset_in, mode, TRUE, nxt_mcsr.misa, mcsr.misa);
 
    // ------------------------------ Machine Delegation Registers
    // In systems with only M-mode and U-mode, the medeleg and mideleg registers should only be implemented if the N extension for user-mode interrupts is implemented.
@@ -462,22 +454,22 @@ module csr
    `ifdef ext_S // "In systems with S-mode, the medeleg and mideleg registers must exist,..." p. 28 riscv-privileged.pdf
       // Machine exception delegation register.
       // 12'h302 = 12'b0011_0000_0010  medeleg                    (read-write)
-      csr_std_wr #(0,12'h302,RSZ) Medeleg                         (clk_in,reset_in, mode, TRUE, nxt_mcsr.medeleg, mcsr.medeleg);
+      csr_std_wr #(MEDLG_INIT,12'h302,RSZ,MEDLG_MASK) Medeleg     (clk_in,reset_in, mode, TRUE, nxt_mcsr.medeleg, mcsr.medeleg);
 
       `ifdef ext_N
       // Machine interrupt delegation register.
       // 12'h303 = 12'b0011_0000_0011  mideleg                    (read-write)
-      csr_std_wr #(0,12'h303,RSZ) Mideleg                         (clk_in,reset_in, mode, TRUE, nxt_mcsr.mideleg, mcsr.mideleg);
+      csr_std_wr #(MIDLG_INIT,12'h303,RSZ,MIDLG_MASK) Mideleg     (clk_in,reset_in, mode, TRUE, nxt_mcsr.mideleg, mcsr.mideleg);
       `endif
    `elsif ext_U // In systems with only M-mode, or with both M-mode and U-mode but without U-mode trap support, the medeleg and mideleg registers should not exist.
       // Machine exception delegation register.
       // 12'h302 = 12'b0011_0000_0010  medeleg                    (read-write)
-      csr_std_wr #(0,12'h302,RSZ) Medeleg                         (clk_in,reset_in, mode, TRUE, nxt_mcsr.medeleg, mcsr.medeleg);
+      csr_std_wr #(MEDLG_INIT,12'h302,RSZ,MEDLG_MASK) Medeleg     (clk_in,reset_in, mode, TRUE, nxt_mcsr.medeleg, mcsr.medeleg);
 
       `ifdef ext_N
       // Machine interrupt delegation register.
       // 12'h303 = 12'b0011_0000_0011  mideleg                    (read-write)
-      csr_std_wr #(0,12'h303,RSZ) Mideleg                         (clk_in,reset_in, mode, TRUE, nxt_mcsr.mideleg, mcsr.mideleg);
+      csr_std_wr #(MIDLG_INIT,12'h303,RSZ,MIDLG_MASK) Mideleg     (clk_in,reset_in, mode, TRUE, nxt_mcsr.mideleg, mcsr.mideleg);
       `endif
    `endif
 
@@ -487,7 +479,7 @@ module csr
    //  31:12   11    10    9     8     7     6     5     4     3     2     1     0
    // {20'b0, meie, WPRI, seie, ueie, mtie, WPRI, stie, utie, msie, WPRI, ssie, usie};
    // Read Only bits of 32'hFFFF_F444;  // Note: bits 31:12, 10, 6, 2 are not writable and are "hardwired" to 0 (init value = 0 at reset)
-   csr_std_wr #(0,12'h304,RSZ,32'hFFFF_F444) Mie                  (clk_in,reset_in, mode, TRUE, nxt_mcsr.mie, mcsr.mie);
+   csr_std_wr #(0,12'h304,RSZ,32'hFFFF_F444)  Mie                 (clk_in,reset_in, mode, TRUE, nxt_mcsr.mie, mcsr.mie);
    `endif
 
    // ------------------------------ Machine Trap Handler Base Address
@@ -540,7 +532,12 @@ module csr
    // 12'h344 = 12'b0011_0100_0100  mip                           (read-write)  machine mode
    //  31:12   11    10    9     8     7     6     5     4     3     2     1     0
    // {20'b0, meip, 1'b0, seip, ueip, mtip, 1'b0, stip, utip, msip, 1'b0, ssip, usip};
-   csr_std_wr #(0,12'h344,RSZ,32'hFFFF_F444) Mip                  (clk_in,reset_in, mode, TRUE, nxt_mcsr.mip, mcsr.mip);
+   csr_std_wr #(0,12'h344,RSZ,32'hFFFF_FCCC) Mip                  (clk_in,reset_in, mode, TRUE, nxt_mcsr.mip, mcsr.mip);
+   // MEIP, MTIP, MSIP are read only. see p32 riscv-privileged-sail-draft.pdf
+   
+   // Only the bits corresponding to lower-privilege software interrupts (USIP, SSIP), timer interrupts
+   // (UTIP, STIP), and external interrupts (UEIP, SEIP) in mip are writable through this CSR address;
+   // the remaining bits are read-only. see p. 29 riscv-privileged.pdf
    `endif   // ext_N
 
 
