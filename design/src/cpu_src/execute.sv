@@ -29,6 +29,10 @@ module execute
    input    logic                         reset_in,
 
    input   logic                          cpu_halt,                        // Input:  cause CPU to stop processing instructions & data
+   
+   `ifdef ext_N
+   input    logic                         sw_irq,                          // Input:   msp_reg[3] = Software Interrupt Pending bit
+   `endif
 
    // signals shared between EXE stage and csr.sv
    CSR_EXE_intf.slave                     csr_exe_bus,
@@ -324,7 +328,10 @@ module execute
    assign csrfu_bus.Rs1_data        = Rs1D;                                   // contents of R[Rs1]
    assign csrfu_bus.funct3          = D2E_bus.data.funct3;
    assign csrfu_bus.mode            = mode;
-
+   `ifdef ext_N
+   assign csrfu_bus.sw_irq          = sw_irq;                                 // msip_reg[3] = Software Interrupt Pending bit
+   `endif
+   
    assign csr_fu_done = D2E_bus.valid & (ig_type == CSR_INSTR);               // This functional unit only takes 1 clock cycle
    // Control & Status Registers
    csr_fu CSRFU
