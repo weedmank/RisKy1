@@ -350,7 +350,7 @@ module csr_nxt_reg
                nxt_scsr.sstatus.sie = scsr.sstatus.sie;                 // don't change...
          `endif
 
-         // ------------------------------ Supervisor exception delegation register.
+         // ------------------------------ Supervisor exception delegation register
          // 12'h102 = 12'b0001_0000_0010  sedeleg                       (read-write)
          if (csr_wr && (csr_addr[8:0] == 9'h102))                       // writable in modes >= S_MODE
             nxt_scsr.sedeleg  = csr_wr_data;
@@ -358,7 +358,7 @@ module csr_nxt_reg
             nxt_scsr.sedeleg  = scsr.sedeleg;                           // don't change
 
          `ifdef ext_N
-            // ------------------------------ Supervisor interrupt delegation register.
+            // ------------------------------ Supervisor interrupt delegation register
             // 12'h103 = 12'b0001_0000_0011  sideleg                    (read-write)
             if (csr_wr && (csr_addr[8:0] == 9'h103))                    // writable in modes >= S_MODE
                nxt_scsr.sideleg  = csr_wr_data;
@@ -373,14 +373,14 @@ module csr_nxt_reg
                nxt_scsr.sie   = scsr.sie;                               // don't change
          `endif // ext_N
 
-         // ------------------------------ Supervisor trap handler base address.
+         // ------------------------------ Supervisor trap handler base address
          // 12'h105 = 12'b0001_0000_0101  stvec                         (read-write)
          if (csr_wr && (csr_addr[8:0] == 9'h105))                       // writable in modes >= S_MODE
             nxt_scsr.stvec = csr_wr_data;                               // see csr.sv - value written may be masked going into register
          else
             nxt_scsr.stvec = scsr.stvec;
 
-         // ------------------------------ Supervisor counter enable.
+         // ------------------------------ Supervisor Counter Enable
          // 12'h106 = 12'b0001_0000_0110  scounteren                    (read-write)
          if (csr_wr && (csr_addr[8:0] == 9'h106))                       // writable in modes >= S_MODE
             nxt_scsr.scounteren = csr_wr_data;
@@ -538,7 +538,7 @@ module csr_nxt_reg
          nxt_mcsr.mstatus.mie  = mcsr.mstatus.mie;  // keep current value
 
 
-      // -------------------------------------- MISA -------------------------------------
+      // -------------------------------------- Machine ISA Register
       // ISA and extensions
       // 12'h301 = 12'b0011_0000_0001  misa                          (read-write but currently Read Only)
       // NOTE: if made to be writable, don't allow bit  2 to change to 1 if ext_C not defined
@@ -565,9 +565,10 @@ module csr_nxt_reg
 
       //!!! NOTE: Don't yet know how to implement all the logic for medeleg and mideleg!!!
 
+      // -------------------------------------- Machine Delegation Registers
       `ifdef ext_S // "In systems with S-mode, the medeleg and mideleg registers must exist,..." p. 28 riscv-privileged.pdf
          // Machine exception delegation register
-         // 12'h302 = 12'b0011_0000_0010  medeleg                       (read-write)
+         // 12'h302 = 12'b0011_0000_0010  Medeleg                       (read-write)
          if (csr_wr && (csr_addr == 12'h302))                           // writable in M_MODE
             nxt_mcsr.medeleg  = csr_wr_data;
          else
@@ -575,7 +576,7 @@ module csr_nxt_reg
 
          `ifdef ext_N
             // Machine interrupt delegation register
-            // 12'h303 = 12'b0011_0000_0011  mideleg                    (read-write)
+            // 12'h303 = 12'b0011_0000_0011  Mideleg                    (read-write)
             if (csr_wr && (csr_addr == 12'h303))                        // writable in M_MODE
                nxt_mcsr.mideleg  = csr_wr_data;
             else
@@ -583,7 +584,7 @@ module csr_nxt_reg
          `endif
       `elsif ext_U
          // Machine exception delegation register
-         // 12'h302 = 12'b0011_0000_0010  medeleg                       (read-write)
+         // 12'h302 = 12'b0011_0000_0010  Medeleg                       (read-write)
          if (csr_wr && (csr_addr == 12'h302))                           // writable in M_MODE
             nxt_mcsr.medeleg  = csr_wr_data;
          else
@@ -591,7 +592,7 @@ module csr_nxt_reg
 
          `ifdef ext_N
             // Machine interrupt delegation register
-            // 12'h303 = 12'b0011_0000_0011  mideleg                    (read-write)
+            // 12'h303 = 12'b0011_0000_0011  Mideleg                    (read-write)
             if (csr_wr && (csr_addr == 12'h303))                        // writable in M_MODE
                nxt_mcsr.mideleg  = csr_wr_data;
             else
@@ -600,23 +601,23 @@ module csr_nxt_reg
       `endif // ext_U
 
       `ifdef ext_N
-         // ------------------------------ Machine interrupt-enable register
-         // 12'h304 = 12'b0011_0000_0100  mie                           (read-write)
+         // ------------------------------ Machine Interrupt Enable register
+         // 12'h304 = 12'b0011_0000_0100  Mie                           (read-write)
          if (csr_wr && (csr_addr == 12'h304))                           // writable in M_MODE
             nxt_mcsr.mie   = csr_wr_data;
          else
             nxt_mcsr.mie   = mcsr.mie;                                  // don't change
       `endif
 
-      // ------------------------------ Machine trap-handler base address
-      // 12'h305 = 12'b0011_0000_0101  mtvec                            (read-write)
+      // ------------------------------ Machine Trap-handler Base Address
+      // 12'h305 = 12'b0011_0000_0101  Mtvec                            (read-write)
       if (csr_wr & (csr_addr == 12'h305))                               // writable in M_MODE
          nxt_mcsr.mtvec = csr_wr_data;                                  // see csr.sv - value written may be masked going into register
       else
          nxt_mcsr.mtvec = mcsr.mtvec;                                   // don't change
 
-      // ------------------------------ Machine counter enable
-      // 12'h306 = 12'b0011_0000_0110  mcounteren                       (read-write)
+      // ------------------------------ Machine Counter Enable
+      // 12'h306 = 12'b0011_0000_0110  Mcounteren                       (read-write)
       if (csr_wr && (csr_addr == 12'h306))                              // writable in M_MODE
          nxt_mcsr.mcounteren = csr_wr_data;
       else
@@ -624,7 +625,7 @@ module csr_nxt_reg
 
       // ------------------------------ Machine Counter Setup
       // Machine Counter Inhibit  (if not implemented, set all bits to 0 => no inhibits will ocur)
-      // 12'h320 = 12'b0011_0010_00000  mcountinhibit                   (read-write)
+      // 12'h320 = 12'b0011_0010_00000  Mcountinhibit                   (read-write)
       if (reset_in)
          nxt_mcsr.mcountinhibit = (SET_MCOUNTINHIBIT == 1) ? SET_MCOUNTINHIBIT_BITS : 0;
       else if (csr_wr && (csr_addr == 12'h320))                         // writable in M_MODE
@@ -642,14 +643,14 @@ module csr_nxt_reg
 
       // ------------------------------ Machine Scratch register
       // Scratch register for machine trap handlers.
-      // 12'h340 = 12'b0011_0100_0000  mscratch                         (read-write)
+      // 12'h340 = 12'b0011_0100_0000  Mscratch                         (read-write)
       if (csr_wr && (csr_addr == 12'h340))                              // writable in M_MODE
          nxt_mcsr.mscratch = csr_wr_data;
       else
          nxt_mcsr.mscratch = mcsr.mscratch;                             // don't change
 
       // ------------------------------ Machine Exception Program Counter. Used by MRET instruction at end of Machine mode trap handler
-      // 12'h341 = 12'b0011_0100_0001  mepc                             (read-write)   see riscv-privileged p 36
+      // 12'h341 = 12'b0011_0100_0001  Mepc                             (read-write)   see riscv-privileged p 36
       if (reset_in)
          nxt_mcsr.mepc     =  '0;
       else if ((exception.flag) & (nxt_mode == M_MODE))
@@ -660,7 +661,7 @@ module csr_nxt_reg
          nxt_mcsr.mepc     = mcsr.mepc;                                 // don't change
 
       // ------------------------------ Machine Exception Cause
-      // 12'h342 = 12'b0011_0100_0010  mcause                           (read-write)
+      // 12'h342 = 12'b0011_0100_0010  Mcause                           (read-write)
       if (reset_in)
          nxt_mcsr.mcause   = 'b0;
       else if (exception.flag & (nxt_mode == M_MODE))
@@ -671,7 +672,7 @@ module csr_nxt_reg
          nxt_mcsr.mcause   = mcsr.mcause;                               // don't change
 
       // ------------------------------ Machine Exception Trap Value
-      // 12'h343 = 12'b0011_0100_0011  mtval                            (read-write)
+      // 12'h343 = 12'b0011_0100_0011  Mtval                            (read-write)
       //
       if (reset_in)
          nxt_mcsr.mtval    = 'b0;
@@ -683,8 +684,8 @@ module csr_nxt_reg
          nxt_mcsr.mtval    = mcsr.mtval;                                // don't change
 
       `ifdef ext_N
-         // ---------------------- Machine Interrupt Pending bits ----------------------
-         // 12'h344 = 12'b0011_0100_0100  mip                           (read-write)  machine mode
+         // ---------------------- Machine Interrupt Pending bits
+         // 12'h344 = 12'b0011_0100_0100  Mip                           (read-write)  machine mode
 
          // Only the bits corresponding to lower-privilege software interrupts (USIP, SSIP), timer interrupts
          // (UTIP, STIP), and external interrupts (UEIP, SEIP) in mip are writable through this CSR address;
@@ -949,19 +950,19 @@ module csr_nxt_reg
       // ------------------------------ Machine Information Registers
       // NOTE: These can be changed as needed. currently they are just constants
       // Vendor ID
-      // 12'hF11 = 12'b1111_0001_0001  mvendorid   (read-only)
+      // 12'hF11 = 12'b1111_0001_0001  Mvendorid   (read-only)
       nxt_mcsr.mvendorid = M_VENDOR_ID;
 
       // Architecture ID
-      // 12'hF12 = 12'b1111_0001_0010  marchid     (read-only)
+      // 12'hF12 = 12'b1111_0001_0010  Marchid     (read-only)
       nxt_mcsr.marchid  = M_ARCH_ID;
 
       // Implementation ID
-      // 12'hF13 = 12'b1111_0001_0011  mimpid      (read-only)
+      // 12'hF13 = 12'b1111_0001_0011  Mimpid      (read-only)
       nxt_mcsr.mimpid   = M_IMP_ID;
 
       // Hardware Thread ID
-      // 12'hF14 = 12'b1111_0001_0100  mhartid     (read-only)
+      // 12'hF14 = 12'b1111_0001_0100  Mhartid     (read-only)
       nxt_mcsr.mhartid  = M_HART_ID;
    end // always_comb
 
