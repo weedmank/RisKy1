@@ -169,7 +169,7 @@ module csr_nxt_reg
             else if (uret)
                nxt_ucsr.ustatus.upie  = 1'b1;
             else
-               nxt_ucsr.ustatus.upie  = ucsr.ustatus.upie;                          // don't change... get this from corresponding mstatus bit
+               nxt_ucsr.ustatus.upie  = ucsr.ustatus.upie;              // keep current value... get this from corresponding mstatus bit
 
             // p. 20 The xIE bits are located in the low-order bits of mstatus, allowing them to be atomically set
             //       or cleared with a single CSR instruction.
@@ -178,11 +178,11 @@ module csr_nxt_reg
             else if (exception.flag & (nxt_mode == U_MODE))
                nxt_ucsr.ustatus.uie  = 'd0;
             else if (uret)
-               nxt_ucsr.ustatus.uie  = ucsr.ustatus.upie;                           // "xIE is set to xPIE;"  p. 21 riscv-privileged.pdf
-            else if (csr_wr && (csr_addr[7:0] == 8'h00))                            // writable in all modes
-               nxt_ucsr.ustatus.uie  = csr_wr_data[0];
-            else
-               nxt_ucsr.ustatus.uie  = ucsr.ustatus.uie;                            // hold last value
+               nxt_ucsr.ustatus.uie  = ucsr.ustatus.upie;               // "xIE is set to xPIE;"  p. 21 riscv-privileged.pdf
+            else if (csr_wr && (csr_addr[7:0] == 8'h00))                // writable in all modes
+               nxt_ucsr.ustatus.uie  = csr_wr_data[0];      
+            else     
+               nxt_ucsr.ustatus.uie  = ucsr.ustatus.uie;                // hold last value
          `endif // ext_N
 
 
@@ -334,7 +334,7 @@ module csr_nxt_reg
             else if (sret)
                nxt_scsr.sstatus.spie = TRUE;                            // "xPIE is set to 1"
             else
-               nxt_scsr.sstatus.spie = scsr.sstatus.spie;               // don't change...
+               nxt_scsr.sstatus.spie = scsr.sstatus.spie;               // keep current value...
 
             // p. 20 The xIE bits are located in the low-order bits of mstatus, allowing them to be atomically set
             //       or cleared with a single CSR instruction.
@@ -347,7 +347,7 @@ module csr_nxt_reg
             else if (csr_wr && (csr_addr[8:0] == 9'h100))               // writable in M or S mode
                nxt_scsr.sstatus.sie = csr_wr_data[1];
             else
-               nxt_scsr.sstatus.sie = scsr.sstatus.sie;                 // don't change...
+               nxt_scsr.sstatus.sie = scsr.sstatus.sie;                 // keep current value...
          `endif
 
          // ------------------------------ Supervisor exception delegation register
@@ -355,7 +355,7 @@ module csr_nxt_reg
          if (csr_wr && (csr_addr[8:0] == 9'h102))                       // writable in modes >= S_MODE
             nxt_scsr.sedeleg  = csr_wr_data;
          else
-            nxt_scsr.sedeleg  = scsr.sedeleg;                           // don't change
+            nxt_scsr.sedeleg  = scsr.sedeleg;                           // keep current value
 
          `ifdef ext_N
             // ------------------------------ Supervisor interrupt delegation register
@@ -363,14 +363,14 @@ module csr_nxt_reg
             if (csr_wr && (csr_addr[8:0] == 9'h103))                    // writable in modes >= S_MODE
                nxt_scsr.sideleg  = csr_wr_data;
             else
-               nxt_scsr.sideleg  = scsr.sideleg;                        // don't change
+               nxt_scsr.sideleg  = scsr.sideleg;                        // keep current value
 
             // ------------------------------ Supervisor interrupt-enable register.
             // 12'h104 = 12'b0001_0000_0100  sie                        (read-write)
             if (csr_wr && (csr_addr[8:0] == 9'h104))                    // writable in modes >= S_MODE
                nxt_scsr.sie   = csr_wr_data;
             else
-               nxt_scsr.sie   = scsr.sie;                               // don't change
+               nxt_scsr.sie   = scsr.sie;                               // keep current value
          `endif // ext_N
 
          // ------------------------------ Supervisor trap handler base address
@@ -385,7 +385,7 @@ module csr_nxt_reg
          if (csr_wr && (csr_addr[8:0] == 9'h106))                       // writable in modes >= S_MODE
             nxt_scsr.scounteren = csr_wr_data;
          else
-            nxt_scsr.scounteren = scsr.scounteren;                      // don't change
+            nxt_scsr.scounteren = scsr.scounteren;                      // keep current value
 
          // ------------------------------ Supervisor Scratch register
          // Scratch register for supervisor trap handlers.
@@ -393,7 +393,7 @@ module csr_nxt_reg
          if (csr_wr && (csr_addr[8:0] == 9'h140))                       // writable in modes >= S_MODE
             nxt_scsr.sscratch = csr_wr_data;
          else
-            nxt_scsr.sscratch = scsr.sscratch;                          // don't change
+            nxt_scsr.sscratch = scsr.sscratch;                          // keep current value
 
          // ------------------------------ Supervisor Exception Program Counter
          // 12'h141 = 12'b0001_0100_0001  sepc                          (read-write)
@@ -404,7 +404,7 @@ module csr_nxt_reg
          else if (csr_wr && (csr_addr[8:0] == 9'h141))                  // writable in modes >= S_MODE
             nxt_scsr.sepc  = csr_wr_data;                               // Software settable  - low bit is always 0 (see csr.sv)
          else
-            nxt_scsr.sepc  = scsr.sepc;                                 // don't change
+            nxt_scsr.sepc  = scsr.sepc;                                 // keep current value
 
          // ------------------------------ Supervisor Exception Cause
          // 12'h142 = 12'b0001_0100_0010  scause                        (read-write)
@@ -415,7 +415,7 @@ module csr_nxt_reg
          else if (csr_wr && (csr_addr[8:0] == 9'h142))                  // writable in modes >= S_MODE
             nxt_scsr.scause   = csr_wr_data[3:0];                       // Sotware settable - currently scause is only 4 bits wide
          else
-            nxt_scsr.scause   = scsr.scause;                            // don't change
+            nxt_scsr.scause   = scsr.scause;                            // keep current value
 
 
          // ------------------------------ Supervisor Exception Trap Value                            see riscv-privileged p. 38-39
@@ -427,7 +427,7 @@ module csr_nxt_reg
          else if (csr_wr && (csr_addr[8:0] == 9'h143))                  // writable in modes >= S_MODE
             nxt_scsr.stval    = csr_wr_data;                            // Sotware settable
          else
-            nxt_scsr.stval    = scsr.stval;                             // don't change
+            nxt_scsr.stval    = scsr.stval;                             // keep current value
 
          `ifdef ext_N
             // ------------------------------ Supervisor Interrupt Pending
@@ -483,7 +483,7 @@ module csr_nxt_reg
          if (csr_wr && (csr_addr[8:0] == 9'h180))                       // writable in modes >= S_MODE
             nxt_scsr.satp = csr_wr_data;
          else
-            nxt_scsr.satp = scsr.satp;                                  // don't change
+            nxt_scsr.satp = scsr.satp;                                  // keep current value
       `endif // ext_S
 
       // ==================================================================== Machine Mode Registers =================================================================
@@ -538,7 +538,7 @@ module csr_nxt_reg
          nxt_mcsr.mstatus.mie  = mcsr.mstatus.mie;  // keep current value
 
 
-      // -------------------------------------- Machine ISA Register
+      // ------------------------------ Machine ISA Register
       // ISA and extensions
       // 12'h301 = 12'b0011_0000_0001  misa                          (read-write but currently Read Only)
       // NOTE: if made to be writable, don't allow bit  2 to change to 1 if ext_C not defined
@@ -565,14 +565,14 @@ module csr_nxt_reg
 
       //!!! NOTE: Don't yet know how to implement all the logic for medeleg and mideleg!!!
 
-      // -------------------------------------- Machine Delegation Registers
+      // ------------------------------ Machine Delegation Registers
       `ifdef ext_S // "In systems with S-mode, the medeleg and mideleg registers must exist,..." p. 28 riscv-privileged.pdf
          // Machine exception delegation register
          // 12'h302 = 12'b0011_0000_0010  Medeleg                       (read-write)
          if (csr_wr && (csr_addr == 12'h302))                           // writable in M_MODE
             nxt_mcsr.medeleg  = csr_wr_data;
          else
-            nxt_mcsr.medeleg  = mcsr.medeleg;                           // don't change
+            nxt_mcsr.medeleg  = mcsr.medeleg;                           // keep current value
 
          `ifdef ext_N
             // Machine interrupt delegation register
@@ -580,7 +580,7 @@ module csr_nxt_reg
             if (csr_wr && (csr_addr == 12'h303))                        // writable in M_MODE
                nxt_mcsr.mideleg  = csr_wr_data;
             else
-               nxt_mcsr.mideleg  = mcsr.mideleg;                        // don't change
+               nxt_mcsr.mideleg  = mcsr.mideleg;                        // keep current value
          `endif
       `elsif ext_U
          // Machine exception delegation register
@@ -588,7 +588,7 @@ module csr_nxt_reg
          if (csr_wr && (csr_addr == 12'h302))                           // writable in M_MODE
             nxt_mcsr.medeleg  = csr_wr_data;
          else
-            nxt_mcsr.medeleg  = mcsr.medeleg;                           // don't change
+            nxt_mcsr.medeleg  = mcsr.medeleg;                           // keep current value
 
          `ifdef ext_N
             // Machine interrupt delegation register
@@ -596,7 +596,7 @@ module csr_nxt_reg
             if (csr_wr && (csr_addr == 12'h303))                        // writable in M_MODE
                nxt_mcsr.mideleg  = csr_wr_data;
             else
-               nxt_mcsr.mideleg  = mcsr.mideleg;                        // don't change
+               nxt_mcsr.mideleg  = mcsr.mideleg;                        // keep current value
          `endif // ext_N
       `endif // ext_U
 
@@ -606,7 +606,7 @@ module csr_nxt_reg
          if (csr_wr && (csr_addr == 12'h304))                           // writable in M_MODE
             nxt_mcsr.mie   = csr_wr_data;
          else
-            nxt_mcsr.mie   = mcsr.mie;                                  // don't change
+            nxt_mcsr.mie   = mcsr.mie;                                  // keep current value
       `endif
 
       // ------------------------------ Machine Trap-handler Base Address
@@ -614,14 +614,14 @@ module csr_nxt_reg
       if (csr_wr & (csr_addr == 12'h305))                               // writable in M_MODE
          nxt_mcsr.mtvec = csr_wr_data;                                  // see csr.sv - value written may be masked going into register
       else
-         nxt_mcsr.mtvec = mcsr.mtvec;                                   // don't change
+         nxt_mcsr.mtvec = mcsr.mtvec;                                   // keep current value
 
       // ------------------------------ Machine Counter Enable
       // 12'h306 = 12'b0011_0000_0110  Mcounteren                       (read-write)
       if (csr_wr && (csr_addr == 12'h306))                              // writable in M_MODE
          nxt_mcsr.mcounteren = csr_wr_data;
       else
-         nxt_mcsr.mcounteren = mcsr.mcounteren;                         // don't change
+         nxt_mcsr.mcounteren = mcsr.mcounteren;                         // keep current value
 
       // ------------------------------ Machine Counter Setup
       // Machine Counter Inhibit  (if not implemented, set all bits to 0 => no inhibits will ocur)
@@ -631,7 +631,7 @@ module csr_nxt_reg
       else if (csr_wr && (csr_addr == 12'h320))                         // writable in M_MODE
          nxt_mcsr.mcountinhibit = csr_wr_data;
       else
-         nxt_mcsr.mcountinhibit = mcsr.mcountinhibit;                   // don't change
+         nxt_mcsr.mcountinhibit = mcsr.mcountinhibit;                   // keep current value
 
       `ifdef use_MHPM
          // ------------------------------ Machine Hardware Performance-Monitoring Event selectors
@@ -647,7 +647,7 @@ module csr_nxt_reg
       if (csr_wr && (csr_addr == 12'h340))                              // writable in M_MODE
          nxt_mcsr.mscratch = csr_wr_data;
       else
-         nxt_mcsr.mscratch = mcsr.mscratch;                             // don't change
+         nxt_mcsr.mscratch = mcsr.mscratch;                             // keep current value
 
       // ------------------------------ Machine Exception Program Counter. Used by MRET instruction at end of Machine mode trap handler
       // 12'h341 = 12'b0011_0100_0001  Mepc                             (read-write)   see riscv-privileged p 36
@@ -658,7 +658,7 @@ module csr_nxt_reg
       else if (csr_wr && (csr_addr == 12'h341))                         // writable in M_MODE
          nxt_mcsr.mepc     = csr_wr_data;                               // Software settable - low bit is always 0 (see csr.sv)
       else
-         nxt_mcsr.mepc     = mcsr.mepc;                                 // don't change
+         nxt_mcsr.mepc     = mcsr.mepc;                                 // keep current value
 
       // ------------------------------ Machine Exception Cause
       // 12'h342 = 12'b0011_0100_0010  Mcause                           (read-write)
@@ -669,7 +669,7 @@ module csr_nxt_reg
       else if (csr_wr && (csr_addr == 12'h342))                         // writable in M_MODE
          nxt_mcsr.mcause   = csr_wr_data[3:0];                          // Sotware settable - currently mcause is only 4 bits wide
       else
-         nxt_mcsr.mcause   = mcsr.mcause;                               // don't change
+         nxt_mcsr.mcause   = mcsr.mcause;                               // keep current value
 
       // ------------------------------ Machine Exception Trap Value
       // 12'h343 = 12'b0011_0100_0011  Mtval                            (read-write)
@@ -681,10 +681,10 @@ module csr_nxt_reg
       else if (csr_wr && (csr_addr == 12'h343))                         // writable in M_MODE
          nxt_mcsr.mtval    = csr_wr_data;                               // Sotware settable
       else
-         nxt_mcsr.mtval    = mcsr.mtval;                                // don't change
+         nxt_mcsr.mtval    = mcsr.mtval;                                // keep current value
 
       `ifdef ext_N
-         // ---------------------- Machine Interrupt Pending bits
+         // ------------------------------ Machine Interrupt Pending bits
          // 12'h344 = 12'b0011_0100_0100  Mip                           (read-write)  machine mode
 
          // Only the bits corresponding to lower-privilege software interrupts (USIP, SSIP), timer interrupts
@@ -726,7 +726,7 @@ module csr_nxt_reg
          if (csr_wr && (csr_addr == 12'h3A0))                           // writable in M_MODE
             nxt_mcsr.pmpcfg0 = csr_wr_data;
          else
-            nxt_mcsr.pmpcfg0 = mcsr.pmpcfg0;                            // don't change
+            nxt_mcsr.pmpcfg0 = mcsr.pmpcfg0;                            // keep current value
 
          // 12'h3A1 = 12'b0011_1010_0001  pmpcfg1                       (read-write)
          if (csr_wr && (csr_addr == 12'h3A1))                           // writable in M_MODE
@@ -852,29 +852,29 @@ module csr_nxt_reg
          if (csr_wr && (csr_addr == 12'h7A0))                           // writable in M_MODE
             nxt_mcsr.tselect     = csr_wr_data;                         // change Trigger Select Register
          else
-            nxt_mcsr.tselect     = mcsr.tselect;                        // don't change
+            nxt_mcsr.tselect     = mcsr.tselect;                        // keep current value
 
          if (csr_wr && (csr_addr == 12'h7A1))                           // writable in M_MODE
             nxt_mcsr.tdata1      = csr_wr_data;                         // change Trigger Data Register 1
          else
-            nxt_mcsr.tdata1      = mcsr.tdata1;                         // don't change
+            nxt_mcsr.tdata1      = mcsr.tdata1;                         // keep current value
 
          if (csr_wr && (csr_addr == 12'h7A2))                           // writable in M_MODE
             nxt_mcsr.tdata2      = csr_wr_data;                         // change Trigger Data Register 2
          else
-            nxt_mcsr.tdata2      = mcsr.tdata2;                         // don't change
+            nxt_mcsr.tdata2      = mcsr.tdata2;                         // keep current value
 
          if (csr_wr && (csr_addr == 12'h7A3))                           // writable in M_MODE
             nxt_mcsr.tdata3      = csr_wr_data;                         // change Trigger Data Register 3
          else
-            nxt_mcsr.tdata3      = mcsr.tdata3;                         // don't change
+            nxt_mcsr.tdata3      = mcsr.tdata3;                         // keep current value
 
          // ------------------------------ Debug Mode Registers (dcsr,dpc,dscratch0,dscatch1)
          // "0x7B0–0x7BF are only visible to debug mode" p. 6 riscv-privileged.pdf
          if (csr_wr && (csr_addr == 12'h7B0) & Dbg_mode)                // writable in Debug MODE
             nxt_mcsr.dcsr        = csr_wr_data;                         // change Debug Control and Status Register
          else
-            nxt_mcsr.dcsr        = mcsr.dcsr;                           // don't change
+            nxt_mcsr.dcsr        = mcsr.dcsr;                           // keep current value
 
          if (csr_wr && (csr_addr == 12'h7B1) & Dbg_mode)                // writable in Debug MODE
             nxt_mcsr.dpc         = csr_wr_data;                         // change Debug PC Register
@@ -912,7 +912,7 @@ module csr_nxt_reg
       else if (!mcsr.mcountinhibit[0])
          {nxt_mcsr.mcycle_hi,nxt_mcsr.mcycle_lo}   = 2*RSZ ' ({mcsr.mcycle_hi,mcsr.mcycle_lo} + 'd1);  // increment counter/timer - cast result to 2*RSZ bits before assigning
       else
-         {nxt_mcsr.mcycle_hi,nxt_mcsr.mcycle_lo}   = {mcsr.mcycle_hi,mcsr.mcycle_lo};        // don't change
+         {nxt_mcsr.mcycle_hi,nxt_mcsr.mcycle_lo}   = {mcsr.mcycle_hi,mcsr.mcycle_lo};        // keep current value
 
       // ------------------------------ Machine Instructions-Retired Counter
       // The time CSR is a read-only shadow of the memory-mapped mtime register.                                                                               p 34 riscv-priviliged.pdf
@@ -932,7 +932,7 @@ module csr_nxt_reg
       else if (!mcsr.mcountinhibit[2])
          {nxt_mcsr.minstret_hi,nxt_mcsr.minstret_lo}  = 2*RSZ ' ({mcsr.minstret_hi,mcsr.minstret_lo} + tot_retired);    // cast result to 2*RSZ bits before assigning
       else
-         {nxt_mcsr.minstret_hi,nxt_mcsr.minstret_lo}  = {mcsr.minstret_hi,mcsr.minstret_lo}; // don't change
+         {nxt_mcsr.minstret_hi,nxt_mcsr.minstret_lo}  = {mcsr.minstret_hi,mcsr.minstret_lo}; // keep current value
 
       `ifdef use_MHPM
          // ------------------------------ Machine Hardware Performance-Monitoring Counters
@@ -982,7 +982,7 @@ module csr_nxt_reg
             else if (csr_wr && (csr_addr == 12'h323+n))                 // writable in M_MODE
                mhpmevent[n]    = csr_wr_data[EV_SEL_SZ-1:0];            // write to this event register to change which event is selected
             else
-               mhpmevent[n]    = mcsr.mhpmevent[n];                     // don't change it
+               mhpmevent[n]    = mcsr.mhpmevent[n];                     // keep current value it
 
             // Machine hardware performance-monitoring counters
             // increment mhpmcounter[] if the Event Selector is not 0 and the corresponding mcountinhibit[] bit is not set.

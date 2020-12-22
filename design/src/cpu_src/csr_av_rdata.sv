@@ -84,7 +84,7 @@ module csr_av_rdata
          end
          `endif // ext_N
 
-         // User Trap Handler Base address.
+         // ------------------------------ User Trap Handler Base address
          // 12'h005 = 12'b0000_0000_0101  utvec       (read-write)  user mode
          12'h005:
          begin
@@ -101,7 +101,7 @@ module csr_av_rdata
             csr_rd_data    = ucsr.uscratch;
          end
 
-         // User exception program counter.
+         // ------------------------------ User Exception Program Counter
          // 12'h041 = 12'b0000_0100_0001  uepc        (read-write)
          12'h041:
          begin
@@ -109,7 +109,7 @@ module csr_av_rdata
             csr_rd_data    = ucsr.uepc & (is_IALIGN16 ? ~32'h1 : ~32'h3); // bit 1 is masked when read when is_IALIGN16 == FALSE (32 bit alignment)
          end
 
-         // User exception program counter.
+         // ------------------------------ User Exception Cause
          // 12'h042 = 12'b0000_0100_0010  ucause      (read-write)
          12'h042:
          begin
@@ -117,7 +117,7 @@ module csr_av_rdata
             csr_rd_data    = ucsr.ucause;
          end
 
-         // User bad address or instruction.
+         // ------------------------------ User Trap Value = bad address or instruction
          // 12'h043 = 12'b0000_0100_0011  utval       (read-write)
          12'h043:
          begin
@@ -126,7 +126,7 @@ module csr_av_rdata
          end
 
          `ifdef ext_N
-         // User interrupt pending.
+         // ------------------------------ User Interrupt Pending.
          // 12'h044 = 12'b0000_0100_0100  uip         (read-write)
          12'h044:
          begin
@@ -150,7 +150,7 @@ module csr_av_rdata
             csr_rd_data    = scsr.sstatus;   // see this in csr.sv
          end
 
-         // ------------------------------ Supervisor exception delegation register.
+         // ------------------------------ Supervisor Exception Delegation Register.
          // 12'h102 = 12'b0001_0000_0010  sedeleg     (read-write)
          12'h102:
          begin
@@ -159,7 +159,7 @@ module csr_av_rdata
          end
 
          `ifdef ext_N
-         // ------------------------------ Supervisor interrupt delegation register.
+         // ------------------------------ Supervisor Interrupt Delegation Register.
          // 12'h103 = 12'b0001_0000_0011  sideleg     (read-write)
          12'h103:
          begin
@@ -167,7 +167,7 @@ module csr_av_rdata
             csr_rd_data    = scsr.sideleg;
          end
 
-         // ------------------------------ Supervisor interrupt-enable register.
+         // ------------------------------ Supervisor Interrupt Enable Register.
          // 12'h104 = 12'b0001_0000_0100  sie         (read-write)
          12'h104:
          begin
@@ -176,7 +176,7 @@ module csr_av_rdata
          end
          `endif // ext_N
 
-         // ------------------------------ Supervisor trap handler base address.
+         // ------------------------------ Supervisor Trap handler base address.
          // 12'h105 = 12'b0001_0000_0101  stvec       (read-write)
          // Only MODE values of 0 or 1 - thus bit 1 forced to 0 below. Also lower 2 bit's of BASE (bits 3,2) must be 0
          12'h105:
@@ -185,7 +185,7 @@ module csr_av_rdata
             csr_rd_data    = scsr.stvec;
          end
 
-         // ------------------------------ Supervisor counter enable.
+         // ------------------------------ Supervisor Counter Enable.
          // 12'h106 = 12'b0001_0000_0110  scounteren  (read-write)
          12'h106:
          begin
@@ -193,7 +193,7 @@ module csr_av_rdata
             csr_rd_data    = scsr.scounteren;
          end      // see csr_rd_cntr_tmr.svh
 
-         // ------------------------------ Supervisor Trap Handling
+         // ------------------------------ Supervisor Scratch Register
          // Scratch register for supervisor trap handlers.
          // 12'h140 = 12'b0001_0100_0000  sscratch    (read-write)
          12'h140:
@@ -202,7 +202,7 @@ module csr_av_rdata
             csr_rd_data    = scsr.sscratch;
          end
 
-         // ------------------------------ Supervisor exception program counter.
+         // ------------------------------ Supervisor Exception Program Counter.
          // 12'h141 = 12'b0001_0100_0001  sepc        (read-write)
          12'h141:
          begin
@@ -210,7 +210,7 @@ module csr_av_rdata
             csr_rd_data    = scsr.sepc & (is_IALIGN16 ? ~32'h1 : ~32'h3);
          end
 
-         // ------------------------------ Supervisor trap cause.
+         // ------------------------------ Supervisor Trap Cause.
          // 12'h142 = 12'b0001_0100_0010  scause      (read-write)
          12'h142:
          begin
@@ -218,7 +218,7 @@ module csr_av_rdata
             csr_rd_data    = scsr.scause;
          end
 
-         // ------------------------------ Supervisor bad address or instruction.
+         // ------------------------------ Supervisor Trap Value = bad address or instruction.
          // 12'h143 = 12'b0001_0100_0011  stval       (read-write)
          12'h143:
          begin
@@ -266,7 +266,7 @@ module csr_av_rdata
             csr_rd_avail   = TRUE;
             csr_rd_data    = mcsr.mstatus;
          end
-         // -------------------------------------- MISA -------------------------------------
+         // ------------------------------ Machine ISA
          // ISA and extensions
          // 12'h301 = 12'b0011_0000_0001  misa                          (read-write but currently Read Only)
          // NOTE: if made to be writable, don't allow bit  2 to change to 1 if ext_C not defined
@@ -285,7 +285,7 @@ module csr_av_rdata
          // In systems with only M-mode, or with both M-mode and U-mode but without U-mode trap support, the medeleg and mideleg registers should not exist. seee riscv-privileged.pdf p 28
 
          `ifdef ext_S // "In systems with S-mode, the medeleg and mideleg registers must exist,..." p. 28 riscv-privileged.pdf
-            // Machine exception delegation register.
+            // ------------------------------ Machine Exception Delegation Register
             // 12'h302 = 12'b0011_0000_0010  medeleg                          (read-write)
             12'h302:
             begin
@@ -294,7 +294,7 @@ module csr_av_rdata
             end
             
             `ifdef ext_N
-               // Machine interrupt delegation register.
+               // ------------------------------ Machine Interrupt Delegation Register
                // 12'h303 = 12'b0011_0000_0011  mideleg                       (read-write)
                12'h303:
                begin
@@ -303,7 +303,7 @@ module csr_av_rdata
                end
             `endif
          `elsif ext_U
-            // Machine exception delegation register.
+            // ------------------------------ Machine exception Delegation Register
             // 12'h302 = 12'b0011_0000_0010  medeleg                          (read-write)
             12'h302:
             begin
@@ -312,7 +312,7 @@ module csr_av_rdata
             end
       
             `ifdef ext_N
-               // Machine interrupt delegation register.
+               // ------------------------------ Machine Interrupt Delegation Register
                // 12'h303 = 12'b0011_0000_0011  mideleg                       (read-write)
                12'h303:
                begin
@@ -323,7 +323,7 @@ module csr_av_rdata
          `endif // ext_U
 
          `ifdef ext_N
-         // Machine interrupt-enable register.
+         // ------------------------------ Machine Interrupt Enable Register
          // 12'h304 = 12'b0011_0000_0100  mie                                 (read-write)
          12'h304:
          begin
@@ -332,7 +332,7 @@ module csr_av_rdata
          end
          `endif
 
-         // Machine trap-handler base address.
+         // ------------------------------ Machine Trap-handler base address.
          // 12'h305 = 12'b0011_0000_0101  mtvec                            (read-write)
          // Only MODE values of 0 or 1 - thus bit 1 forced to 0 below. Also lower 2 bit's of BASE (bits 3,2) must be 0
          12'h305:
@@ -341,7 +341,7 @@ module csr_av_rdata
             csr_rd_data    = mcsr.mtvec;
          end
 
-         // Machine counter enable.
+         // ------------------------------ Machine Counter Enable.
          // 12'h306 = 12'b0011_0000_0110  mcounteren                       (read-write)
          12'h306:
          begin
@@ -368,7 +368,7 @@ module csr_av_rdata
             csr_rd_data    = mcsr.mscratch;
          end
 
-         // Machine Exception Program Counter. Used by MRET instruction at end of Machine mode trap handler
+         // ------------------------------ Machine Exception Program Counter. Used by MRET instruction at end of Machine mode trap handler
          // 12'h341 = 12'b0011_0100_0001  mepc                             (read-write)   see riscv-privileged p 36
          12'h341:
          begin
@@ -376,7 +376,7 @@ module csr_av_rdata
             csr_rd_data    = mcsr.mepc & (is_IALIGN16 ? ~32'h1 : ~32'h3);
          end
 
-         // Machine Exception Cause.
+         // ------------------------------ Machine Exception Cause
          // 12'h342 = 12'b0011_0100_0010  mcause                           (read-write)
          12'h342:
          begin
@@ -384,8 +384,7 @@ module csr_av_rdata
             csr_rd_data   = mcsr.mcause;
          end
 
-         // The mbadaddr register has been subsumed by a more general mtval register that can now capture bad instruction bits on an illegal instruction fault to speed instruction emulation. see riscv-privileged-20190608-1.pdf p. iii, 38
-         // Machine Exception Trap Value.                                  see riscv-privileged p. 38-39
+         // ------------------------------ Machine Exception Trap Value     see riscv-privileged p. 38-39
          // 12'h343 = 12'b0011_0100_0011  mtval                            (read-write)
          12'h343:
          begin
@@ -394,7 +393,7 @@ module csr_av_rdata
          end
 
          `ifdef ext_N
-         // ---------------------- Machine Interrupt Pending bits ----------------------
+         // ------------------------------ Machine Interrupt Pending
          // 12'h344 = 12'b0011_0100_0100  mip                              (read-write)
          // {20'b0,meip,1'b0,seip,ueip,mtip,1'b0,stip,utip,msip,1'b0,ssip,usip};
          
@@ -485,7 +484,7 @@ module csr_av_rdata
             csr_rd_data    = mcsr.mcycle_lo;
          end
 
-         // Upper 32 bits of mcycle
+         // ------------------------------ Upper 32 bits of mcycle
          // 12'hB80 = 12'b1011_1000_0000  mcycle_hi (read-write)
          12'hB80:
          begin
@@ -501,7 +500,7 @@ module csr_av_rdata
             csr_rd_data    = mcsr.minstret_lo;
          end
 
-         // Upper 32 bits of minstret
+         // ------------------------------ Upper 32 bits of minstret
          // 12'hB82 = 12'b1011_1000_0010  minstret_hi
          12'hB82:
          begin
@@ -518,7 +517,7 @@ module csr_av_rdata
             csr_rd_data    = mcsr.mvendorid;
          end
 
-         // Architecture ID
+         // ------------------------------ Architecture ID
          // 12'hF12 = 12'b1111_0001_0010  marchid     (read-only)
          12'hF12:
          begin
@@ -526,7 +525,7 @@ module csr_av_rdata
             csr_rd_data    = mcsr.marchid;
          end
 
-         // Implementation ID
+         // ------------------------------ Implementation ID
          // 12'hF13 = 12'b1111_0001_0011  mimpid      (read-only)
          12'hF13:
          begin
@@ -534,7 +533,7 @@ module csr_av_rdata
             csr_rd_data    = mcsr.mimpid;
          end
 
-         // Hardware Thread ID
+         // ------------------------------ Hardware Thread ID
          // 12'hF14 = 12'b1111_0001_0100  mhartid     (read-only)
          12'hF14:
          begin
@@ -548,7 +547,7 @@ module csr_av_rdata
       generate
          for (n = 0; n < NUM_MHPM; n++)
          begin : MHPM_CNTR_EVENTS
-            // Machine hardware performance-monitoring counters
+            // ------------------------------ Machine hardware performance-monitoring counters
             // 12'hBO3 - 12'hB1F  mhpmcounter3 - mhpmcounter31
             if (csr_rd_addr == (12'hB03+n))
             begin
@@ -575,7 +574,7 @@ module csr_av_rdata
                csr_rd_data    = mcsr.mhpmcounter_hi[n];
             end
 
-            // Machine hardware performance-monitoring event selectors mhpmevent3 - mhpmevent31
+            // ------------------------------ Machine hardware performance-monitoring event selectors mhpmevent3 - mhpmevent31
             // 12'h323 - 12'h33F  mhpmevent3 - mhpmevent31
             if (csr_rd_addr == 12'h323+n)
             begin
@@ -610,8 +609,7 @@ module csr_av_rdata
 
       // csr_rd_avail = CSR register exists in this design
       // ------------------------------ Counter/Timers (12'hCxx = Read Only - readable by Machine, Supervisor and User modes)
-
-      // Cycle counter for RDCYCLE instruction
+      // ------------------------------ Cycle Counter for RDCYCLE instruction
       // 12'hC00 = 12'b1100_0000_0000  cycle          (read-only)
       if (csr_rd_addr == 12'hC00)
       begin
@@ -619,6 +617,7 @@ module csr_av_rdata
          if (csr_rd_avail) csr_rd_data = mcsr.mcycle_lo;
       end
 
+      // ------------------------------ Timer Counter
       // 12'hC01 = 12'b1100_0000_0001  time           (read-only)
       if (csr_rd_addr == 12'hC01)
       begin
@@ -626,7 +625,7 @@ module csr_av_rdata
          if (csr_rd_avail) csr_rd_data = mtime[RSZ-1:0];
       end
 
-      // Number of Instructions Retired
+      // ------------------------------ Number of Instructions Retired
       // 12'hC02 = 12'b1100_0000_0010  instret        (read-only)
       if (csr_rd_addr == 12'hC02)
       begin
@@ -635,7 +634,7 @@ module csr_av_rdata
       end
 
 
-      // Upper 32 bits of cycle
+      // ------------------------------ Upper 32 bits of Cycle Counter
       // 12'hC80 = 12'b1100_1000_0000  mcycle hi      (read-only)
       if (csr_rd_addr == 12'hC80)
       begin
@@ -643,7 +642,7 @@ module csr_av_rdata
          csr_rd_data    = mcsr.mcycle_hi;
       end
 
-      // Upper 32 bits of time
+      // ------------------------------ Upper 32 bits of Timer Counter
       // 12'hC81 = 12'b1100_1000_0001  time hi        (read-only)
       if (csr_rd_addr == 12'hC81)
       begin
@@ -651,7 +650,7 @@ module csr_av_rdata
          csr_rd_data    = mtime[RSZ*2-1:RSZ];
       end
 
-      // Upper 32 bits of instret, RV32I only.
+      // ------------------------------ Upper 32 bits of Instructions Retired, RV32I only.
       // 12'hC82 = 12'b1100_1000_0010  uinstret hi    (read-only)
       if (csr_rd_addr == 12'hC82)
       begin

@@ -60,14 +60,14 @@ module mode_irq
    input var MCSR                  mcsr               // Input:   current register state of all the Machine Mode Control & Status Registers
 );
 
-   //----------------------------------------------------------------------------------------------------------------------------------------
-   //------------------------------------- "N" Standard Extension for User_Level Interrupts, Version 1.1 ------------------------------------
-   //----------------------------------------------------------------------------------------------------------------------------------------
+   //----------------------------------------------------------------------------------------------------------------------------
+   //------------------------------------- "N" Standard Extension for User_Level Interrupts -------------------------------------
+   //----------------------------------------------------------------------------------------------------------------------------
 
    // Delegated interrupts result in the interrupt being masked at the delegator privilege level. For
    // example, if the supervisor timer interrupt (STI) is delegated to S-mode by setting mideleg[5], STIs
    // will not be taken when executing in M-mode. By contrast, if mideleg[5] is clear, STIs can be taken
-   // in any mode and regardless of current mode will transfer control to M-mode. p 28-29 <-------------- WARNING: Not implemented yet 12/19/2020 !!!!!!!!!!!!!!!!!!!!
+   // in any mode and regardless of current mode will transfer control to M-mode. p 28-29
 
    `ifdef ext_N
       logic          m_irq, s_irq, u_irq;
