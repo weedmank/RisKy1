@@ -227,7 +227,7 @@ module fetch
 `ifdef ext_C
    logic                      overlap_flag;
    logic          [CI_SZ-1:0] overlap_instr, ov_instr;                                    // upper 16 bits of overlapping instruction
-   logic          [PC_SZ-1:0] overlap_pc;
+   logic          [PC_SZ-1:0] overlap_pc;                                                 // lower 5 bits not needed or recorded
    logic                      set_overlap_flag;
    logic                      clr_overlap_flag;
    logic                      isoverlap;
@@ -324,7 +324,7 @@ module fetch
             //************** 1st - determine size and branch type of each instruction
 
             `ifdef ext_C // Logic for Compressed instruction fetching is not yet tested and may not work - 9/1/2020
-            isoverlap         = (c == 0) && overlap_flag && (overlap_pc == PC);
+            isoverlap         = (c == 0) && overlap_flag && (overlap_pc == PC);           // predicted overlap address = current address?
 
             // The following occurs on this clock cycle (if c==0) if an instruction "overlap" occured on the last cache line fetch
             if (isoverlap)                         // combine overlap_instr with 2 LS bytes in cache line?
@@ -622,7 +622,7 @@ module fetch
       begin
          overlap_flag   <= TRUE;
          overlap_instr  <= ov_instr;
-         overlap_pc     <= {PC>>CL_SZ,{CL_SZ{1'b0}}}+CL_LEN;                              // what next address should be if there's an overlapping instruction
+         overlap_pc     <= { PC[PC_SZ-1:CL_SZ] + 1'd1,{CL_SZ{1'b0}} } + 2;                // next cache line address + 2 bytes
       end
       else if (clr_overlap_flag)
       begin
