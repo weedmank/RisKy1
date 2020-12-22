@@ -35,14 +35,11 @@ module csr_av_rdata
    input    logic    [RSZ*2-1:0] mtime,
    
    input    logic          [1:0] mode,
+   
+   `ifdef add_DM
+   input    logic                Dbg_mode,
+   `endif
 
-//   `ifdef ext_U
-//   UCSR_REG_intf.slave           ucsr,          // all of the User mode Control & Status Registers
-//   `endif
-//   `ifdef ext_S
-//   SCSR_REG_intf.slave           scsr,          // all of the Supervisor mode Control & Status Registers
-//   `endif
-//   MCSR_REG_intf.slave           mcsr           // all of the Machine mode Control & Status Registers
    `ifdef ext_U
    input var UCSR  ucsr,          // all of the User mode Control & Status Registers
    `endif
@@ -231,10 +228,11 @@ module csr_av_rdata
 
          `ifdef ext_N
          // ------------------------------ Supervisor interrupt pending.
-         // p. 29 SUPERVISOR mode: The logical-OR of the software-writeable bit and the signal from the external interrupt controller is used to generate external
-         // interrupts to the supervisor. When the SEIP bit is read with a CSRRW, CSRRS, or CSRRC instruction, the value returned in the rd destination register
-         // contains the logical-OR of the software-writable bit and the interrupt signal from the interrupt controller. However, the value used in the  read-modify-write
-         // sequence of a CSRRS or CSRRC instruction is only the software-writable SEIP bit, ignoring the interrupt value from the external interrupt controller.
+         // When the SEIP bit is read with a CSRRW, CSRRS, or CSRRC instruction, the value returned in the
+         // rd destination register contains the logical-OR of the softwarewritable bit and the interrupt
+         // signal from the interrupt controller. However, the value used in the read-modify-write sequence
+         // of a CSRRS or CSRRC instruction is only the software-writable SEIP bit, ignoring the interrupt
+         // value from the external interrupt controller. p. 30 riscv-privileged.pdf  see csr_fu.sv for implementation
 
          // 12'h144 = 12'b0001_0100_0100  sip         (read-write)
          //  31:10  9     8   7:6   5    4   3:2   1    0
@@ -399,7 +397,13 @@ module csr_av_rdata
          // ---------------------- Machine Interrupt Pending bits ----------------------
          // 12'h344 = 12'b0011_0100_0100  mip                              (read-write)
          // {20'b0,meip,1'b0,seip,ueip,mtip,1'b0,stip,utip,msip,1'b0,ssip,usip};
-         12'h344: // see p 29 riscv-privileged
+         
+         // When the SEIP bit is read with a CSRRW, CSRRS, or CSRRC instruction, the value returned in the
+         // rd destination register contains the logical-OR of the softwarewritable bit and the interrupt
+         // signal from the interrupt controller. However, the value used in the read-modify-write sequence
+         // of a CSRRS or CSRRC instruction is only the software-writable SEIP bit, ignoring the interrupt
+         // value from the external interrupt controller. p. 30 riscv-privileged.pdf  see csr_fu.sv for implementation
+         12'h344:
          begin
             csr_rd_avail   = TRUE;
             csr_rd_data    = mcsr.mip;
@@ -458,17 +462,18 @@ module csr_av_rdata
          `ifdef add_DM
          // Debug Write registers - INCOMPLETE!!!!!!!!!!!
          // ------------------------------ Debug/Trace Registers - shared with Debug Mode (tselect,tdata1,tdata2,tdata3)
+         // visible to machine mode and debug mode
          12'h7A0: begin csr_rd_avail = TRUE; csr_rd_data = mcsr.tselect;   end     // Trigger Select Register
          12'h7A1: begin csr_rd_avail = TRUE; csr_rd_data = mcsr.tdata1;    end     // Trigger Data Register 1
          12'h7A2: begin csr_rd_avail = TRUE; csr_rd_data = mcsr.tdata2;    end     // Trigger Data Register 2
          12'h7A3: begin csr_rd_avail = TRUE; csr_rd_data = mcsr.tdata3;    end     // Trigger Data Register 3
 
          // ------------------------------ Debug Mode Registers (dcsr,dpc,dscratch0,dscatch1)
-         // "0x7B0–0x7BF are only visible to debug mode" p. 6 riscv-privileged.pdf
-         12'h7B0: begin csr_rd_avail = TRUE; csr_rd_data = mcsr.dcsr;      end     // Debug Control and Status Register
-         12'h7B1: begin csr_rd_avail = TRUE; csr_rd_data = mcsr.dpc;       end     // Debug PC Register
-         12'h7B2: begin csr_rd_avail = TRUE; csr_rd_data = mcsr.dscratch0; end     // Debug Scratch Register 0
-         12'h7B3: begin csr_rd_avail = TRUE; csr_rd_data = mcsr.dscratch1; end     // Debug Scratch Register 1
+         // "0x7B0–0x7BF are only visible to debug mode" see. p 6 riscv-privileged-sail-draft.pdf
+         12'h7B0: begin csr_rd_avail = Dbg_mode; csr_rd_data = mcsr.dcsr;      end     // Debug Control and Status Register
+         12'h7B1: begin csr_rd_avail = Dbg_mode; csr_rd_data = mcsr.dpc;       end     // Debug PC Register
+         12'h7B2: begin csr_rd_avail = Dbg_mode; csr_rd_data = mcsr.dscratch0; end     // Debug Scratch Register 0
+         12'h7B3: begin csr_rd_avail = Dbg_mode; csr_rd_data = mcsr.dscratch1; end     // Debug Scratch Register 1
          `endif // add_DM
 
          // ------------------------------ Machine Cycle Counter
