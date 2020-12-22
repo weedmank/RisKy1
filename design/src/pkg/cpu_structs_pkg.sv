@@ -161,7 +161,7 @@ import cpu_params_pkg::*;
 //   `else
 //      localparam RET_SZ = RETIRE_TYPE.num();    // Modelsim 2020.1 and lower can't handle this
 //   `endif
-   
+
    typedef struct packed {                      // each entry contains count of how many instructions  of that typeretired this clock cycle
       logic                   ext_irq;          // External Interrutp Request count - not one of the faults but usefull information - only 1 of these can ever occur during a clock cycle
 //    logic   [RET_SZ:0] [n-1:0] ret_cnt;       // general format to use if more than 1 instruction retires per clock cycle - where n is the number of bits needed to hold maximum count
@@ -200,6 +200,7 @@ import cpu_params_pkg::*;
       logic       [OP_SZ-1:0] op_type;
       logic             [1:0] mode;             // mode can change on any clock cycle, but we want to pass value associated with current instruction
       `ifdef ext_N
+      logic                   sw_irq;
       logic                   interrupt_flag;   // 1 = take an interrupt trap
       logic             [3:0] interrupt_cause;  // value specifying what type of interrupt
       `endif
@@ -235,6 +236,7 @@ import cpu_params_pkg::*;
       logic                   mio_ack_fault;
       logic             [1:0] mode;
       `ifdef ext_N
+      logic                   sw_irq;
       logic                   interrupt_flag;   // 1 = take an interrupt trap
       logic             [3:0] interrupt_cause;  // value specifying what type of interrupt
       `endif
@@ -331,7 +333,7 @@ import cpu_params_pkg::*;
 `endif
 
 
-   // 12'h300 = 12'b0000_0000_0000  ustatus     (read-write)  user mode
+   // 12'h300 = 12'b0000_0000_0000  ustatus                       (read-write)  user mode
    //  31        22   21  20   19   18   17   16:15 14:13 12:11  10:9    8    7     6     5     4      3     2     1    0
    // {sd, 8'b0, tsr, tw, tvm, mxr, sum, mprv,   xs,   fs,  mpp, 2'b0,  spp, mpie, 1'b0, spie, upie,  mie, 1'b0,  sie, uie};
    typedef struct packed {
@@ -399,6 +401,18 @@ import cpu_params_pkg::*;
    } MIP_SIGS;
 
 
+   // 12'h100 = 12'b0000_0000_0000  ustatus                       (read-write)  Supervisor mode
+   //  31        22   21  20   19   18   17   16:15 14:13 12:11  10:9    8    7     6     5     4     3     2     1    0
+   // {sd, 8'b0, tsr, tw, tvm, mxr, sum, mprv, xs,   fs,  2'b0,  2'b0,  spp, 1'b0, 1'b0, spie, 1'b0, 1'b0, 1'b0,  sie, 1'b0};
+   typedef struct packed {
+      logic                   spp;
+      logic             [1:0] WPRI_2;
+      logic                   spie;
+      logic             [2:0] WPRI_3;
+      logic                   sie;
+      logic                   WPRI;
+   } SSTATUS_SIGS;
+
    // ------------------------------ Supervisor Interrupt Pending bits
    // 12'h144 = 12'b0011_0100_0100  mip                           (read-write)  machine mode
    //  31:12   11    10    9     8     7     6     5     4     3     2     1     0
@@ -415,12 +429,20 @@ import cpu_params_pkg::*;
       logic                   usip;
    } SIP_SIGS;
 
+   // 12'h000 = 12'b0000_0000_0000  ustatus                       (read-write)  user mode
+   //  31        22   21  20   19   18   17    16:15 14:13 12:11  10:9   8     7     6     5     4     3     2     1     0
+   // {sd, 8'b0, tsr, tw, tvm, mxr, sum, mprv,  xs,   fs,  2'b0,  2'b0, 1'b0, 1'b0, 1'b0, 1'b0, upie, 1'b0, 1'b0, 1'b0, uie};
+   typedef struct packed {
+      logic                   upie;
+      logic             [2:0] WPRI_3;
+      logic                   uie;
+   } USTATUS_SIGS;
+
    // ------------------------------ Supervisor Interrupt Pending bits
    // 12'h144 = 12'b0011_0100_0100  mip                           (read-write)  machine mode
    //  31:12   11    10    9     8     7     6     5     4     3     2     1     0
    // {20'b0, 1'b0, 1'b0, 1'b0, ueip, 1'b0, 1'b0, 1'b0, utip, 1'b0, 1'b0, 1'b0, usip};
    typedef struct packed {
-      logic            [22:0] WPRI_23;
       logic                   ueip;
       logic             [2:0] WPRI3;
       logic                   utip;
@@ -430,35 +452,35 @@ import cpu_params_pkg::*;
 
    // ------------------------ Machine mode CSRs ------------------------
    typedef struct packed {
-      MSTATUS_SIGS                           mstatus;          // 12'h300
-      logic                        [RSZ-1:0] misa;             // 12'h301
+      MSTATUS_SIGS                           mstatus;             // 12'h300
+      logic                        [RSZ-1:0] misa;                // 12'h301
       `ifdef ext_S   // "In systems with S-mode, the medeleg and mideleg registers must exist,..." see p. 28 riscv-privileged.pdf, csr_wr_mach.svh
-      logic                        [RSZ-1:0] medeleg;          // 12'h302
+      logic                        [RSZ-1:0] medeleg;             // 12'h302
          `ifdef ext_N
-          logic                    [RSZ-1:0] mideleg;          // 12'h303
+          logic                    [RSZ-1:0] mideleg;             // 12'h303
           `endif
       `elsif ext_U
-         logic                     [RSZ-1:0] medeleg;          // 12'h302
+         logic                     [RSZ-1:0] medeleg;             // 12'h302
          `ifdef ext_N
-         logic                     [RSZ-1:0] mideleg;          // 12'h303
+         logic                     [RSZ-1:0] mideleg;             // 12'h303
          `endif
       `endif
       `ifdef ext_N
-      MIE_SIGS                               mie;              // 12'h304
+      MIE_SIGS                               mie;                 // 12'h304
       `endif
-      logic                        [RSZ-1:0] mtvec;            // 12'h305
-      logic                        [RSZ-1:0] mcounteren;       // 12'h306
-      logic                        [RSZ-1:0] mcountinhibit;    // 12'h320
+      logic                        [RSZ-1:0] mtvec;               // 12'h305
+      logic                        [RSZ-1:0] mcounteren;          // 12'h306
+      logic                        [RSZ-1:0] mcountinhibit;       // 12'h320
       `ifdef use_MHPM
-      logic   [NUM_MHPM-1:0] [EV_SEL_SZ-1:0] mhpmevent;        // 12'h323 - 12'h33F, mhpmevent3 - mhpmevent31
+      logic   [NUM_MHPM-1:0] [EV_SEL_SZ-1:0] mhpmevent;           // 12'h323 - 12'h33F, mhpmevent3 - mhpmevent31
       `endif
 
-      logic                        [RSZ-1:0] mscratch;         // 12'h340
-      logic                      [PC_SZ-1:0] mepc;             // 12'h341
-      logic                            [3:0] mcause;           // 12'h342
-      logic                        [RSZ-1:0] mtval;            // 12'h343
+      logic                        [RSZ-1:0] mscratch;            // 12'h340
+      logic                      [PC_SZ-1:0] mepc;                // 12'h341
+      logic                            [3:0] mcause;              // 12'h342
+      logic                        [RSZ-1:0] mtval;               // 12'h343
       `ifdef ext_N
-      MIP_SIGS                               mip;              // 12'h344
+      MIP_SIGS                               mip;                 // 12'h344
       `endif
 
       `ifdef USE_PMPCFG
@@ -547,7 +569,7 @@ import cpu_params_pkg::*;
    // ------------------------ Supervisor mode CSRs ------------------------
    // Supervisor mode Registers
    typedef struct packed {
-      logic                        [RSZ-1:0] sstatus;          // 12'h100
+      SSTATUS_SIGS                           sstatus;          // 12'h100
       logic                        [RSZ-1:0] sedeleg;          // 12'h102
       `ifdef ext_N
       logic                        [RSZ-1:0] sideleg;          // 12'h103
@@ -568,7 +590,7 @@ import cpu_params_pkg::*;
    // ------------------------ User mode CSRs ------------------------
    // User mode Registers
    typedef struct packed {
-      logic                        [RSZ-1:0] ustatus;          // 12'h000
+      USTATUS_SIGS                           ustatus;          // 12'h000
       `ifdef ext_N
       logic                        [RSZ-1:0] uie;              // 12'h004
       `endif
