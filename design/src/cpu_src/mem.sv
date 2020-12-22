@@ -47,7 +47,6 @@ module mem
    // I/O Read Data
    input    logic             [2*RSZ-1:0] mtime,                                    // Input:   contents of mtime register
    input    logic             [2*RSZ-1:0] mtimecmp,                                 // Input:   contents of mtimecmp register
-   input    logic               [RSZ-1:0] msip_reg,                                 // Input:   contents of msip_reg register
 
    // misprediction signals to other stages
    input    logic                         pipe_flush,                               // Input:   1 = Flush this segment of the pipeline
@@ -105,6 +104,9 @@ module mem
    assign is_ld                        = E2M_bus.data.is_ld;
    assign is_st                        = E2M_bus.data.is_st;
    assign mode                         = E2M_bus.data.mode;
+   `ifdef ext_N
+   assign sw_irq                       = E2M_bus.data.sw_irq;                       // msip_reg[3]. see irq.sv
+   `endif
    
    assign is_ls                        = (is_ld | is_st);
 
@@ -160,6 +162,7 @@ module mem
    assign mem_dout.mode                = E2M_bus.data.mode;
    assign mem_dout.trap_pc             = E2M_bus.data.trap_pc;                      // trap_pc, interrupt_flag, interrupt_cause not used in this stage,but needed in WB stage
    `ifdef ext_N         
+   assign mem_dout.sw_irq              = E2M_bus.data.sw_irq;                       // msip_reg[3]. see irq.sv
    assign mem_dout.interrupt_flag      = E2M_bus.data.interrupt_flag;
    assign mem_dout.interrupt_cause     = E2M_bus.data.interrupt_cause;
    `endif
@@ -322,13 +325,15 @@ module mem
                if (is_ld)
                   MIO_ack_data   = mtimecmp[2*RSZ-1:RSZ];
             end
+            `ifdef ext_N
             else if (ls_addr == MSIP_Base_Addr)
             begin
                MIO_ack           = TRUE;                                   // read or write
                MIO_ack_fault     = FALSE;
                if (is_ld)
-                  MIO_ack_data   = msip_reg;                               // Software Interrupt Pending Register
+                  MIO_ack_data   = {28'b0,sw_irq,3'b0};                    // Software Interrupt Pending Register
             end
+            `endif
             else // unknown internal I/O
             begin
                MIO_ack           = TRUE;                                   // read or write
