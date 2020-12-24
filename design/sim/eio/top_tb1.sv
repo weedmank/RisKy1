@@ -198,9 +198,7 @@ module  top_tb1 ();
       
       .sim_stop(sim_stop),             // used to know when to stop a particular assembly/C program in simulation.
 
-      `ifdef ext_N
       .ext_irq(1'b0),                  // Input:  Machine mode External Interrupt - could be driven by this test bench
-      `endif
       
       // External I/O accesses
       .EIO_bus(EIO_bus)

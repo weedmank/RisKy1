@@ -31,29 +31,24 @@ module irq
    input       logic                mtime_hi_wr,
    input       logic                mtimecmp_lo_wr,
    input       logic                mtimecmp_hi_wr,
-   input       logic      [RSZ-1:0] mmr_wr_data,
-   `ifdef ext_N
    input       logic                msip_wr,
+   input       logic      [RSZ-1:0] mmr_wr_data,
    output      logic                timer_irq,
    output      logic                sw_irq,              // msip_reg[3] = Machine mode Software Interrupt Register
-   `endif
+
    output      logic    [RSZ*2-1:0] mtime,
    output      logic    [RSZ*2-1:0] mtimecmp             // not directly used in csr.sv
 );
 
-   `ifdef ext_N
    assign timer_irq  = (mtime >= mtimecmp);
-   `endif
 
    always_ff @(posedge clk_in)
    begin
       // ------------------------------ MSIP Register    (Machine mode Software Interrupt Pending)
-      `ifdef ext_N
       if (reset_in)
          sw_irq <= 1'b0;
       else if (msip_wr)
          sw_irq <= mmr_wr_data[3];     // same position as MIP.MSIP ---????? Should this record bits 3,1,0 - software interrupt pending bits for all modes
-      `endif
 
       // ------------------------------ Time in Ticks Register
       if (reset_in)

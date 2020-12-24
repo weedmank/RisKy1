@@ -30,10 +30,8 @@ module csr
    input    logic             clk_in,
    input    logic             reset_in,
 
-   `ifdef ext_N
    input    logic             ext_irq,
    input    logic             timer_irq,
-   `endif
 
    // signals shared between CSR and EXE stage
    CSR_EXE_intf.master        csr_exe_bus,
@@ -107,10 +105,8 @@ module csr
 
    // ----------------------------------- signals shared between csr.sv and EXE stage
    logic                   [PC_SZ-1:2] trap_pc;             // Output:  trap vector handler address.
-   `ifdef ext_N
    logic                               interrupt_flag;      // 1 = take an interrupt trap
    logic                         [3:0] interrupt_cause;     // value specifying what type of interrupt
-   `endif
    assign csr_exe_bus.mode             = mode;
 
    assign csr_exe_bus.mepc             = mcsr.mepc;
@@ -121,10 +117,8 @@ module csr
    assign csr_exe_bus.uepc             = ucsr.uepc;
    `endif
    assign csr_exe_bus.trap_pc          = trap_pc;
-   `ifdef ext_N
    assign csr_exe_bus.interrupt_flag   = interrupt_flag;
    assign csr_exe_bus.interrupt_cause  = interrupt_cause;
-   `endif
 
    logic    mret;
    assign mret = csr_exe_bus.mret;
@@ -144,11 +138,9 @@ module csr
    csr_nxt_reg cnr (
       .reset_in(reset_in),
 
-      `ifdef ext_N
       .ext_irq(ext_irq),
       .timer_irq(timer_irq),
       .sw_irq(sw_irq),
-      `endif
 
       .csr_addr(csr_wr_addr),                               // Input:   CSR write address
       .csr_wr(csr_wr),                                      // Input:   CSR write control
@@ -223,11 +215,9 @@ module csr
    csr_nxt_reg cnr_2 (
       .reset_in(reset_in),
 
-      `ifdef ext_N
       .ext_irq(ext_irq),
       .timer_irq(timer_irq),
       .sw_irq(sw_irq),                                      // captured value of sw_irq in EXE stage (i.e. csr_fu.sv)
-      `endif
 
       .csr_addr(nxt_csr_wr_addr),                           // Input:   CSR write address
       .csr_wr(nxt_csr_wr),                                  // Input:   CSR write control
@@ -296,11 +286,9 @@ module csr
       .mret(mret),
 
       .trap_pc(trap_pc),                                    // Output:  needed in WB logic
-      `ifdef ext_N
       .ext_irq(ext_irq),
       .interrupt_flag(interrupt_flag),                      // Output:  needed in WB logic
       .interrupt_cause(interrupt_cause),                    // Output:  needed in WB logic
-      `endif
 
       `ifdef ext_U
       .ucsr(ucsr),                                          // Input:   current register state of all the User Mode Control & Status Registers
@@ -364,71 +352,71 @@ module csr
 
 
 
-   `ifdef ext_S
    // ================================================================== Supervisor Mode CSRs ===============================================================
-   // ------------------------------ Supervisor Status Register
-   // The sstatus register is a subset of the mstatus register. In a straightforward implementation,
-   // reading or writing any field in sstatus is equivalent to reading or writing the homonymous field
-   // in mstatus
-   // 12'h100 = 12'b0001_0000_0000  sstatus                       (read-write)
-   // 31 30:20 19    18  17   16:15   14:13   12:9 8   7    6   5    4    3:2  1   0
-   // SD WPRI  MXR   SUM WPRI XS[1:0] FS[1:0] WPRI SPP WPRI UBE SPIE UPIE WPRI SIE UIE
-   // 1  11    1     1   1    2       2       4    1   1    1   1    1    2    1   1
-   csr_std_wr #(0,12'h100,9,32'hFFFF_FECC) Sstatus                (clk_in,reset_in, mode, TRUE, nxt_scsr.sstatus, scsr.sstatus); // only lower 9 implemented so far 12/21/2020
+   `ifdef ext_S
+      // ------------------------------ Supervisor Status Register
+      // The sstatus register is a subset of the mstatus register. In a straightforward implementation,
+      // reading or writing any field in sstatus is equivalent to reading or writing the homonymous field
+      // in mstatus
+      // 12'h100 = 12'b0001_0000_0000  sstatus                       (read-write)
+      // 31 30:20 19    18  17   16:15   14:13   12:9 8   7    6   5    4    3:2  1   0
+      // SD WPRI  MXR   SUM WPRI XS[1:0] FS[1:0] WPRI SPP WPRI UBE SPIE UPIE WPRI SIE UIE
+      // 1  11    1     1   1    2       2       4    1   1    1   1    1    2    1   1
+      csr_std_wr #(0,12'h100,9,32'hFFFF_FECC) Sstatus                (clk_in,reset_in, mode, TRUE, nxt_scsr.sstatus, scsr.sstatus); // only lower 9 implemented so far 12/21/2020
 
-   // In systems with S-mode, the  medeleg and mideleg registers must exist, whereas the sedeleg and sideleg registers should only
-   // exist if the N extension for user-mode interrupts is also implemented. p 28 riscv-privileged
-   `ifdef ext_N
-   // ------------------------------ Supervisor Exception Delegation Register.
-   // 12'h102 = 12'b0001_0000_0010  sedeleg                       (read-write)
-   csr_std_wr #(SEDLG_INIT,12'h102,RSZ,SEDLG_MASK) Sedeleg        (clk_in,reset_in, mode, TRUE, nxt_scsr.sedeleg, scsr.sedeleg);
+      // In systems with S-mode, the  medeleg and mideleg registers must exist, whereas the sedeleg and sideleg registers should only
+      // exist if the N extension for user-mode interrupts is also implemented. p 28 riscv-privileged
+      `ifdef ext_N
+         // ------------------------------ Supervisor Exception Delegation Register.
+         // 12'h102 = 12'b0001_0000_0010  sedeleg                    (read-write)
+         csr_std_wr #(SEDLG_INIT,12'h102,RSZ,SEDLG_MASK) Sedeleg     (clk_in,reset_in, mode, TRUE, nxt_scsr.sedeleg, scsr.sedeleg);
 
-   // ------------------------------ Supervisor Interrupt Delegation Register.
-   // 12'h103 = 12'b0001_0000_0011  sideleg                       (read-write)
-   csr_std_wr #(SIDLG_INIT,12'h103,RSZ,SIDLG_MASK) Sideleg        (clk_in,reset_in, mode, TRUE, nxt_scsr.sideleg, scsr.sideleg);
+         // ------------------------------ Supervisor Interrupt Delegation Register.
+         // 12'h103 = 12'b0001_0000_0011  sideleg                    (read-write)
+         csr_std_wr #(SIDLG_INIT,12'h103,RSZ,SIDLG_MASK) Sideleg     (clk_in,reset_in, mode, TRUE, nxt_scsr.sideleg, scsr.sideleg);
+      `endif // ext_N
 
-   // ------------------------------ Supervisor Interrupt Enable Register.
-   // 12'h104 = 12'b0001_0000_0100  sie                           (read-write)
-   // Read Only bits of 32'hFFFF_FCCC;  // Note: bits 31:10, 7:6, 3:2 are not writable and are "hardwired" to 0 (init value = 0 at reset)
-   csr_std_wr #(0,12'h104,RSZ,32'hFFFF_FCCC) Sie                  (clk_in,reset_in, mode, TRUE, nxt_scsr.sie, scsr.sie);
-   `endif // ext_N
+      // ------------------------------ Supervisor Interrupt Enable Register.
+      // 12'h104 = 12'b0001_0000_0100  sie                           (read-write)
+      // Read Only bits of 32'hFFFF_FCCC;  // Note: bits 31:10, 7:6, 3:2 are not writable and are "hardwired" to 0 (init value = 0 at reset)
+      csr_std_wr #(0,12'h104,RSZ,32'hFFFF_FCCC) Sie                  (clk_in,reset_in, mode, TRUE, nxt_scsr.sie, scsr.sie);
 
-   // ------------------------------ Supervisor Trap handler base address.
-   // 12'h105 = 12'b0001_0000_0101  stvec                         (read-write)
-   // Current design only allows MODE of 0 or 1 - thus bit 1 forced to retain it's reset value which is 0.
-   csr_std_wr #(STVEC_INIT & ~32'd2,12'h105,RSZ,32'h0000_0002) Stvec (clk_in,reset_in, mode, TRUE, nxt_scsr.stvec, scsr.stvec);
+      // ------------------------------ Supervisor Trap handler base address.
+      // 12'h105 = 12'b0001_0000_0101  stvec                         (read-write)
+      // Current design only allows MODE of 0 or 1 - thus bit 1 forced to retain it's reset value which is 0.
+      csr_std_wr #(STVEC_INIT & ~32'd2,12'h105,RSZ,32'h0000_0002) Stvec (clk_in,reset_in, mode, TRUE, nxt_scsr.stvec, scsr.stvec);
 
-   // ------------------------------ Supervisor Counter Enable.
-   // 12'h106 = 12'b0001_0000_0110  scounteren                    (read-write)
-   csr_std_wr #(SCNTEN_INIT,12'h106,RSZ,SCNTEN_MASK) Scounteren   (clk_in,reset_in, mode, TRUE, nxt_scsr.scounteren, scsr.scounteren);
+      // ------------------------------ Supervisor Counter Enable.
+      // 12'h106 = 12'b0001_0000_0110  scounteren                    (read-write)
+      csr_std_wr #(SCNTEN_INIT,12'h106,RSZ,SCNTEN_MASK) Scounteren   (clk_in,reset_in, mode, TRUE, nxt_scsr.scounteren, scsr.scounteren);
 
-   // ------------------------------ Supervisor Scratch Register
-   // Scratch register for supervisor trap handlers.
-   // 12'h140 = 12'b0001_0100_0000  sscratch                      (read-write)
-   csr_std_wr #(0,12'h140,RSZ) Sscratch                           (clk_in,reset_in, mode, TRUE, nxt_scsr.sscratch, scsr.sscratch);
+      // ------------------------------ Supervisor Scratch Register
+      // Scratch register for supervisor trap handlers.
+      // 12'h140 = 12'b0001_0100_0000  sscratch                      (read-write)
+      csr_std_wr #(0,12'h140,RSZ) Sscratch                           (clk_in,reset_in, mode, TRUE, nxt_scsr.sscratch, scsr.sscratch);
 
-   // ------------------------------ Supervisor Exception Program Counter
-   // 12'h141 = 12'b0001_0100_0001  sepc                          (read-write)
-   csr_std_wr #(0,12'h141,RSZ,32'h1) Sepc                         (clk_in,reset_in, mode, TRUE, nxt_scsr.sepc, scsr.sepc); // ls-bit is RO so it remains at 0 after reset
+      // ------------------------------ Supervisor Exception Program Counter
+      // 12'h141 = 12'b0001_0100_0001  sepc                          (read-write)
+      csr_std_wr #(0,12'h141,RSZ,32'h1) Sepc                         (clk_in,reset_in, mode, TRUE, nxt_scsr.sepc, scsr.sepc); // ls-bit is RO so it remains at 0 after reset
 
-   // ------------------------------ Supervisor Exception Cause
-   // 12'h142 = 12'b0001_0100_0010  scause                        (read-write)
-   csr_std_wr #(0,12'h142,4) Scause                               (clk_in,reset_in, mode, TRUE, nxt_scsr.scause, scsr.scause);   // scause is currently 4 Flops wide
+      // ------------------------------ Supervisor Exception Cause
+      // 12'h142 = 12'b0001_0100_0010  scause                        (read-write)
+      csr_std_wr #(0,12'h142,4) Scause                               (clk_in,reset_in, mode, TRUE, nxt_scsr.scause, scsr.scause);   // scause is currently 4 Flops wide
 
-   // ------------------------------ Supervisor Exception Trap Value                             see riscv-privileged p. 38-39
-   // 12'h143 = 12'b0001_0100_0011  stval                         (read-write)
-   csr_std_wr #(0,12'h142,RSZ) Stval                              (clk_in,reset_in, mode, TRUE, nxt_scsr.stval, scsr.stval);
+      // ------------------------------ Supervisor Exception Trap Value                             see riscv-privileged p. 38-39
+      // 12'h143 = 12'b0001_0100_0011  stval                         (read-write)
+      csr_std_wr #(0,12'h142,RSZ) Stval                              (clk_in,reset_in, mode, TRUE, nxt_scsr.stval, scsr.stval);
 
-   // ------------------------------ Supervisor Interrupt Pending bits
-   // 12'h144 = 12'b0001_0100_0100  sip                           (read-write)
-   //  31:12   11    10    9     8     7     6     5     4     3     2     1     0
-   // {20'b0, 1'b0, 1'b0, seip, ueip, 1'b0, 1'b0, stip, utip, 1'b0, 1'b0, ssip, usip}; // All bits besides SSIP, USIP, and UEIP in the sip register are read-only. p 59 riscv-privileged.pdf
-   csr_std_wr #(0,12'h344,RSZ,32'hFFFF_FCCC) Sip                  (clk_in,reset_in, mode, TRUE, nxt_scsr.sip, scsr.sip);
+      // ------------------------------ Supervisor Interrupt Pending bits
+      // 12'h144 = 12'b0001_0100_0100  sip                           (read-write)
+      //  31:12   11    10    9     8     7     6     5     4     3     2     1     0
+      // {20'b0, 1'b0, 1'b0, seip, ueip, 1'b0, 1'b0, stip, utip, 1'b0, 1'b0, ssip, usip}; // All bits besides SSIP, USIP, and UEIP in the sip register are read-only. p 59 riscv-privileged.pdf
+      csr_std_wr #(0,12'h344,RSZ,32'hFFFF_FCCC) Sip                  (clk_in,reset_in, mode, TRUE, nxt_scsr.sip, scsr.sip);
 
-   // ------------------------------ Supervisor Protection and Translation
-   // 12'h180 = 12'b0001_1000_0000  satp                          (read-write)
-   // Supervisor address translation and protection.
-   csr_std_wr #(0,12'h180) Satp                                   (clk_in,reset_in, mode, TRUE, nxt_scsr.satp, scsr.satp);
+      // ------------------------------ Supervisor Protection and Translation
+      // 12'h180 = 12'b0001_1000_0000  satp                          (read-write)
+      // Supervisor address translation and protection.
+      csr_std_wr #(0,12'h180,RSZ) Satp                               (clk_in,reset_in, mode, TRUE, nxt_scsr.satp, scsr.satp);
    `endif // ext_S
 
    // ================================================================== Machine Mode CSRs ==================================================================

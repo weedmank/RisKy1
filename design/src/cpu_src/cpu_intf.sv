@@ -104,7 +104,7 @@ interface BFU_intf;
       `ifndef ext_C
       logic                   mis;        // misaligned address flag
       `endif
-      
+
       modport master (output Rs1_data, Rs2_data, pc, imm, funct3, ci, sel_x, sel_y, op, mepc, `ifdef ext_S sepc, `endif `ifdef ext_U uepc, `endif input  no_br_pc, `ifndef ext_C mis, `endif br_pc);
       modport slave  (input  Rs1_data, Rs2_data, pc, imm, funct3, ci, sel_x, sel_y, op, mepc, `ifdef ext_S sepc, `endif `ifdef ext_U uepc, `endif output no_br_pc, `ifndef ext_C mis, `endif br_pc);
 endinterface: BFU_intf
@@ -187,10 +187,8 @@ interface CSRFU_intf;
       logic         [RSZ-1:0] Rs1_data;
       logic             [2:0] funct3;
       logic             [1:0] mode;             // Current CPU mode: Machine, Supervisor, or Use
-      `ifdef ext_N
       logic                   sw_irq;           // Software Interrupt Pending
-      `endif
-      
+
       logic                   csr_wr;
       logic                   csr_rd;
       logic         [RSZ-1:0] Rd_data;          // data for R[Rd]
@@ -199,9 +197,9 @@ interface CSRFU_intf;
       logic                   ill_csr_access;   // 1 = illegal csr access
       logic            [11:0] ill_csr_addr;
 
-      modport master (output csr_valid, csr_addr, csr_avail, csr_rd_data, Rd_addr, Rs1_addr, Rs1_data, funct3, mode, `ifdef ext_N sw_irq, `endif
+      modport master (output csr_valid, csr_addr, csr_avail, csr_rd_data, Rd_addr, Rs1_addr, Rs1_data, funct3, mode, sw_irq,
                       input  csr_wr, csr_rd, Rd_data, csr_wr_data, nxt_csr_rd_data, ill_csr_access, ill_csr_addr);
-      modport slave  (input  csr_valid, csr_addr, csr_avail, csr_rd_data, Rd_addr, Rs1_addr, Rs1_data, funct3, mode, `ifdef ext_N sw_irq, `endif
+      modport slave  (input  csr_valid, csr_addr, csr_avail, csr_rd_data, Rd_addr, Rs1_addr, Rs1_data, funct3, mode, sw_irq,
                       output csr_wr, csr_rd, Rd_data, csr_wr_data, nxt_csr_rd_data, ill_csr_access, ill_csr_addr);
 endinterface: CSRFU_intf
 
@@ -303,8 +301,8 @@ interface EV_EXC_intf;
       EXCEPTION               exception;
       EVENTS                  current_events;   // number of retired instructions for current clock cycle
 
-      modport master (output `ifdef ext_N sw_irq, `endif exception, current_events);
-      modport slave  (input  `ifdef ext_N sw_irq, `endif exception, current_events);
+      modport master (output sw_irq, exception, current_events);
+      modport slave  (input  sw_irq, exception, current_events);
 
 endinterface: EV_EXC_intf
 
@@ -349,12 +347,10 @@ interface CSR_EXE_intf;
    logic                     [RSZ-1:0] uepc;             // User Exception PC
    `endif
    logic                         [1:0] mode;
-   `ifdef ext_N
    logic                               interrupt_flag;   // 1 = take an interrupt trap
    logic                         [3:0] interrupt_cause;  // value specifying what type of interrupt
-   `endif
    logic                   [PC_SZ-1:2] trap_pc;          // Output:  trap vector handler address. 4 byte alignment
-   
+
    // signals from EXE stage - Note: partial pipeline flush will occur when xret == TRUE & PC reloads
    `ifdef ext_S
    logic                               sret;             // Supervisor Mode return flag
@@ -363,10 +359,10 @@ interface CSR_EXE_intf;
    logic                               uret;             // User Mode return flag
    `endif
    logic                               mret;             // Machine mode return flag
-   
-   modport master(output   mepc, `ifdef ext_S sepc, `endif `ifdef ext_U uepc, `endif mode, `ifdef ext_N interrupt_flag, interrupt_cause, `endif trap_pc,
+
+   modport master(output   mepc, `ifdef ext_S sepc, `endif `ifdef ext_U uepc, `endif mode, interrupt_flag, interrupt_cause, trap_pc,
                   input  `ifdef ext_S sret, `endif `ifdef ext_U uret, `endif mret);
-   modport  slave(input    mepc, `ifdef ext_S sepc, `endif `ifdef ext_U uepc, `endif mode, `ifdef ext_N interrupt_flag, interrupt_cause, `endif trap_pc,
+   modport  slave(input    mepc, `ifdef ext_S sepc, `endif `ifdef ext_U uepc, `endif mode, interrupt_flag, interrupt_cause, trap_pc,
                   output `ifdef ext_S sret, `endif `ifdef ext_U uret, `endif mret);
 
 endinterface: CSR_EXE_intf

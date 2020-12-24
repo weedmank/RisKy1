@@ -147,27 +147,28 @@ module csr_av_rdata
          12'h100:
          begin
             csr_rd_avail   = TRUE;
-            csr_rd_data    = scsr.sstatus;   // see this in csr.sv
+            csr_rd_data    = scsr.sstatus;            // see this in csr.sv
          end
 
          // In systems with S-mode, the  medeleg and mideleg registers must exist, whereas the sedeleg and sideleg registers should only
          // exist if the N extension for user-mode interrupts is also implemented. p 28 riscv-privileged
          `ifdef ext_N
-         // ------------------------------ Supervisor Exception Delegation Register.
-         // 12'h102 = 12'b0001_0000_0010  sedeleg     (read-write)
-         12'h102:
-         begin
-            csr_rd_avail   = TRUE;
-            csr_rd_data    = scsr.sedeleg;
-         end
+            // ------------------------------ Supervisor Exception Delegation Register.
+            // 12'h102 = 12'b0001_0000_0010  sedeleg  (read-write)
+            12'h102:
+            begin
+               csr_rd_avail   = TRUE;
+               csr_rd_data    = scsr.sedeleg;
+            end
 
-         // ------------------------------ Supervisor Interrupt Delegation Register.
-         // 12'h103 = 12'b0001_0000_0011  sideleg     (read-write)
-         12'h103:
-         begin
-            csr_rd_avail   = TRUE;
-            csr_rd_data    = scsr.sideleg;
-         end
+            // ------------------------------ Supervisor Interrupt Delegation Register.
+            // 12'h103 = 12'b0001_0000_0011  sideleg  (read-write)
+            12'h103:
+            begin
+               csr_rd_avail   = TRUE;
+               csr_rd_data    = scsr.sideleg;
+            end
+         `endif // ext_N
 
          // ------------------------------ Supervisor Interrupt Enable Register.
          // 12'h104 = 12'b0001_0000_0100  sie         (read-write)
@@ -176,7 +177,6 @@ module csr_av_rdata
             csr_rd_avail   = TRUE;
             csr_rd_data    = scsr.sie;
          end
-         `endif // ext_N
 
          // ------------------------------ Supervisor Trap handler base address.
          // 12'h105 = 12'b0001_0000_0101  stvec       (read-write)
@@ -243,7 +243,6 @@ module csr_av_rdata
             csr_rd_avail   = TRUE;
             csr_rd_data    = scsr.sip;
          end
-         `endif // ext_N
 
          // ------------------------------ Supervisor Protection and Translation
          // Supervisor address translation and protection.
@@ -253,6 +252,7 @@ module csr_av_rdata
             csr_rd_avail   = TRUE;
             csr_rd_data    = scsr.satp;
          end
+      `endif // ext_S
 
          // ==================================================================== Machine Mode Registers =================================================================
 
@@ -302,7 +302,6 @@ module csr_av_rdata
             end
          `endif
 
-         `ifdef ext_N
          // ------------------------------ Machine Interrupt Enable Register
          // 12'h304 = 12'b0011_0000_0100  mie                                 (read-write)
          12'h304:
@@ -310,7 +309,6 @@ module csr_av_rdata
             csr_rd_avail   = TRUE;
             csr_rd_data    = mcsr.mie;
          end
-         `endif
 
          // ------------------------------ Machine Trap-handler base address.
          // 12'h305 = 12'b0011_0000_0101  mtvec                            (read-write)
@@ -337,7 +335,6 @@ module csr_av_rdata
             csr_rd_avail   = TRUE;
             csr_rd_data    = mcsr.mcountinhibit;
          end
-
 
          // ------------------------------ Machine Trap Handling
          // Scratch register for machine trap handlers.

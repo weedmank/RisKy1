@@ -29,9 +29,7 @@ module wb
 
    input    logic                         cpu_halt,                                 // Output:  disable CPU operations by not allowing any more input to this stage
 
-   `ifdef ext_N
    output   logic                         trigger_wfi,                              // WFI instruction may trigger a CPU halt
-   `endif
 
    // Fetch PC reload signals
    output   logic                         rld_pc_flag,                              // Output:  Cause the Fetch unit to reload the PC
@@ -174,9 +172,7 @@ module wb
 
 
    //------------------- CPU Halt Logic ------------------
-   `ifdef ext_N
    assign trigger_wfi = FALSE;      //!!!!!!!!!!!!!!!!! temporary !!!!!!!!!!!!!!!!!!!!
-   `endif
 
    //-----------------------------------------------------
    // Interrupt Code   Description - riscv_privileged.pdf p 37

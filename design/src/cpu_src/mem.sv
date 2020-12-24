@@ -35,9 +35,7 @@ module mem
    `endif
 
    // I/O Write signals to specific RISC-V I/O registers
-   `ifdef ext_N
    output   logic                         msip_wr,                                  // Output:  write to I/O msip register
-   `endif
    output   logic                         mtime_lo_wr,                              // Output:  write to I/O mtime_lo register
    output   logic                         mtime_hi_wr,                              // Output:  write to I/O mtime_hi register
    output   logic                         mtimecmp_lo_wr,                           // Output:  write to I/O mtimecmp_lo register
@@ -94,7 +92,7 @@ module mem
    logic                   MIO_req, MIO_ack, MIO_ack_fault;
    logic         [RSZ-1:0] MIO_ack_data;
    logic             [1:0] mode;
-   
+
    // signals used in MEM stage
    assign ls_addr                      = E2M_bus.data.ls_addr;
    assign st_data                      = E2M_bus.data.st_data;
@@ -107,7 +105,7 @@ module mem
    `ifdef ext_N
    assign sw_irq                       = E2M_bus.data.sw_irq;                       // msip_reg[3]. see irq.sv
    `endif
-   
+
    assign is_ls                        = (is_ld | is_st);
 
    // control logic for interface to Execution Stage
@@ -161,12 +159,12 @@ module mem
    //     mem_dout.mio_ack_fault       is created in always block below
    assign mem_dout.mode                = E2M_bus.data.mode;
    assign mem_dout.trap_pc             = E2M_bus.data.trap_pc;                      // trap_pc, interrupt_flag, interrupt_cause not used in this stage,but needed in WB stage
-   `ifdef ext_N         
+   `ifdef ext_N
    assign mem_dout.sw_irq              = E2M_bus.data.sw_irq;                       // msip_reg[3]. see irq.sv
    assign mem_dout.interrupt_flag      = E2M_bus.data.interrupt_flag;
    assign mem_dout.interrupt_cause     = E2M_bus.data.interrupt_cause;
    `endif
-   
+
    `ifdef ext_F
    assign mem_dout.Fd_wr               = E2M_bus.data.Fd_wr;
    `endif
@@ -236,10 +234,7 @@ module mem
    assign mtime_hi_wr      = is_int_io & (mode == M_MODE) & (ls_addr == (MTIME_Base_Addr+4))    & is_st;
    assign mtimecmp_lo_wr   = is_int_io & (mode == M_MODE) & (ls_addr == MTIMECMP_Base_Addr)     & is_st;
    assign mtimecmp_hi_wr   = is_int_io & (mode == M_MODE) & (ls_addr == (MTIMECMP_Base_Addr+4)) & is_st;
-
-   `ifdef ext_N
    assign msip_wr          = is_int_io & (mode == M_MODE) & (ls_addr == MSIP_Base_Addr)         & is_st;
-   `endif
 
    assign mmr_wr_data      = st_data;
 

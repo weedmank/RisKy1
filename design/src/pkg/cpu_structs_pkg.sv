@@ -191,25 +191,23 @@ import cpu_params_pkg::*;
       logic                   inv_flag;                        // invalidate flag
       logic                   is_ld;                           // 1 = Read from System Memory
       logic                   is_st;                           // 1 = Write to System Memory
-      logic                   instr_err;              
+      logic                   instr_err;
       logic                   ci;                              // 1 = compressed 16-bit instruction, 0 = 32 bit instruction
-      `ifndef ext_C              
-      logic       [PC_SZ-1:0] br_pc;               
-      `endif               
-      IG_TYPE                 ig_type;             
-      logic       [OP_SZ-1:0] op_type;             
+      `ifndef ext_C
+      logic       [PC_SZ-1:0] br_pc;
+      `endif
+      IG_TYPE                 ig_type;
+      logic       [OP_SZ-1:0] op_type;
       logic             [1:0] mode;                            // mode can change on any clock cycle, but we want to pass value associated with current instruction
-      `ifdef ext_N               
-      logic                   sw_irq;              
+      logic                   sw_irq;
       logic                   interrupt_flag;                  // 1 = take an interrupt trap
       logic             [3:0] interrupt_cause;                 // value specifying what type of interrupt
-      `endif               
       logic       [PC_SZ-1:2] trap_pc;                         // Output:  trap vector handler address. 4 byte alignmen
 
       // GPR/FPR information (gets pased to MEM stage which passes it to WB stage)
       `ifdef ext_F
       logic                   Fd_wr;                           // WB stage needs to know whether to write to destination register Fd
-      `endif               
+      `endif
       logic                   Rd_wr;                           // WB stage needs to know whether to write to destination register Rd
       logic     [GPR_ASZ-1:0] Rd_addr;                         // address of which GPR/FPR we want to Write
       logic         [RSZ-1:0] Rd_data;                         // This is the write back data (produced by alu_fu, br_fu, im_fu, idr_fu, csr_fu, spfp_fu)
@@ -224,9 +222,9 @@ import cpu_params_pkg::*;
    typedef struct packed {
       // information to be consumed by the MEM stage
       IP_Data                 ipd;                             // pass instruction and program counter for debugging purposes
-      logic       [PC_SZ-1:0] ls_addr;             
+      logic       [PC_SZ-1:0] ls_addr;
       logic                   inv_flag;                        // invalidate flag
-      logic                   instr_err;              
+      logic                   instr_err;
       logic                   ci;                              // 1 = compressed 16-bit instruction, 0 = 32 bit instruction
       `ifndef ext_C
       logic       [PC_SZ-1:0] br_pc;
@@ -235,19 +233,17 @@ import cpu_params_pkg::*;
       logic       [OP_SZ-1:0] op_type;
       logic                   mio_ack_fault;
       logic             [1:0] mode;
-      `ifdef ext_N
       logic                   sw_irq;
       logic                   interrupt_flag;                  // 1 = take an interrupt trap
       logic             [3:0] interrupt_cause;                 // value specifying what type of interrupt
-      `endif               
       logic       [PC_SZ-1:2] trap_pc;                         // Output:  trap vector handler address. 4 byte alignment
-               
-      // GPR/FPR information              
-      `ifdef ext_F               
+
+      // GPR/FPR information
+      `ifdef ext_F
       logic                   Fd_wr;                           // Writeback stage needs to know whether to write to single precision floating point destination register Fd
-      `endif               
+      `endif
       logic                   Rd_wr;                           // Writeback stage needs to know whether to write to destination register Rd
-      logic     [GPR_ASZ-1:0] Rd_addr;             
+      logic     [GPR_ASZ-1:0] Rd_addr;
       logic         [RSZ-1:0] Rd_data;                         // This is the write back data (produced by alu_fu, br_fu, im_fu, idr_fu)
       // CSR information (gets pased to MEM stage which passes it to WB stage)
       logic                   csr_wr;                          // WB stage needs to know whether to write to CSR
@@ -290,9 +286,9 @@ import cpu_params_pkg::*;
       logic             [2:0] size;                            // size in bytes -> 1 = 8 bit, 2 = 16 bit, 4 = 32 bit Load/Store
       logic                   zero_ext;                        // 1 = Zero Extend
       logic                   inv_flag;                        // invalidate flag
-   } L1DC_Req_Data;              
-               
-   typedef struct packed {             
+   } L1DC_Req_Data;
+
+   typedef struct packed {
       logic                   rw;                              // read = 1, write = 0
       logic [PC_SZ-CL_SZ-1:0] rw_addr;                         // rw_addr - cache line address
       logic    [CL_LEN*8-1:0] wr_data;                         // wr_data - cache line of data to be stored if rw = 0
@@ -312,21 +308,21 @@ import cpu_params_pkg::*;
       logic         [RSZ-1:0] st_data;
       logic             [2:0] size;
       logic                   zero_ext;                        // 1 = LBU or LHU
-      logic                   inv_flag;               
-      logic                   is_ld;               
-      logic                   is_st;               
+      logic                   inv_flag;
+      logic                   is_ld;
+      logic                   is_st;
       logic                   mis;                             // misalignment
-   } MEM_LS_Data;             
-               
-`ifdef add_LSQ             
-   typedef struct packed {             
-      logic       [PC_SZ-1:0] addr;             
-      logic         [RSZ-1:0] data;             
-      logic             [2:0] size;             
+   } MEM_LS_Data;
+
+`ifdef add_LSQ
+   typedef struct packed {
+      logic       [PC_SZ-1:0] addr;
+      logic         [RSZ-1:0] data;
+      logic             [2:0] size;
       logic                   zero_ext;                        // 1 = LBU or LHU
-      logic                   inv_flag;               
+      logic                   inv_flag;
       logic                   is_ld;                           // 1 = Load, 0 = Store
-      logic                   completed;              
+      logic                   completed;
       logic                   fault;                           // Load/Store fault occured
       logic                   mis;                             // Load/store misalignment
    } LSQ_Data;
@@ -486,32 +482,28 @@ import cpu_params_pkg::*;
       logic                        [RSZ-1:0] misa;             // 12'h301
       `ifdef ext_S   // "In systems with S-mode, the medeleg and mideleg registers must exist,..." see p. 28 riscv-privileged.pdf, csr_wr_mach.svh
       logic                        [RSZ-1:0] medeleg;          // 12'h302
-         `ifdef ext_N   
+         `ifdef ext_N
           logic                    [RSZ-1:0] mideleg;          // 12'h303
-          `endif  
-      `elsif ext_U   
+          `endif
+      `elsif ext_U
          logic                     [RSZ-1:0] medeleg;          // 12'h302
-         `ifdef ext_N   
+         `ifdef ext_N
          logic                     [RSZ-1:0] mideleg;          // 12'h303
-         `endif   
-      `endif   
-      `ifdef ext_N   
+         `endif
+      `endif
       MIE_SIGS                               mie;              // 12'h304
-      `endif   
       logic                        [RSZ-1:0] mtvec;            // 12'h305
       logic                        [RSZ-1:0] mcounteren;       // 12'h306
       logic                        [RSZ-1:0] mcountinhibit;    // 12'h320
-      `ifdef use_MHPM   
+      `ifdef use_MHPM
       logic   [NUM_MHPM-1:0] [EV_SEL_SZ-1:0] mhpmevent;        // 12'h323 - 12'h33F, mhpmevent3 - mhpmevent31
-      `endif   
-   
+      `endif
+
       logic                        [RSZ-1:0] mscratch;         // 12'h340
       logic                      [PC_SZ-1:0] mepc;             // 12'h341
       logic                            [3:0] mcause;           // 12'h342
       logic                        [RSZ-1:0] mtval;            // 12'h343
-      `ifdef ext_N   
       MIP_SIGS                               mip;              // 12'h344
-      `endif
 
       `ifdef USE_PMPCFG
       logic                        [RSZ-1:0] pmpcfg0;          // 12'h3A0
@@ -600,20 +592,18 @@ import cpu_params_pkg::*;
    // Supervisor mode Registers
    typedef struct packed {
       SSTATUS_SIGS                           sstatus;          // 12'h100
-      logic                        [RSZ-1:0] sedeleg;          // 12'h102
       `ifdef ext_N
+      logic                        [RSZ-1:0] sedeleg;          // 12'h102
       logic                        [RSZ-1:0] sideleg;          // 12'h103
+      `endif // ext_N
       SIE_SIGS                               sie;              // 12'h104
-      `endif
       logic                        [RSZ-1:0] stvec;            // 12'h105
       logic                        [RSZ-1:0] scounteren;       // 12'h106
       logic                        [RSZ-1:0] sscratch;         // 12'h140
       logic                      [PC_SZ-1:0] sepc;             // 12'h141
       logic                            [3:0] scause;           // 12'h142
       logic                        [RSZ-1:0] stval;            // 12'h143
-      `ifdef ext_N
       SIP_SIGS                               sip;              // 12'h144
-      `endif
       logic                        [RSZ-1:0] satp;             // 12'h180
    } SCSR;
 
@@ -621,17 +611,13 @@ import cpu_params_pkg::*;
    // User mode Registers
    typedef struct packed {
       USTATUS_SIGS                           ustatus;          // 12'h000
-      `ifdef ext_N
       UIE_SIGS                               uie;              // 12'h004
-      `endif
       logic                        [RSZ-1:0] utvec;            // 12'h005
       logic                        [RSZ-1:0] uscratch;         // 12'h040
       logic                      [PC_SZ-1:0] uepc;             // 12'h041
       logic                            [3:0] ucause;           // 12'h042
       logic                        [RSZ-1:0] utval;            // 12'h043
-      `ifdef ext_N
       UIP_SIGS                               uip;              // 12'h044
-      `endif
    } UCSR;
 
 /*

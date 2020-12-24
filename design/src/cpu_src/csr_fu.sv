@@ -35,16 +35,14 @@ module csr_fu
    logic     [GPR_ASZ-1:0] Rd_addr;                               // Input:   Rd address
    logic     [GPR_ASZ-1:0] Rs1_addr;                              // Input:   Rs1 address
    logic         [RSZ-1:0] Rs1_data;                              // Input:   Contents of R[rs1]
-   logic             [2:0] funct3;                                  
+   logic             [2:0] funct3;
    logic             [1:0] mode;                                  // Input:   CPU mode: Machine, Supervisor, or User
-   `ifdef ext_N
    logic                   sw_irq;                                // Input:   Software Interrupt Pending
-   `endif
 
-   logic                   csr_wr;                                // Output: 
-   logic                   csr_rd;                                // Output: 
-   logic                   csr_avail;                             // Output: 
-   logic         [RSZ-1:0] csr_rd_data;                           // Output: 
+   logic                   csr_wr;                                // Output:
+   logic                   csr_rd;                                // Output:
+   logic                   csr_avail;                             // Output:
+   logic         [RSZ-1:0] csr_rd_data;                           // Output:
    logic         [RSZ-1:0] Rd_data;                               // Output:  based on current CSR[csr_addr] and function to perform. This is the value to write into Destination Register Rd in WB stage
    logic         [RSZ-1:0] csr_wr_data;                           // Output:  write data to csr[csr_addr]
    logic         [RSZ-1:0] nxt_csr_rd_data;                       // Output:  data that will be in CSR[csr_addr] after write - may be different that data being written but it can be determined
@@ -70,10 +68,8 @@ module csr_fu
    assign Rs1_data                     = csrfu_bus.Rs1_data;      // Input:   R[rs1]
    assign funct3                       = csrfu_bus.funct3;        // Input:   type of CSR R/W
    assign mode                         = csrfu_bus.mode;          // Input:   current CPU mode
-   `ifdef ext_N
    assign sw_irq                       = csrfu_bus.sw_irq;        // Input:   Software Interrupt Pending
-   `endif
-   
+
    assign csrfu_bus.csr_wr             = csr_wr;                  // Output:   1 = write csr_wr_data to CSR[csr_addr]
    assign csrfu_bus.csr_rd             = csr_rd;                  // Output:   1 = read csr_rd_data from CSR[csr_addr]
    assign csrfu_bus.Rd_data            = Rd_data;                 // Output:  data, based on current CSR[csr_addr] and operation to perform, that will be written to Destination Register Rd in WB stage
@@ -154,10 +150,8 @@ module csr_fu
                   if (csr_rd)
                   begin
                      Rd_data = csr_rd_data;
-                     `ifdef ext_N
                      if (csr_addr[8:0] == 9'h144)  // Machine Interrupt Pending register - Mip and Supervisor Interrupt Pending register
                         Rd_data |= (sw_irq << 9);  // the value returned in the rd destination register contains the logical-OR of the softwarewritable bit and the interrupt signal from the interrupt controller. p 30 riscv-privileged.pdf
-                     `endif
                   end
                end
             end
@@ -186,10 +180,8 @@ module csr_fu
                begin
                   csr_rd = TRUE;
                   Rd_data = csr_rd_data;
-                  `ifdef ext_N
                   if (csr_addr[8:0] == 9'h144)  // Machine Interrupt Pending register - Mip and Supervisor Interrupt Pending register
                      Rd_data |= (sw_irq << 9);  // the value returned in the rd destination register contains the logical-OR of the softwarewritable bit and the interrupt signal from the interrupt controller. p 30 riscv-privileged.pdf
-                  `endif
                end
             end
             CSRRC: // 3
@@ -214,10 +206,8 @@ module csr_fu
                begin
                   csr_rd = TRUE;
                   Rd_data = csr_rd_data;
-                  `ifdef ext_N
                   if (csr_addr[8:0] == 9'h144)  // Machine Interrupt Pending register - Mip and Supervisor Interrupt Pending register
                      Rd_data |= (sw_irq << 9);  // the value returned in the rd destination register contains the logical-OR of the softwarewritable bit and the interrupt signal from the interrupt controller. p 30 riscv-privileged.pdf
-                  `endif
                end
             end
             CSRRWI: // 5

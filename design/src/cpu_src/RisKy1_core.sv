@@ -87,9 +87,7 @@ module RisKy1_core
    input    wire                       clk_in,
    input    wire                       reset_in,
 
-   `ifdef ext_N
    input    wire                       ext_irq,                               // Input:  Machine mode External Interrupt
-   `endif
 
    // L1 Instruction cache interface signals
    output   wire                       ic_req,                                // Output: Request            - Fetch unit is requesting a cache line of data from the I $
@@ -165,9 +163,7 @@ module RisKy1_core
    input    logic                      clk_in,
    input    logic                      reset_in,
 
-   `ifdef ext_N
    input    logic                      ext_irq,                               // Input:  Machine mode External Interrupt
-   `endif
 
    `ifdef SIM_DEBUG
    output   logic                      sim_stop,
@@ -331,11 +327,9 @@ module RisKy1_core
    logic                   [2*RSZ-1:0] mtime, mtimecmp;
    logic                     [RSZ-1:0] mmr_wr_data;
 
-   `ifdef ext_N
    logic                               msip_wr;
    logic                               timer_irq;
    logic                               sw_irq;
-   `endif
 
    // GPR signals
    logic       [MAX_GPR-1:0] [RSZ-1:0] gpr;                                   // MAX_GPR General Purpose registers
@@ -411,9 +405,7 @@ module RisKy1_core
       .clk_in(clk_in), .reset_in(reset_in),                                   // Inputs:  system clock and reset
 
       .cpu_halt(cpu_halt),                                                    // Input:   Cause the CPU to stop processing instructions and data
-      `ifdef ext_N
       .sw_irq(sw_irq),                                                        // Input:   Software Interrupt Pending. used in csr_fu.sv. then passed on to MEM and WB/CSR
-      `endif
 
       // signals shared between CSR and EXE stage
       .csr_exe_bus(csr_exe_bus),                                              // Input:   mepc,sepc,uepc,mert  Output: sret,uret,mode
@@ -466,9 +458,7 @@ module RisKy1_core
       `endif
 
       // Internal I/O Write Data - in case it's a Store instruction wanting to write to the contents of the following registers
-      `ifdef ext_N
       .msip_wr(msip_wr),                                                      // Output:  write to I/O msip register
-      `endif
       .mtime_lo_wr(mtime_lo_wr),                                              // Output:  write to I/O mtime_lo register
       .mtime_hi_wr(mtime_hi_wr),                                              // Output:  write to I/O mtime_hi register
       .mtimecmp_lo_wr(mtimecmp_lo_wr),                                        // Output:  write to I/O mtimecmp_lo register
@@ -505,18 +495,14 @@ module RisKy1_core
 
    // 5th Stage = Write Back Stage
    WB_2_CSR_wr_intf  csr_wr_bus();
-   `ifdef ext_N
    logic             trigger_wfi;
-   `endif
    wb WB
    (
       .reset_in(reset_in),                                                    // Input:  system reset
 
       .cpu_halt(cpu_halt),                                                    // Input:   halt CPU operation if TRUE
 
-      `ifdef ext_N
       .trigger_wfi(trigger_wfi),                                              // Output:  Trigger a CPU halt
-      `endif
 
       // flush pipeline/reload PC signals
       .rld_pc_flag(wb_rld_pc_flag),                                           // Output:  1 = flush pipeline & reload PC with mem_rld_pc_addr
@@ -552,10 +538,8 @@ module RisKy1_core
       .clk_in(clk_in),
       .reset_in(reset_in),
 
-      `ifdef ext_N
       .ext_irq(ext_irq),                                                      // Input:   External Interrupt
       .timer_irq(timer_irq),                                                  // Input:   Timer & Software Interrupt from clint.sv
-      `endif
 
       // signals shared between CSR and EXE stage
       .csr_exe_bus(csr_exe_bus),
@@ -602,24 +586,20 @@ module RisKy1_core
    irq IRQ
    ( .clk_in(clk_in), .reset_in(reset_in),
 
-      .mtime_lo_wr(mtime_lo_wr),                                              // Input:  write to I/O mtime_lo register
-      .mtime_hi_wr(mtime_hi_wr),                                              // Input:  write to I/O mtime_hi register
-      .mtimecmp_lo_wr(mtimecmp_lo_wr),                                        // Input:  write to I/O mtimecmp_lo register
-      .mtimecmp_hi_wr(mtimecmp_hi_wr),                                        // Input:  write to I/O mtimecmp_hi register
-      .mmr_wr_data(mmr_wr_data),                                              // Input:  write data for above registers
-
-     `ifdef ext_N
-     .msip_wr(msip_wr),
-     .timer_irq(timer_irq), .sw_irq(sw_irq),                                  // Outputs: Timer and Software Interrupts (1 bit each)
-     `endif
-
-     .mtime(mtime), .mtimecmp(mtimecmp)                                       // Outputs: 64 bit mtime & mtimecmp registers
+      .mtime_lo_wr(mtime_lo_wr),                                              // Input:   write to I/O mtime_lo register
+      .mtime_hi_wr(mtime_hi_wr),                                              // Input:   write to I/O mtime_hi register
+      .mtimecmp_lo_wr(mtimecmp_lo_wr),                                        // Input:   write to I/O mtimecmp_lo register
+      .mtimecmp_hi_wr(mtimecmp_hi_wr),                                        // Input:   write to I/O mtimecmp_hi register
+      .msip_wr(msip_wr),                                                      // Input:   write to I/O msip register
+      .mmr_wr_data(mmr_wr_data),                                              // Input:   write data for above registers
+      .sw_irq(sw_irq),                                                        // Output:  Software Interrupt (1 bit each)
+      .timer_irq(timer_irq),                                                  // Output:  Timer Interrupts (1 bit each)
+      .mtime(mtime), .mtimecmp(mtimecmp)                                      // Outputs: 64 bit mtime & mtimecmp registers
    );
 
    //---------------------------------------------------------------------------
    // CPU Halt Logic
    //---------------------------------------------------------------------------
-   `ifdef ext_N
    // Putting CPU to sleep and waking it up
    always_ff @(posedge clk_in)
    begin
@@ -628,8 +608,5 @@ module RisKy1_core
       else if (trigger_wfi)
          cpu_halt <= TRUE;
    end
-   `else
-   assign cpu_halt = FALSE;
-   `endif
 
 endmodule

@@ -29,10 +29,8 @@ module execute
    input    logic                         reset_in,
 
    input   logic                          cpu_halt,                        // Input:  cause CPU to stop processing instructions & data
-   
-   `ifdef ext_N
+
    input    logic                         sw_irq,                          // Input:   msp_reg[3] = Software Interrupt Pending bit
-   `endif
 
    // signals shared between EXE stage and csr.sv
    CSR_EXE_intf.slave                     csr_exe_bus,
@@ -309,7 +307,7 @@ module execute
    logic         [RSZ-1:0] nxt_csr_rd_data;  // data to use as forwarding value for CSR[csr_addr]
    logic                   ill_csr_access;   // 1 = illegal csr access
    logic            [11:0] ill_csr_addr;
-   
+
    assign csr_addr                  = D2E_bus.data.imm[11:0];
    // ----------------------------------- csr_rd_bus interface
    // Read CSR access port signals to/from CSR module (csr.sv)
@@ -328,10 +326,8 @@ module execute
    assign csrfu_bus.Rs1_data        = Rs1D;                                   // contents of R[Rs1]
    assign csrfu_bus.funct3          = D2E_bus.data.funct3;
    assign csrfu_bus.mode            = mode;
-   `ifdef ext_N
    assign csrfu_bus.sw_irq          = sw_irq;                                 // msip_reg[3] = Software Interrupt Pending bit
-   `endif
-   
+
    assign csr_fu_done = D2E_bus.valid & (ig_type == CSR_INSTR);               // This functional unit only takes 1 clock cycle
    // Control & Status Registers
    csr_fu CSRFU
@@ -478,10 +474,8 @@ module execute
 
          // trap_pc, interrupt_flag, interrupt_cause need to come from CSR in this stage so they can be passed to next stages as they relate to current instruction
          exe_dout.trap_pc           = csr_exe_bus.trap_pc;                          // trap_pc, interrupt_flag, interrupt_cause not used in this stage,but needed in WB stage
-         `ifdef ext_N         
          exe_dout.interrupt_flag    = csr_exe_bus.interrupt_flag;
          exe_dout.interrupt_cause   = csr_exe_bus.interrupt_cause;
-         `endif
 
          exe_dout.ipd               = D2E_bus.data.ipd;                             // pass on to next stage
          exe_dout.ci                = ci;                                           // 1 = compressed 16 bit instruction, 0 = 32 bit instruction
@@ -489,7 +483,7 @@ module execute
 
          exe_dout.op_type           = op_type;
          exe_dout.mode              = mode;                                         // pass mode value associated with this instruction
-         
+
          // NOTE: illegal instructions (ILL_INSTR) will cause an exception in WB stage
          case(ig_type)                                                              // select which functional unit output data is the appropriate one and save it
             ALU_INSTR:
