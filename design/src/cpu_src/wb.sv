@@ -341,7 +341,7 @@ module wb
                      if (mode < M_MODE)                                             // Illegal to use in Supervisor or User modes
                      begin
                         rld_pc_flag             = TRUE;                             // flush pipeline and reload new fetch address
-                        rld_pc_addr             = trap_pc;                          // Trap Vector Base Address - from csr.sv
+                        rld_pc_addr             = trap_pc;                          // Trap Vector Base Address - from csr.sv/mode_irq.sv
 
                         exception.pc            = ipd.pc;                           // save address of current instruction
                         exception.tval          = ipd.instruction;                  // current Instruction

@@ -224,7 +224,7 @@ module RisKy1_core
       if (MIDLG_INIT & MIDLG_MASK)                                            $fatal ("An implementation shall not hardwaire any delegation bits to one. see p 28 riscv-privilege.pdf.\n See parameters MIDLG_INIT and MIDLG_MASK in cpu_params_pkg.sv");
       if (SEDLG_INIT & SEDLG_MASK)                                            $fatal ("An implementation shall not hardwaire any delegation bits to one. see p 28 riscv-privilege.pdf.\n See parameters SEDLG_INIT and SEDLG_MASK in cpu_params_pkg.sv");
       if (SIDLG_INIT & SIDLG_MASK)                                            $fatal ("An implementation shall not hardwaire any delegation bits to one. see p 28 riscv-privilege.pdf.\n See parameters SIDLG_INIT and SIDLG_MASK in cpu_params_pkg.sv");
-      
+
       if ((Phys_Addr_Lo % 4) != 0)                                            $fatal ("Phys_Addr_Lo must be a multiple of 4. see cpu_params_pkg.sv");
       if ((Phys_Depth % 4) != 0)                                              $fatal ("Phys_Depth must be a multiple of 4. see cpu_params_pkg.sv");
 
@@ -414,9 +414,9 @@ module RisKy1_core
       `ifdef ext_N
       .sw_irq(sw_irq),                                                        // Input:   Software Interrupt Pending. used in csr_fu.sv. then passed on to MEM and WB/CSR
       `endif
-      
+
       // signals shared between CSR and EXE stage
-      .csr_exe_bus(csr_exe_bus),                                              // Input:   mepc,sepc,uepc,mert,sret,uret,mode
+      .csr_exe_bus(csr_exe_bus),                                              // Input:   mepc,sepc,uepc,mert  Output: sret,uret,mode
 
       // Time to flush pipeline and reload PC signal
       .pipe_flush(pipe_flush_exe),                                            // Input:   1 = flush pipeline

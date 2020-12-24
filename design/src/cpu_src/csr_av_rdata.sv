@@ -33,9 +33,9 @@ module csr_av_rdata
    output   logic                csr_rd_avail,     // 1 = register exists (available) in design
 
    input    logic    [RSZ*2-1:0] mtime,
-   
+
    input    logic          [1:0] mode,
-   
+
    `ifdef add_DM
    input    logic                Dbg_mode,
    `endif
@@ -49,16 +49,17 @@ module csr_av_rdata
    input var MCSR  mcsr           // all of the Machine mode Control & Status Registers
 );
    logic    av;
-   
+
    always_comb
    begin
       csr_rd_avail   = FALSE; // default values
       csr_rd_data    = '0;
 
       case(csr_rd_addr)
-         `ifdef ext_U
+      `ifdef ext_U
          // ==================================================================== User Mode Registers ====================================================================
 
+         `ifdef ext_N
          // ------------------------------ User Status Register
          // 12'h000 = 12'b0000_0000_0000  ustatus     (read-write)  user mode
          //  31          22    21    20   19    18   17   16:15 14:13 12:11 10:9   8     7     6     5     4     3     2     1     0
@@ -68,6 +69,7 @@ module csr_av_rdata
             csr_rd_avail   = TRUE;
             csr_rd_data    = ucsr.ustatus;            // see this in csr.sv
          end
+         `endif // ext_N
 
          `ifdef ext_F
          // ------------------------------ User Floating-Point CSRs
@@ -82,7 +84,6 @@ module csr_av_rdata
             csr_rd_avail   = TRUE;
             csr_rd_data    = ucsr.uie;
          end
-         `endif // ext_N
 
          // ------------------------------ User Trap Handler Base address
          // 12'h005 = 12'b0000_0000_0101  utvec       (read-write)  user mode
@@ -125,7 +126,6 @@ module csr_av_rdata
             csr_rd_data    = ucsr.utval;
          end
 
-         `ifdef ext_N
          // ------------------------------ User Interrupt Pending.
          // 12'h044 = 12'b0000_0100_0100  uip         (read-write)
          12'h044:
@@ -134,10 +134,10 @@ module csr_av_rdata
             csr_rd_data    = ucsr.uip;
          end
          `endif // ext_N
-         `endif // ext_U
+      `endif // ext_U
 
 
-         `ifdef ext_S
+      `ifdef ext_S
          // ==================================================================== Supervisor Mode Registers ==============================================================
 
          // ------------------------------ Supervisor Status Register
@@ -150,6 +150,9 @@ module csr_av_rdata
             csr_rd_data    = scsr.sstatus;   // see this in csr.sv
          end
 
+         // In systems with S-mode, the  medeleg and mideleg registers must exist, whereas the sedeleg and sideleg registers should only
+         // exist if the N extension for user-mode interrupts is also implemented. p 28 riscv-privileged
+         `ifdef ext_N
          // ------------------------------ Supervisor Exception Delegation Register.
          // 12'h102 = 12'b0001_0000_0010  sedeleg     (read-write)
          12'h102:
@@ -158,7 +161,6 @@ module csr_av_rdata
             csr_rd_data    = scsr.sedeleg;
          end
 
-         `ifdef ext_N
          // ------------------------------ Supervisor Interrupt Delegation Register.
          // 12'h103 = 12'b0001_0000_0011  sideleg     (read-write)
          12'h103:
@@ -226,7 +228,6 @@ module csr_av_rdata
             csr_rd_data    = scsr.scause;
          end
 
-         `ifdef ext_N
          // ------------------------------ Supervisor interrupt pending.
          // When the SEIP bit is read with a CSRRW, CSRRS, or CSRRC instruction, the value returned in the
          // rd destination register contains the logical-OR of the softwarewritable bit and the interrupt
@@ -252,7 +253,6 @@ module csr_av_rdata
             csr_rd_avail   = TRUE;
             csr_rd_data    = scsr.satp;
          end
-         `endif // ext_S
 
          // ==================================================================== Machine Mode Registers =================================================================
 
@@ -284,7 +284,7 @@ module csr_av_rdata
          // In systems with only M-mode and U-mode, the medeleg and mideleg registers should only be implemented if the N extension for user-mode interrupts is implemented.
          // In systems with only M-mode, or with both M-mode and U-mode but without U-mode trap support, the medeleg and mideleg registers should not exist. seee riscv-privileged.pdf p 28
 
-         `ifdef ext_S // "In systems with S-mode, the medeleg and mideleg registers must exist,..." p. 28 riscv-privileged.pdf
+         `ifdef MDLG // see cpu_params_pkg.sv
             // ------------------------------ Machine Exception Delegation Register
             // 12'h302 = 12'b0011_0000_0010  medeleg                          (read-write)
             12'h302:
@@ -292,35 +292,15 @@ module csr_av_rdata
                csr_rd_avail   = TRUE;
                csr_rd_data    = mcsr.medeleg;
             end
-            
-            `ifdef ext_N
-               // ------------------------------ Machine Interrupt Delegation Register
-               // 12'h303 = 12'b0011_0000_0011  mideleg                       (read-write)
-               12'h303:
-               begin
-                  csr_rd_avail   = TRUE;
-                  csr_rd_data    = mcsr.mideleg;
-               end
-            `endif
-         `elsif ext_U
-            // ------------------------------ Machine exception Delegation Register
-            // 12'h302 = 12'b0011_0000_0010  medeleg                          (read-write)
-            12'h302:
+
+            // ------------------------------ Machine Interrupt Delegation Register
+            // 12'h303 = 12'b0011_0000_0011  mideleg                       (read-write)
+            12'h303:
             begin
                csr_rd_avail   = TRUE;
-               csr_rd_data    = mcsr.medeleg;
+               csr_rd_data    = mcsr.mideleg;
             end
-      
-            `ifdef ext_N
-               // ------------------------------ Machine Interrupt Delegation Register
-               // 12'h303 = 12'b0011_0000_0011  mideleg                       (read-write)
-               12'h303:
-               begin
-                  csr_rd_avail   = TRUE;
-                  csr_rd_data    = mcsr.mideleg;
-               end
-            `endif // ext_N
-         `endif // ext_U
+         `endif
 
          `ifdef ext_N
          // ------------------------------ Machine Interrupt Enable Register
@@ -396,7 +376,7 @@ module csr_av_rdata
          // ------------------------------ Machine Interrupt Pending
          // 12'h344 = 12'b0011_0100_0100  mip                              (read-write)
          // {20'b0,meip,1'b0,seip,ueip,mtip,1'b0,stip,utip,msip,1'b0,ssip,usip};
-         
+
          // When the SEIP bit is read with a CSRRW, CSRRS, or CSRRC instruction, the value returned in the
          // rd destination register contains the logical-OR of the softwarewritable bit and the interrupt
          // signal from the interrupt controller. However, the value used in the read-modify-write sequence
@@ -593,7 +573,7 @@ module csr_av_rdata
       // 2 M, U Secure embedded systems
       // 3 M, S, U Systems running Unix-like operating systems
       //
-      
+
       // see p 34 riscv-privileged.pdf
       av = FALSE;
       if (mode == M_MODE)                             // Machine mode

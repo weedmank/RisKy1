@@ -20,12 +20,13 @@
 package cpu_params_pkg;
 import functions_pkg::*;
 
-   `ifndef ext_S
-   `ifndef ext_U
-   `define M_MODE_ONLY
-   `endif
-   `endif
+//   `ifndef ext_S
+//   `ifndef ext_U
+//      `define M_MODE_ONLY
+//   `endif
+//   `endif
 
+      `define MDLG
 
    // The following M_xxxx are used in csr_wr_mach.svh and should be set by the user to a 32 bit value
    parameter   M_VENDOR_ID = "KIRK";

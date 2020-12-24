@@ -159,7 +159,7 @@ module csr
       `ifdef use_MHPM
       .hpm_events(hpm_events),                              // Input:   24 different event counts (counts for this clock cycle) that can be used. 1 bit needed per event for this design (1 instruction max per clock cycle)
       `endif
-      
+
       .mode(mode),                                          // Input:
       .nxt_mode(nxt_mode),                                  // Input:
 
@@ -238,7 +238,7 @@ module csr
       `ifdef use_MHPM
       .hpm_events(hpm_events),                              // Input:   24 different event counts (counts for this clock cycle) that can be used. 1 bit needed per event for this design (1 instruction max per clock cycle)
       `endif
-      
+
       .mode(mode),
       .nxt_mode(nxt_mode),
 
@@ -313,17 +313,23 @@ module csr
 
    // ================================================================== User Mode CSRs =====================================================================
    `ifdef ext_U
+   `ifdef ext_N
    // ------------------------------ User Status Register
    // 12'h000 = 12'b0000_0000_0000  ustatus     (read-write)  user mode
    //  31          22    21    20   19    18   17   16:15 14:13 12:11 10:9   8     7     6     5     4     3     2     1     0
    // {sd, 8'b0, 1'b0, 1'b0, 1'b0, mxr,  sum, 1'b0,   xs,   fs, 2'b0, 2'b0, 1'b0, 1'b0, 1'b0, 1'b0, upie, 1'b0, 1'b0, 1'b0, uie};
-   csr_std_wr #(0,12'h100,5,32'hFFFF_FFEE) Ustatus                (clk_in,reset_in, mode, TRUE, nxt_ucsr.ustatus, ucsr.ustatus); // only lower 5 bits implemented so far 12/21/2020
+   csr_std_wr #(0,12'h000,5,32'hFFFF_FFEE) Ustatus                (clk_in,reset_in, mode, TRUE, nxt_ucsr.ustatus, ucsr.ustatus); // only lower 5 bits implemented so far 12/21/2020
+   `endif
+
+   `ifdef ext_F
+   // ------------------------------ User Floating-Point CSRs
+   // 12'h001 - 12'h003
+   `endif   // ext_F
 
    `ifdef ext_N
    // ------------------------------ User Interrupt-Enable Register
    // 12'h004 = 12'b0000_0000_0100  uie                           (read-write)  user mode
-   csr_std_wr #(0,12'h004,RSZ,32'hFFFF_FEEE) Uie                  (clk_in,reset_in, mode, TRUE, nxt_ucsr.uie, ucsr.uie);
-   `endif // ext_N
+   csr_std_wr #(0,12'h004,9,32'hFFFF_FEEE) Uie                    (clk_in,reset_in, mode, TRUE, nxt_ucsr.uie, ucsr.uie);
 
    // User Trap Handler Base address.
    // 12'h005 = 12'b0000_0000_0101  utvec                         (read-write)  user mode
@@ -347,7 +353,6 @@ module csr
    // 12'h043 = 12'b0000_0100_0011  utval                         (read-write)
    csr_std_wr #(0,12'h043,RSZ) Utval                              (clk_in,reset_in, mode, TRUE, nxt_ucsr.utval, ucsr.utval);
 
-   `ifdef ext_N
    // ------------------------------ User Interrupt Pending bits
    // 12'h044 = 12'b0000_0100_0100  uip                           (read-write)
    //        31:10   9     8         7:6   5     4         3:2   1     0
@@ -373,42 +378,40 @@ module csr
 
    // In systems with S-mode, the  medeleg and mideleg registers must exist, whereas the sedeleg and sideleg registers should only
    // exist if the N extension for user-mode interrupts is also implemented. p 28 riscv-privileged
-
-
-   // ------------------------------ Supervisor exception delegation register.
+   `ifdef ext_N
+   // ------------------------------ Supervisor Exception Delegation Register.
    // 12'h102 = 12'b0001_0000_0010  sedeleg                       (read-write)
    csr_std_wr #(SEDLG_INIT,12'h102,RSZ,SEDLG_MASK) Sedeleg        (clk_in,reset_in, mode, TRUE, nxt_scsr.sedeleg, scsr.sedeleg);
 
-   `ifdef ext_N
-   // ------------------------------ Supervisor interrupt delegation register.
+   // ------------------------------ Supervisor Interrupt Delegation Register.
    // 12'h103 = 12'b0001_0000_0011  sideleg                       (read-write)
    csr_std_wr #(SIDLG_INIT,12'h103,RSZ,SIDLG_MASK) Sideleg        (clk_in,reset_in, mode, TRUE, nxt_scsr.sideleg, scsr.sideleg);
 
-   // ------------------------------ Supervisor interrupt-enable register.
+   // ------------------------------ Supervisor Interrupt Enable Register.
    // 12'h104 = 12'b0001_0000_0100  sie                           (read-write)
    // Read Only bits of 32'hFFFF_FCCC;  // Note: bits 31:10, 7:6, 3:2 are not writable and are "hardwired" to 0 (init value = 0 at reset)
    csr_std_wr #(0,12'h104,RSZ,32'hFFFF_FCCC) Sie                  (clk_in,reset_in, mode, TRUE, nxt_scsr.sie, scsr.sie);
    `endif // ext_N
 
-   // ------------------------------ Supervisor trap handler base address.
+   // ------------------------------ Supervisor Trap handler base address.
    // 12'h105 = 12'b0001_0000_0101  stvec                         (read-write)
    // Current design only allows MODE of 0 or 1 - thus bit 1 forced to retain it's reset value which is 0.
    csr_std_wr #(STVEC_INIT & ~32'd2,12'h105,RSZ,32'h0000_0002) Stvec (clk_in,reset_in, mode, TRUE, nxt_scsr.stvec, scsr.stvec);
 
-   // ------------------------------ Supervisor counter enable.
+   // ------------------------------ Supervisor Counter Enable.
    // 12'h106 = 12'b0001_0000_0110  scounteren                    (read-write)
    csr_std_wr #(SCNTEN_INIT,12'h106,RSZ,SCNTEN_MASK) Scounteren   (clk_in,reset_in, mode, TRUE, nxt_scsr.scounteren, scsr.scounteren);
 
-   // ------------------------------ Supervisor Trap Handling
+   // ------------------------------ Supervisor Scratch Register
    // Scratch register for supervisor trap handlers.
    // 12'h140 = 12'b0001_0100_0000  sscratch                      (read-write)
    csr_std_wr #(0,12'h140,RSZ) Sscratch                           (clk_in,reset_in, mode, TRUE, nxt_scsr.sscratch, scsr.sscratch);
 
-   // ------------------------------ Supervisor Exception Program Counter.
+   // ------------------------------ Supervisor Exception Program Counter
    // 12'h141 = 12'b0001_0100_0001  sepc                          (read-write)
    csr_std_wr #(0,12'h141,RSZ,32'h1) Sepc                         (clk_in,reset_in, mode, TRUE, nxt_scsr.sepc, scsr.sepc); // ls-bit is RO so it remains at 0 after reset
 
-   // ------------------------------ Supervisor Exception Cause.
+   // ------------------------------ Supervisor Exception Cause
    // 12'h142 = 12'b0001_0100_0010  scause                        (read-write)
    csr_std_wr #(0,12'h142,4) Scause                               (clk_in,reset_in, mode, TRUE, nxt_scsr.scause, scsr.scause);   // scause is currently 4 Flops wide
 
@@ -416,13 +419,11 @@ module csr
    // 12'h143 = 12'b0001_0100_0011  stval                         (read-write)
    csr_std_wr #(0,12'h142,RSZ) Stval                              (clk_in,reset_in, mode, TRUE, nxt_scsr.stval, scsr.stval);
 
-   `ifdef ext_N
    // ------------------------------ Supervisor Interrupt Pending bits
    // 12'h144 = 12'b0001_0100_0100  sip                           (read-write)
    //  31:12   11    10    9     8     7     6     5     4     3     2     1     0
-   // {20'b0, 1'b0, 1'b0, seip, ueip, 1'b0, 1'b0, stip, utip, 1'b0, 1'b0, ssip, usip};
-   assign scsr.sip = mcsr.mip & 32'hFFFF_FCCC; // just a mask of the mip register
-   `endif   // ext_N
+   // {20'b0, 1'b0, 1'b0, seip, ueip, 1'b0, 1'b0, stip, utip, 1'b0, 1'b0, ssip, usip}; // All bits besides SSIP, USIP, and UEIP in the sip register are read-only. p 59 riscv-privileged.pdf
+   csr_std_wr #(0,12'h344,RSZ,32'hFFFF_FCCC) Sip                  (clk_in,reset_in, mode, TRUE, nxt_scsr.sip, scsr.sip);
 
    // ------------------------------ Supervisor Protection and Translation
    // 12'h180 = 12'b0001_1000_0000  satp                          (read-write)
@@ -447,31 +448,17 @@ module csr
    // currently this is just a constant (all bits R0)
    csr_std_wr #(MISA,12'h301,RSZ,MISA_MASK) Misa                  (clk_in,reset_in, mode, TRUE, nxt_mcsr.misa, mcsr.misa);
 
-   // ------------------------------ Machine Delegation Registers
    // In systems with only M-mode and U-mode, the medeleg and mideleg registers should only be implemented if the N extension for user-mode interrupts is implemented.
    // In systems with only M-mode, or with both M-mode and U-mode but without U-mode trap support, the medeleg and mideleg registers should not exist. seee riscv-privileged.pdf p 28
-
-   `ifdef ext_S // "In systems with S-mode, the medeleg and mideleg registers must exist,..." p. 28 riscv-privileged.pdf
-      // Machine exception delegation register.
+   `ifdef MDLG // "In systems with S-mode, the medeleg and mideleg registers must exist,..." p. 28 riscv-privileged.pdf
+      // ------------------------------ Machine Exception Delegation Register
       // 12'h302 = 12'b0011_0000_0010  medeleg                    (read-write)
       csr_std_wr #(MEDLG_INIT,12'h302,RSZ,MEDLG_MASK) Medeleg     (clk_in,reset_in, mode, TRUE, nxt_mcsr.medeleg, mcsr.medeleg);
 
-      `ifdef ext_N
-      // Machine interrupt delegation register.
+      // ------------------------------ Machine Interrupt Delegation Register
       // 12'h303 = 12'b0011_0000_0011  mideleg                    (read-write)
       csr_std_wr #(MIDLG_INIT,12'h303,RSZ,MIDLG_MASK) Mideleg     (clk_in,reset_in, mode, TRUE, nxt_mcsr.mideleg, mcsr.mideleg);
-      `endif
-   `elsif ext_U // In systems with only M-mode, or with both M-mode and U-mode but without U-mode trap support, the medeleg and mideleg registers should not exist.
-      // Machine exception delegation register.
-      // 12'h302 = 12'b0011_0000_0010  medeleg                    (read-write)
-      csr_std_wr #(MEDLG_INIT,12'h302,RSZ,MEDLG_MASK) Medeleg     (clk_in,reset_in, mode, TRUE, nxt_mcsr.medeleg, mcsr.medeleg);
-
-      `ifdef ext_N
-      // Machine interrupt delegation register.
-      // 12'h303 = 12'b0011_0000_0011  mideleg                    (read-write)
-      csr_std_wr #(MIDLG_INIT,12'h303,RSZ,MIDLG_MASK) Mideleg     (clk_in,reset_in, mode, TRUE, nxt_mcsr.mideleg, mcsr.mideleg);
-      `endif
-   `endif
+  `endif
 
    `ifdef ext_N
    // ------------------------------ Machine Interrupt Enable Register
@@ -485,7 +472,7 @@ module csr
    // ------------------------------ Machine Trap Handler Base Address
    // 12'h305 = 12'b0011_0000_0101  mtvec                         (read-write)
    // Current design only allows MODE of 0 or 1 - thus bit 1 forced to retain it's reset value which is 0.
-   csr_std_wr #(MTVEC_INIT & ~32'd2,12'h305,RSZ,32'h0000_0002) Mtvec (clk_in,reset_in, mode, TRUE, nxt_mcsr.mtvec, mcsr.mtvec);
+   csr_std_wr #(MTVEC_INIT & ~32'd2,12'h305,RSZ,32'h2) Mtvec      (clk_in,reset_in, mode, TRUE, nxt_mcsr.mtvec, mcsr.mtvec);
 
    // ------------------------------ Machine Counter Enable
    // 12'h306 = 12'b0011_0000_0110  mcounteren                    (read-write)
@@ -510,7 +497,7 @@ module csr
    endgenerate
    `endif
 
-   // ------------------------------ Machine Scratch Register for machine trap handlers.
+   // ------------------------------ Machine Scratch Register
    // 12'h340 = 12'b0011_0100_0000  mscratch                      (read-write)
    csr_std_wr #(0,12'h340,RSZ) Mscratch                           (clk_in,reset_in, mode, TRUE, nxt_mcsr.mscratch, mcsr.mscratch);
 
@@ -532,12 +519,7 @@ module csr
    // 12'h344 = 12'b0011_0100_0100  mip                           (read-write)  machine mode
    //  31:12   11    10    9     8     7     6     5     4     3     2     1     0
    // {20'b0, meip, 1'b0, seip, ueip, mtip, 1'b0, stip, utip, msip, 1'b0, ssip, usip};
-   csr_std_wr #(0,12'h344,RSZ,32'hFFFF_FCCC) Mip                  (clk_in,reset_in, mode, TRUE, nxt_mcsr.mip, mcsr.mip);
-   // MEIP, MTIP, MSIP are read only. see p32 riscv-privileged-sail-draft.pdf
-   
-   // Only the bits corresponding to lower-privilege software interrupts (USIP, SSIP), timer interrupts
-   // (UTIP, STIP), and external interrupts (UEIP, SEIP) in mip are writable through this CSR address;
-   // the remaining bits are read-only. see p. 29 riscv-privileged.pdf
+   csr_std_wr #(0,12'h344,RSZ,32'hFFFF_F444) Mip                  (clk_in,reset_in, mode, TRUE, nxt_mcsr.mip, mcsr.mip);
    `endif   // ext_N
 
 

@@ -91,8 +91,8 @@ import cpu_params_pkg::*;
 
    // ------------------------------------- Predecode data structure for fetch.sv -----------------------------------
    typedef struct packed {
-      logic       [PC_SZ-1:0] addr;                // Branch prediction address for TAKEN or NOT_TAKEN
-      logic                   is_br;               // 1 = this is a branch instruction
+      logic       [PC_SZ-1:0] addr;                            // Branch prediction address for TAKEN or NOT_TAKEN
+      logic                   is_br;                           // 1 = this is a branch instruction
    } Pre_Data;
 
    typedef struct packed {
@@ -116,12 +116,12 @@ import cpu_params_pkg::*;
       SEL_TYPE                sel_x;
       SEL_TYPE                sel_y;
       logic       [OP_SZ-1:0] op;
-      logic                   ci;               // compressed instruction
+      logic                   ci;                              // compressed instruction
       logic         [RSZ-1:0] imm;
    } ROM_Data;
 
    typedef struct packed {
-      IP_Data                 ipd;              // pass instruction and program counter
+      IP_Data                 ipd;                             // pass instruction and program counter
       logic       [PC_SZ-1:0] predicted_addr;
       logic                   Rs1_rd;
       logic                   Rs2_rd;
@@ -135,7 +135,7 @@ import cpu_params_pkg::*;
       SEL_TYPE                sel_x;
       SEL_TYPE                sel_y;
       logic       [OP_SZ-1:0] op;
-      logic                   ci;               // 1 = compressed 16-bit instruction, 0 = 32 bit instruction
+      logic                   ci;                              // 1 = compressed 16-bit instruction, 0 = 32 bit instruction
       logic         [RSZ-1:0] imm;
       logic             [2:0] funct3;
       logic     [GPR_ASZ-1:0] Rs2_addr;
@@ -146,10 +146,10 @@ import cpu_params_pkg::*;
    // ---------------------------------------------------------------------------------------------------------------
    // see mem.sv
    typedef struct packed {
-      logic       [PC_SZ-1:0] pc;               // new program counter due to exception
-      logic         [RSZ-1:0] tval;             // trap value (information)
-      logic             [3:0] cause;            // 0 - 15, 2 = illegal instruction
-      logic                   flag;             // 1 = take an exception trap
+      logic       [PC_SZ-1:0] pc;                              // new program counter due to exception
+      logic         [RSZ-1:0] tval;                            // trap value (information)
+      logic             [3:0] cause;                           // 0 - 15, 2 = illegal instruction
+      logic                   flag;                            // 1 = take an exception trap
    } EXCEPTION;
 
    // There will be a ret_cnt for each of these type of instructions
@@ -157,77 +157,77 @@ import cpu_params_pkg::*;
 
    // Verilog
 //   `ifdef MODELSIM
-      localparam RET_SZ = 15;                   // must change depending on number of RETIRE_TYPE entries!!!!!!!!!!!!!
+      localparam RET_SZ = 15;                                  // must change depending on number of RETIRE_TYPE entries!!!!!!!!!!!!!
 //   `else
-//      localparam RET_SZ = RETIRE_TYPE.num();    // Modelsim 2020.1 and lower can't handle this
+//      localparam RET_SZ = RETIRE_TYPE.num();                   // Modelsim 2020.1 and lower can't handle this
 //   `endif
 
-   typedef struct packed {                      // each entry contains count of how many instructions  of that typeretired this clock cycle
-      logic                   ext_irq;          // External Interrutp Request count - not one of the faults but usefull information - only 1 of these can ever occur during a clock cycle
-//    logic   [RET_SZ:0] [n-1:0] ret_cnt;       // general format to use if more than 1 instruction retires per clock cycle - where n is the number of bits needed to hold maximum count
-      logic        [RET_SZ:0] ret_cnt;          // only 1 instruction maximum retires per clock cycle in this pipelined RV32imc... design
-      logic                   e_flag;           // e_flag = 1 = the type of problem that occured with this instrucion is specified in e_cause
-      logic             [3:0] e_cause;          // 0 = Instruction Address Misaligned
-                                                // 1 = Instruction Access Fault
-                                                // 2 = Illegal Instruction
-                                                // 3 = Environment Break
-                                                // 4 = Load Address Misaligned
-                                                // 5 = Load Access Fault
-                                                // 6 = Store Address Misaligned
-                                                // 7 = Store Access Fault
-                                                // 8 = User ECALL
-                                                // 9 = Supervisor ECALL
-                                                // 10 = Hypervsor ECALL - not used in this design
-                                                // 11 = Machine ECALL
+   typedef struct packed {                                     // each entry contains count of how many instructions  of that typeretired this clock cycle
+      logic                   ext_irq;                         // External Interrutp Request count - not one of the faults but usefull information - only 1 of these can ever occur during a clock cycle
+//    logic   [RET_SZ:0] [n-1:0] ret_cnt;                      // general format to use if more than 1 instruction retires per clock cycle - where n is the number of bits needed to hold maximum count
+      logic        [RET_SZ:0] ret_cnt;                         // only 1 instruction maximum retires per clock cycle in this pipelined RV32imc... design
+      logic                   e_flag;                          // e_flag = 1 = the type of problem that occured with this instrucion is specified in e_cause
+      logic             [3:0] e_cause;                         // 0 = Instruction Address Misaligned
+                                                               // 1 = Instruction Access Fault
+                                                               // 2 = Illegal Instruction
+                                                               // 3 = Environment Break
+                                                               // 4 = Load Address Misaligned
+                                                               // 5 = Load Access Fault
+                                                               // 6 = Store Address Misaligned
+                                                               // 7 = Store Access Fault
+                                                               // 8 = User ECALL
+                                                               // 9 = Supervisor ECALL
+                                                               // 10 = Hypervsor ECALL - not used in this design
+                                                               // 11 = Machine ECALL
    } EVENTS;
 
    typedef struct packed {
       // information to be consumed by the MEM stage
-      IP_Data                 ipd;              // pass instruction and program counter for debugging purposes
+      IP_Data                 ipd;                             // pass instruction and program counter for debugging purposes
       logic       [PC_SZ-1:0] ls_addr;
       logic         [RSZ-1:0] st_data;
       logic             [2:0] size;
-      logic                   zero_ext;         // 1 = LBU or LHU
-      logic                   inv_flag;         // invalidate flag
-      logic                   is_ld;            // 1 = Read from System Memory
-      logic                   is_st;            // 1 = Write to System Memory
-      logic                   instr_err;
-      logic                   ci;               // 1 = compressed 16-bit instruction, 0 = 32 bit instruction
-      `ifndef ext_C
-      logic       [PC_SZ-1:0] br_pc;
-      `endif
-      IG_TYPE                 ig_type;
-      logic       [OP_SZ-1:0] op_type;
-      logic             [1:0] mode;             // mode can change on any clock cycle, but we want to pass value associated with current instruction
-      `ifdef ext_N
-      logic                   sw_irq;
-      logic                   interrupt_flag;   // 1 = take an interrupt trap
-      logic             [3:0] interrupt_cause;  // value specifying what type of interrupt
-      `endif
-      logic       [PC_SZ-1:2] trap_pc;          // Output:  trap vector handler address. 4 byte alignmen
+      logic                   zero_ext;                        // 1 = LBU or LHU
+      logic                   inv_flag;                        // invalidate flag
+      logic                   is_ld;                           // 1 = Read from System Memory
+      logic                   is_st;                           // 1 = Write to System Memory
+      logic                   instr_err;              
+      logic                   ci;                              // 1 = compressed 16-bit instruction, 0 = 32 bit instruction
+      `ifndef ext_C              
+      logic       [PC_SZ-1:0] br_pc;               
+      `endif               
+      IG_TYPE                 ig_type;             
+      logic       [OP_SZ-1:0] op_type;             
+      logic             [1:0] mode;                            // mode can change on any clock cycle, but we want to pass value associated with current instruction
+      `ifdef ext_N               
+      logic                   sw_irq;              
+      logic                   interrupt_flag;                  // 1 = take an interrupt trap
+      logic             [3:0] interrupt_cause;                 // value specifying what type of interrupt
+      `endif               
+      logic       [PC_SZ-1:2] trap_pc;                         // Output:  trap vector handler address. 4 byte alignmen
 
       // GPR/FPR information (gets pased to MEM stage which passes it to WB stage)
       `ifdef ext_F
-      logic                   Fd_wr;            // WB stage needs to know whether to write to destination register Fd
-      `endif
-      logic                   Rd_wr;            // WB stage needs to know whether to write to destination register Rd
-      logic     [GPR_ASZ-1:0] Rd_addr;          // address of which GPR/FPR we want to Write
-      logic         [RSZ-1:0] Rd_data;          // This is the write back data (produced by alu_fu, br_fu, im_fu, idr_fu, csr_fu, spfp_fu)
+      logic                   Fd_wr;                           // WB stage needs to know whether to write to destination register Fd
+      `endif               
+      logic                   Rd_wr;                           // WB stage needs to know whether to write to destination register Rd
+      logic     [GPR_ASZ-1:0] Rd_addr;                         // address of which GPR/FPR we want to Write
+      logic         [RSZ-1:0] Rd_data;                         // This is the write back data (produced by alu_fu, br_fu, im_fu, idr_fu, csr_fu, spfp_fu)
       // CSR information (gets pased to MEM stage which passes it to WB stage)
-      logic                   csr_wr;           // WB stage needs to know whether to write to CSR
-      logic            [11:0] csr_addr;         // address of which CSR we want to Write
-      logic         [RSZ-1:0] csr_wr_data;      // This is the write back data (produced by csr_fu)
-      logic         [RSZ-1:0] csr_fwd_data;     // This data must used in forwarding, not csr_wr_data
+      logic                   csr_wr;                          // WB stage needs to know whether to write to CSR
+      logic            [11:0] csr_addr;                        // address of which CSR we want to Write
+      logic         [RSZ-1:0] csr_wr_data;                     // This is the write back data (produced by csr_fu)
+      logic         [RSZ-1:0] csr_fwd_data;                    // This data must used in forwarding, not csr_wr_data
    } EXE_2_MEM;
 
 
    typedef struct packed {
       // information to be consumed by the MEM stage
-      IP_Data                 ipd;              // pass instruction and program counter for debugging purposes
-      logic       [PC_SZ-1:0] ls_addr;
-      logic                   inv_flag;         // invalidate flag
-      logic                   instr_err;
-      logic                   ci;               // 1 = compressed 16-bit instruction, 0 = 32 bit instruction
+      IP_Data                 ipd;                             // pass instruction and program counter for debugging purposes
+      logic       [PC_SZ-1:0] ls_addr;             
+      logic                   inv_flag;                        // invalidate flag
+      logic                   instr_err;              
+      logic                   ci;                              // 1 = compressed 16-bit instruction, 0 = 32 bit instruction
       `ifndef ext_C
       logic       [PC_SZ-1:0] br_pc;
       `endif
@@ -237,23 +237,23 @@ import cpu_params_pkg::*;
       logic             [1:0] mode;
       `ifdef ext_N
       logic                   sw_irq;
-      logic                   interrupt_flag;   // 1 = take an interrupt trap
-      logic             [3:0] interrupt_cause;  // value specifying what type of interrupt
-      `endif
-      logic       [PC_SZ-1:2] trap_pc;          // Output:  trap vector handler address. 4 byte alignment
-
-      // GPR/FPR information
-      `ifdef ext_F
-      logic                   Fd_wr;            // Writeback stage needs to know whether to write to single precision floating point destination register Fd
-      `endif
-      logic                   Rd_wr;            // Writeback stage needs to know whether to write to destination register Rd
-      logic     [GPR_ASZ-1:0] Rd_addr;
-      logic         [RSZ-1:0] Rd_data;          // This is the write back data (produced by alu_fu, br_fu, im_fu, idr_fu)
+      logic                   interrupt_flag;                  // 1 = take an interrupt trap
+      logic             [3:0] interrupt_cause;                 // value specifying what type of interrupt
+      `endif               
+      logic       [PC_SZ-1:2] trap_pc;                         // Output:  trap vector handler address. 4 byte alignment
+               
+      // GPR/FPR information              
+      `ifdef ext_F               
+      logic                   Fd_wr;                           // Writeback stage needs to know whether to write to single precision floating point destination register Fd
+      `endif               
+      logic                   Rd_wr;                           // Writeback stage needs to know whether to write to destination register Rd
+      logic     [GPR_ASZ-1:0] Rd_addr;             
+      logic         [RSZ-1:0] Rd_data;                         // This is the write back data (produced by alu_fu, br_fu, im_fu, idr_fu)
       // CSR information (gets pased to MEM stage which passes it to WB stage)
-      logic                   csr_wr;           // WB stage needs to know whether to write to CSR
-      logic            [11:0] csr_addr;         // address of which CSR we want to Write
-      logic         [RSZ-1:0] csr_wr_data;      // This is the write back data (produced by csr_fu)
-      logic         [RSZ-1:0] csr_fwd_data;     // This data must used in forwarding, not csr_wr_data
+      logic                   csr_wr;                          // WB stage needs to know whether to write to CSR
+      logic            [11:0] csr_addr;                        // address of which CSR we want to Write
+      logic         [RSZ-1:0] csr_wr_data;                     // This is the write back data (produced by csr_fu)
+      logic         [RSZ-1:0] csr_fwd_data;                    // This data must used in forwarding, not csr_wr_data
    } MEM_2_WB;
 
    // *********************************************** Forwarding Info ***********************************************
@@ -283,19 +283,19 @@ import cpu_params_pkg::*;
    // ---------------------------------------------------------------------------------------------------------------
    // structures related to Memory, L1 D$ and L1 I$
    typedef struct packed {
-      logic                   rd;               // is_ld
-      logic                   wr;               // is_st
-      logic       [PC_SZ-1:0] rw_addr;          // ls_addr - Load/Store Address
-      logic         [RSZ-1:0] wr_data;          // st_data - Store data
-      logic             [2:0] size;             // size in bytes -> 1 = 8 bit, 2 = 16 bit, 4 = 32 bit Load/Store
-      logic                   zero_ext;         // 1 = Zero Extend
-      logic                   inv_flag;         // invalidate flag
-   } L1DC_Req_Data;
-
-   typedef struct packed {
-      logic                   rw;               // read = 1, write = 0
-      logic [PC_SZ-CL_SZ-1:0] rw_addr;          // rw_addr - cache line address
-      logic    [CL_LEN*8-1:0] wr_data;          // wr_data - cache line of data to be stored if rw = 0
+      logic                   rd;                              // is_ld
+      logic                   wr;                              // is_st
+      logic       [PC_SZ-1:0] rw_addr;                         // ls_addr - Load/Store Address
+      logic         [RSZ-1:0] wr_data;                         // st_data - Store data
+      logic             [2:0] size;                            // size in bytes -> 1 = 8 bit, 2 = 16 bit, 4 = 32 bit Load/Store
+      logic                   zero_ext;                        // 1 = Zero Extend
+      logic                   inv_flag;                        // invalidate flag
+   } L1DC_Req_Data;              
+               
+   typedef struct packed {             
+      logic                   rw;                              // read = 1, write = 0
+      logic [PC_SZ-CL_SZ-1:0] rw_addr;                         // rw_addr - cache line address
+      logic    [CL_LEN*8-1:0] wr_data;                         // wr_data - cache line of data to be stored if rw = 0
    } ARB_Data;
 
 
@@ -311,29 +311,29 @@ import cpu_params_pkg::*;
       logic       [PC_SZ-1:0] ls_addr;
       logic         [RSZ-1:0] st_data;
       logic             [2:0] size;
-      logic                   zero_ext;         // 1 = LBU or LHU
-      logic                   inv_flag;
-      logic                   is_ld;
-      logic                   is_st;
-      logic                   mis;              // misalignment
-   } MEM_LS_Data;
-
-`ifdef add_LSQ
-   typedef struct packed {
-      logic       [PC_SZ-1:0] addr;
-      logic         [RSZ-1:0] data;
-      logic             [2:0] size;
-      logic                   zero_ext;         // 1 = LBU or LHU
-      logic                   inv_flag;
-      logic                   is_ld;            // 1 = Load, 0 = Store
-      logic                   completed;
-      logic                   fault;            // Load/Store fault occured
-      logic                   mis;              // Load/store misalignment
+      logic                   zero_ext;                        // 1 = LBU or LHU
+      logic                   inv_flag;               
+      logic                   is_ld;               
+      logic                   is_st;               
+      logic                   mis;                             // misalignment
+   } MEM_LS_Data;             
+               
+`ifdef add_LSQ             
+   typedef struct packed {             
+      logic       [PC_SZ-1:0] addr;             
+      logic         [RSZ-1:0] data;             
+      logic             [2:0] size;             
+      logic                   zero_ext;                        // 1 = LBU or LHU
+      logic                   inv_flag;               
+      logic                   is_ld;                           // 1 = Load, 0 = Store
+      logic                   completed;              
+      logic                   fault;                           // Load/Store fault occured
+      logic                   mis;                             // Load/store misalignment
    } LSQ_Data;
 `endif
 
 
-   // 12'h300 = 12'b0000_0000_0000  ustatus                       (read-write)  user mode
+   // 12'h300 = 12'b0011_0000_0000  mstatus                    (read-write)  user mode
    //  31        22   21  20   19   18   17   16:15 14:13 12:11  10:9    8    7     6     5     4      3     2     1    0
    // {sd, 8'b0, tsr, tw, tvm, mxr, sum, mprv,   xs,   fs,  mpp, 2'b0,  spp, mpie, 1'b0, spie, upie,  mie, 1'b0,  sie, uie};
    typedef struct packed {
@@ -360,7 +360,7 @@ import cpu_params_pkg::*;
       logic                   uie;
    } MSTATUS_SIGS;
 
-   // 12'h304 = 12'b0011_0000_0100  mie                           (read-write)
+   // 12'h304 = 12'b0011_0000_0100  mie                        (read-write)
    //  31:12   11    10    9     8     7     6     5     4     3     2     1     0
    // {20'b0, meie, WPRI, seie, ueie, mtie, WPRI, stie, utie, msie, WPRI, ssie, usie};
    // Read Only bits of 32'hFFFF_F444;  // Note: bits 31:12, 10, 6, 2 are not writable and are "hardwired" to 0 (init value = 0 at reset)
@@ -381,7 +381,7 @@ import cpu_params_pkg::*;
    } MIE_SIGS;
 
    // ------------------------------ Machine Interrupt Pending bits
-   // 12'h344 = 12'b0011_0100_0100  mip                           (read-write)  machine mode
+   // 12'h344 = 12'b0011_0100_0100  mip                        (read-write)  machine mode
    //  31:12   11    10    9     8     7     6     5     4     3     2     1     0
    // {20'b0, meip, 1'b0, seip, ueip, mtip, 1'b0, stip, utip, msip, 1'b0, ssip, usip};
    typedef struct packed {
@@ -401,7 +401,7 @@ import cpu_params_pkg::*;
    } MIP_SIGS;
 
 
-   // 12'h100 = 12'b0000_0000_0000  ustatus                       (read-write)  Supervisor mode
+   // 12'h100 = 12'b0001_0000_0000  sstatus                    (read-write)  Supervisor mode
    //  31        22   21  20   19   18   17   16:15 14:13 12:11  10:9    8    7     6     5     4     3     2     1    0
    // {sd, 8'b0, tsr, tw, tvm, mxr, sum, mprv, xs,   fs,  2'b0,  2'b0,  spp, 1'b0, 1'b0, spie, 1'b0, 1'b0, 1'b0,  sie, 1'b0};
    typedef struct packed {
@@ -413,8 +413,24 @@ import cpu_params_pkg::*;
       logic                   WPRI;
    } SSTATUS_SIGS;
 
+   // ------------------------------ Supervisor Interrupt Enable bits
+   // 12'h104 = 12'b0001_0000_0100  sie                        (read-write)  machine mode
+   //  31:12   11    10    9     8     7     6     5     4     3     2     1     0
+   // {20'b0, 1'b0, 1'b0, seie, ueie, 1'b0, 1'b0, stie, utie, 1'b0, 1'b0, ssie, usie};
+   typedef struct packed {
+      logic            [21:0] WPRI_22;
+      logic                   seie;
+      logic                   ueie;
+      logic             [1:0] WPRI2;
+      logic                   stie;
+      logic                   utie;
+      logic             [1:0] WPRI_2;
+      logic                   ssie;
+      logic                   usie;
+   } SIE_SIGS;
+
    // ------------------------------ Supervisor Interrupt Pending bits
-   // 12'h144 = 12'b0011_0100_0100  mip                           (read-write)  machine mode
+   // 12'h144 = 12'b0001_0100_0100  sip                        (read-write)  machine mode
    //  31:12   11    10    9     8     7     6     5     4     3     2     1     0
    // {20'b0, 1'b0, 1'b0, seip, ueip, 1'b0, 1'b0, stip, utip, 1'b0, 1'b0, ssip, usip};
    typedef struct packed {
@@ -429,7 +445,8 @@ import cpu_params_pkg::*;
       logic                   usip;
    } SIP_SIGS;
 
-   // 12'h000 = 12'b0000_0000_0000  ustatus                       (read-write)  user mode
+
+   // 12'h000 = 12'b0000_0000_0000  ustatus                    (read-write)  user mode
    //  31        22   21  20   19   18   17    16:15 14:13 12:11  10:9   8     7     6     5     4     3     2     1     0
    // {sd, 8'b0, tsr, tw, tvm, mxr, sum, mprv,  xs,   fs,  2'b0,  2'b0, 1'b0, 1'b0, 1'b0, 1'b0, upie, 1'b0, 1'b0, 1'b0, uie};
    typedef struct packed {
@@ -438,8 +455,20 @@ import cpu_params_pkg::*;
       logic                   uie;
    } USTATUS_SIGS;
 
-   // ------------------------------ Supervisor Interrupt Pending bits
-   // 12'h144 = 12'b0011_0100_0100  mip                           (read-write)  machine mode
+   // ------------------------------ User Interrupt Enable bits
+   // 12'h004 = 12'b0000_0000_0100  sie                        (read-write)  machine mode
+   //  31:12   11    10    9     8     7     6     5     4     3     2     1     0
+   // {20'b0, 1'b0, 1'b0, 1'b0, ueie, 1'b0, 1'b0, 1'b0, utie, 1'b0, 1'b0, 1'b0, usie};
+   typedef struct packed {
+      logic                   ueie;
+      logic             [2:0] WPRI3;
+      logic                   utie;
+      logic             [2:0] WPRI_3;
+      logic                   usie;
+   } UIE_SIGS;
+
+   // ------------------------------ User Interrupt Pending bits
+   // 12'h044 = 12'b0000_0100_0100  mip                        (read-write)  machine mode
    //  31:12   11    10    9     8     7     6     5     4     3     2     1     0
    // {20'b0, 1'b0, 1'b0, 1'b0, ueip, 1'b0, 1'b0, 1'b0, utip, 1'b0, 1'b0, 1'b0, usip};
    typedef struct packed {
@@ -450,37 +479,38 @@ import cpu_params_pkg::*;
       logic                   usip;
    } UIP_SIGS;
 
+
    // ------------------------ Machine mode CSRs ------------------------
    typedef struct packed {
-      MSTATUS_SIGS                           mstatus;             // 12'h300
-      logic                        [RSZ-1:0] misa;                // 12'h301
+      MSTATUS_SIGS                           mstatus;          // 12'h300
+      logic                        [RSZ-1:0] misa;             // 12'h301
       `ifdef ext_S   // "In systems with S-mode, the medeleg and mideleg registers must exist,..." see p. 28 riscv-privileged.pdf, csr_wr_mach.svh
-      logic                        [RSZ-1:0] medeleg;             // 12'h302
-         `ifdef ext_N
-          logic                    [RSZ-1:0] mideleg;             // 12'h303
-          `endif
-      `elsif ext_U
-         logic                     [RSZ-1:0] medeleg;             // 12'h302
-         `ifdef ext_N
-         logic                     [RSZ-1:0] mideleg;             // 12'h303
-         `endif
-      `endif
-      `ifdef ext_N
-      MIE_SIGS                               mie;                 // 12'h304
-      `endif
-      logic                        [RSZ-1:0] mtvec;               // 12'h305
-      logic                        [RSZ-1:0] mcounteren;          // 12'h306
-      logic                        [RSZ-1:0] mcountinhibit;       // 12'h320
-      `ifdef use_MHPM
-      logic   [NUM_MHPM-1:0] [EV_SEL_SZ-1:0] mhpmevent;           // 12'h323 - 12'h33F, mhpmevent3 - mhpmevent31
-      `endif
-
-      logic                        [RSZ-1:0] mscratch;            // 12'h340
-      logic                      [PC_SZ-1:0] mepc;                // 12'h341
-      logic                            [3:0] mcause;              // 12'h342
-      logic                        [RSZ-1:0] mtval;               // 12'h343
-      `ifdef ext_N
-      MIP_SIGS                               mip;                 // 12'h344
+      logic                        [RSZ-1:0] medeleg;          // 12'h302
+         `ifdef ext_N   
+          logic                    [RSZ-1:0] mideleg;          // 12'h303
+          `endif  
+      `elsif ext_U   
+         logic                     [RSZ-1:0] medeleg;          // 12'h302
+         `ifdef ext_N   
+         logic                     [RSZ-1:0] mideleg;          // 12'h303
+         `endif   
+      `endif   
+      `ifdef ext_N   
+      MIE_SIGS                               mie;              // 12'h304
+      `endif   
+      logic                        [RSZ-1:0] mtvec;            // 12'h305
+      logic                        [RSZ-1:0] mcounteren;       // 12'h306
+      logic                        [RSZ-1:0] mcountinhibit;    // 12'h320
+      `ifdef use_MHPM   
+      logic   [NUM_MHPM-1:0] [EV_SEL_SZ-1:0] mhpmevent;        // 12'h323 - 12'h33F, mhpmevent3 - mhpmevent31
+      `endif   
+   
+      logic                        [RSZ-1:0] mscratch;         // 12'h340
+      logic                      [PC_SZ-1:0] mepc;             // 12'h341
+      logic                            [3:0] mcause;           // 12'h342
+      logic                        [RSZ-1:0] mtval;            // 12'h343
+      `ifdef ext_N   
+      MIP_SIGS                               mip;              // 12'h344
       `endif
 
       `ifdef USE_PMPCFG
@@ -573,7 +603,7 @@ import cpu_params_pkg::*;
       logic                        [RSZ-1:0] sedeleg;          // 12'h102
       `ifdef ext_N
       logic                        [RSZ-1:0] sideleg;          // 12'h103
-      logic                        [RSZ-1:0] sie;              // 12'h104
+      SIE_SIGS                               sie;              // 12'h104
       `endif
       logic                        [RSZ-1:0] stvec;            // 12'h105
       logic                        [RSZ-1:0] scounteren;       // 12'h106
@@ -592,7 +622,7 @@ import cpu_params_pkg::*;
    typedef struct packed {
       USTATUS_SIGS                           ustatus;          // 12'h000
       `ifdef ext_N
-      logic                        [RSZ-1:0] uie;              // 12'h004
+      UIE_SIGS                               uie;              // 12'h004
       `endif
       logic                        [RSZ-1:0] utvec;            // 12'h005
       logic                        [RSZ-1:0] uscratch;         // 12'h040

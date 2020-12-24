@@ -155,8 +155,8 @@ module csr_fu
                   begin
                      Rd_data = csr_rd_data;
                      `ifdef ext_N
-                     if (csr_addr == 12'h344)   // Machine Interrupt Pending register - Mip
-                        Rd_data |= {28'b0,sw_irq,3'b0};     // mip.????
+                     if (csr_addr[8:0] == 9'h144)  // Machine Interrupt Pending register - Mip and Supervisor Interrupt Pending register
+                        Rd_data |= (sw_irq << 9);  // the value returned in the rd destination register contains the logical-OR of the softwarewritable bit and the interrupt signal from the interrupt controller. p 30 riscv-privileged.pdf
                      `endif
                   end
                end
@@ -186,6 +186,10 @@ module csr_fu
                begin
                   csr_rd = TRUE;
                   Rd_data = csr_rd_data;
+                  `ifdef ext_N
+                  if (csr_addr[8:0] == 9'h144)  // Machine Interrupt Pending register - Mip and Supervisor Interrupt Pending register
+                     Rd_data |= (sw_irq << 9);  // the value returned in the rd destination register contains the logical-OR of the softwarewritable bit and the interrupt signal from the interrupt controller. p 30 riscv-privileged.pdf
+                  `endif
                end
             end
             CSRRC: // 3
@@ -210,6 +214,10 @@ module csr_fu
                begin
                   csr_rd = TRUE;
                   Rd_data = csr_rd_data;
+                  `ifdef ext_N
+                  if (csr_addr[8:0] == 9'h144)  // Machine Interrupt Pending register - Mip and Supervisor Interrupt Pending register
+                     Rd_data |= (sw_irq << 9);  // the value returned in the rd destination register contains the logical-OR of the softwarewritable bit and the interrupt signal from the interrupt controller. p 30 riscv-privileged.pdf
+                  `endif
                end
             end
             CSRRWI: // 5
