@@ -91,10 +91,8 @@ module wb
 
    logic             [1:0] mode;                                                    // CPU mode when this instruction was in EXE stage
    logic       [PC_SZ-1:0] trap_pc;                                                 // Output:  trap vector handler address.
-   `ifdef ext_N
    logic                   interrupt_flag;                                          // 1 = take an interrupt trap
    logic             [3:0] interrupt_cause;                                         // value specifying what type of interrupt
-   `endif
 
 
    // --------------------------------- signals from MEM stage that are used in WB stage
@@ -111,10 +109,8 @@ module wb
    assign mio_ack_fault       = M2W_bus.data.mio_ack_fault;
    assign mode                = M2W_bus.data.mode;
    assign trap_pc             = {M2W_bus.data.trap_pc, 2'b00};
-   `ifdef ext_N
    assign interrupt_flag      = M2W_bus.data.interrupt_flag;
    assign interrupt_cause     = M2W_bus.data.interrupt_cause;
-   `endif
 
 
    // --------------------------------- asserted when this stage is ready to finish it's processing
@@ -232,9 +228,7 @@ module wb
       wb_csr_wr_data    = '0;
       wb_csr_fwd_data   = '0;
 
-      `ifdef ext_N
       EV_EXC_bus.sw_irq = '0;                                                       // msip_reg[3] = Software Interrupt Pending - from EXE stage
-      `endif
 
       rld_pc_flag       = FALSE;
       rld_ic_flag       = FALSE;
@@ -252,7 +246,6 @@ module wb
          //////////////////////////////////////////////////////////
          // signals to update Rd/Fd in WB stage
 
-         `ifdef ext_N
          if (interrupt_flag)                                                        // overrides the current instruction - current instruction will be re-executed after interrupt
          begin
             rld_pc_flag                = TRUE;                                      // if interrupt_flag is set then an exception.flag CANNOT get set this cycle
@@ -266,7 +259,6 @@ module wb
             current_events.ext_irq     = TRUE;                                      // can't be covered by e_flag...becuase interrupt_cause is a 32 bit value that would interfere with e_cause numbers, so just set a single bit flag (ext_irq)
          end
          else
-         `endif
             case(ig_type)                                                           // select which functional unit output data is the appropriate one to process
             ILL_INSTR:
             begin
@@ -547,9 +539,7 @@ module wb
                   wb_csr_wr_data          = M2W_bus.data.csr_wr_data;
                   wb_csr_fwd_data         = M2W_bus.data.csr_fwd_data;
 
-                  `ifdef ext_N
-                  EV_EXC_bus.sw_irq       = M2W_bus.data.sw_irq;                    // msip_reg[3] = Software Interrupt Pending - from EXE stage. see csr_fu.sv
-                  `endif
+                  EV_EXC_bus.sw_irq       = M2W_bus.data.sw_irq;                    // from EXE stage - now needed in csr_fu.sv to complete instruction
                end
 
                current_events.ret_cnt[CSR_RET] = 1'b1;                              // number of CSR instructions retiring this clock cycle

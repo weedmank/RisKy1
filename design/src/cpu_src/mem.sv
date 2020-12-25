@@ -102,9 +102,7 @@ module mem
    assign is_ld                        = E2M_bus.data.is_ld;
    assign is_st                        = E2M_bus.data.is_st;
    assign mode                         = E2M_bus.data.mode;
-   `ifdef ext_N
    assign sw_irq                       = E2M_bus.data.sw_irq;                       // msip_reg[3]. see irq.sv
-   `endif
 
    assign is_ls                        = (is_ld | is_st);
 
@@ -159,11 +157,9 @@ module mem
    //     mem_dout.mio_ack_fault       is created in always block below
    assign mem_dout.mode                = E2M_bus.data.mode;
    assign mem_dout.trap_pc             = E2M_bus.data.trap_pc;                      // trap_pc, interrupt_flag, interrupt_cause not used in this stage,but needed in WB stage
-   `ifdef ext_N
-   assign mem_dout.sw_irq              = E2M_bus.data.sw_irq;                       // msip_reg[3]. see irq.sv
+   assign mem_dout.sw_irq              = E2M_bus.data.sw_irq;                       // just passes on to wb stage
    assign mem_dout.interrupt_flag      = E2M_bus.data.interrupt_flag;
    assign mem_dout.interrupt_cause     = E2M_bus.data.interrupt_cause;
-   `endif
 
    `ifdef ext_F
    assign mem_dout.Fd_wr               = E2M_bus.data.Fd_wr;

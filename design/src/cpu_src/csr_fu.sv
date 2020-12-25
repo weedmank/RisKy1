@@ -30,23 +30,23 @@ module csr_fu
    CSRFU_intf.slave     csrfu_bus,
    CSR_NXT_intf.master  csr_nxt_bus
 );
-   logic                   csr_valid;                             // Input:   1 = Read & Write from/to csr[csr_addr] will occur this clock cylce
-   logic            [11:0] csr_addr;                              // Input:   R/W address
-   logic     [GPR_ASZ-1:0] Rd_addr;                               // Input:   Rd address
-   logic     [GPR_ASZ-1:0] Rs1_addr;                              // Input:   Rs1 address
-   logic         [RSZ-1:0] Rs1_data;                              // Input:   Contents of R[rs1]
+   logic                   csr_valid;                             // 1 = Read & Write from/to csr[csr_addr] will occur this clock cylce
+   logic            [11:0] csr_addr;                              // R/W address
+   logic     [GPR_ASZ-1:0] Rd_addr;                               // Rd address
+   logic     [GPR_ASZ-1:0] Rs1_addr;                              // Rs1 address
+   logic         [RSZ-1:0] Rs1_data;                              // Contents of R[rs1]
    logic             [2:0] funct3;
-   logic             [1:0] mode;                                  // Input:   CPU mode: Machine, Supervisor, or User
-   logic                   sw_irq;                                // Input:   Software Interrupt Pending
+   logic             [1:0] mode;                                  // CPU mode: Machine, Supervisor, or User
+   logic                   sw_irq;                                // Software Interrupt Pending
 
-   logic                   csr_wr;                                // Output:
-   logic                   csr_rd;                                // Output:
-   logic                   csr_avail;                             // Output:
-   logic         [RSZ-1:0] csr_rd_data;                           // Output:
-   logic         [RSZ-1:0] Rd_data;                               // Output:  based on current CSR[csr_addr] and function to perform. This is the value to write into Destination Register Rd in WB stage
-   logic         [RSZ-1:0] csr_wr_data;                           // Output:  write data to csr[csr_addr]
-   logic         [RSZ-1:0] nxt_csr_rd_data;                       // Output:  data that will be in CSR[csr_addr] after write - may be different that data being written but it can be determined
-   logic                   ill_csr_access;                        // Output:  1 = illegal csr access
+   logic                   csr_wr;                                //
+   logic                   csr_rd;                                //
+   logic                   csr_avail;                             //
+   logic         [RSZ-1:0] csr_rd_data;                           //
+   logic         [RSZ-1:0] Rd_data;                               // based on current CSR[csr_addr] and function to perform. This is the value to write into Destination Register Rd in WB stage
+   logic         [RSZ-1:0] csr_wr_data;                           // write data to csr[csr_addr]
+   logic         [RSZ-1:0] nxt_csr_rd_data;                       // data that will be in CSR[csr_addr] after write - may be different that data being written but it can be determined
+   logic                   ill_csr_access;                        // 1 = illegal csr access
    logic            [11:0] ill_csr_addr;
 
    logic         [RSZ-1:0] imm_data;                              // immediate data

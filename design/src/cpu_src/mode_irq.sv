@@ -30,10 +30,10 @@ module mode_irq
    input    logic                reset_in,
    input    logic                clk_in,
 
+   input    logic                exception_flag,
+
    output   logic          [1:0] mode,
    output   logic          [1:0] nxt_mode,
-
-   input    logic                exception_flag,
 
    `ifdef ext_U
    input    logic                uret,

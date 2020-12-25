@@ -369,7 +369,6 @@ module csr_av_rdata
             csr_rd_data    = mcsr.mtval;
          end
 
-         `ifdef ext_N
          // ------------------------------ Machine Interrupt Pending
          // 12'h344 = 12'b0011_0100_0100  mip                              (read-write)
          // {20'b0,meip,1'b0,seip,ueip,mtip,1'b0,stip,utip,msip,1'b0,ssip,usip};
@@ -384,7 +383,6 @@ module csr_av_rdata
             csr_rd_avail   = TRUE;
             csr_rd_data    = mcsr.mip;
          end
-         `endif
 
          // ------------------------------ Machine Protection and Translation
 

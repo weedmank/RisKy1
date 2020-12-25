@@ -317,16 +317,16 @@ module execute
 
 
    // ----------------------------------- csrfu_bus interface
-   assign csrfu_bus.csr_valid       = (ig_type == CSR_INSTR) & D2E_bus.valid; // permission to write to the CSR
-   assign csrfu_bus.csr_addr        = csr_addr;                               // csr_addr = CSR Address - see decode_core.sv imm field
-   assign csrfu_bus.csr_avail       = csr_avail;                              // csr_addr = CSR Address - see decode_core.sv imm field
-   assign csrfu_bus.csr_rd_data     = CSD;                                    // CSR read data (from csr_rd_bus.csr_rd_data or forwarding data)
-   assign csrfu_bus.Rd_addr         = Rd_addr;                                // Rd address value
-   assign csrfu_bus.Rs1_addr        = Rs1_addr;                               // Rs1 address value
-   assign csrfu_bus.Rs1_data        = Rs1D;                                   // contents of R[Rs1]
-   assign csrfu_bus.funct3          = D2E_bus.data.funct3;
-   assign csrfu_bus.mode            = mode;
-   assign csrfu_bus.sw_irq          = sw_irq;                                 // msip_reg[3] = Software Interrupt Pending bit
+   assign csrfu_bus.csr_valid       = (ig_type == CSR_INSTR) & D2E_bus.valid; // Output:  permission to write to the CSR
+   assign csrfu_bus.csr_addr        = csr_addr;                               // Output:  csr_addr = CSR Address - see decode_core.sv imm field
+   assign csrfu_bus.csr_avail       = csr_avail;                              // Output:  csr_addr = CSR Address - see decode_core.sv imm field
+   assign csrfu_bus.csr_rd_data     = CSD;                                    // Output:  CSR read data (from csr_rd_bus.csr_rd_data or forwarding data)
+   assign csrfu_bus.Rd_addr         = Rd_addr;                                // Output:  Rd address value
+   assign csrfu_bus.Rs1_addr        = Rs1_addr;                               // Output:  Rs1 address value
+   assign csrfu_bus.Rs1_data        = Rs1D;                                   // Output:  contents of R[Rs1]
+   assign csrfu_bus.funct3          = D2E_bus.data.funct3;                    // Output:
+   assign csrfu_bus.mode            = mode;                                   // Output:
+   assign csrfu_bus.sw_irq          = sw_irq;                                 // Output:  msip_reg[3] = Software Interrupt Pending bit
 
    assign csr_fu_done = D2E_bus.valid & (ig_type == CSR_INSTR);               // This functional unit only takes 1 clock cycle
    // Control & Status Registers
@@ -679,6 +679,7 @@ module execute
                begin
                   exe_dout.instr_err   = TRUE;
                   exe_dout.Rd_data     = ill_csr_addr;                              // save in Rd_data for use in mem.sv
+                  exe_dout.sw_irq      = sw_irq;                                    // passes all the way to wb stage where csr.sv uses it
                end
                else
                begin

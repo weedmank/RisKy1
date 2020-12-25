@@ -411,7 +411,7 @@ module csr
       // 12'h144 = 12'b0001_0100_0100  sip                           (read-write)
       //  31:12   11    10    9     8     7     6     5     4     3     2     1     0
       // {20'b0, 1'b0, 1'b0, seip, ueip, 1'b0, 1'b0, stip, utip, 1'b0, 1'b0, ssip, usip}; // All bits besides SSIP, USIP, and UEIP in the sip register are read-only. p 59 riscv-privileged.pdf
-      csr_std_wr #(0,12'h344,RSZ,32'hFFFF_FCCC) Sip                  (clk_in,reset_in, mode, TRUE, nxt_scsr.sip, scsr.sip);
+      csr_std_wr #(0,12'h144,RSZ,32'hFFFF_FCCC) Sip                  (clk_in,reset_in, mode, TRUE, nxt_scsr.sip, scsr.sip);
 
       // ------------------------------ Supervisor Protection and Translation
       // 12'h180 = 12'b0001_1000_0000  satp                          (read-write)
@@ -448,14 +448,12 @@ module csr
       csr_std_wr #(MIDLG_INIT,12'h303,RSZ,MIDLG_MASK) Mideleg     (clk_in,reset_in, mode, TRUE, nxt_mcsr.mideleg, mcsr.mideleg);
   `endif
 
-   `ifdef ext_N
    // ------------------------------ Machine Interrupt Enable Register
    // 12'h304 = 12'b0011_0000_0100  mie                           (read-write)
    //  31:12   11    10    9     8     7     6     5     4     3     2     1     0
    // {20'b0, meie, WPRI, seie, ueie, mtie, WPRI, stie, utie, msie, WPRI, ssie, usie};
    // Read Only bits of 32'hFFFF_F444;  // Note: bits 31:12, 10, 6, 2 are not writable and are "hardwired" to 0 (init value = 0 at reset)
    csr_std_wr #(0,12'h304,RSZ,32'hFFFF_F444)  Mie                 (clk_in,reset_in, mode, TRUE, nxt_mcsr.mie, mcsr.mie);
-   `endif
 
    // ------------------------------ Machine Trap Handler Base Address
    // 12'h305 = 12'b0011_0000_0101  mtvec                         (read-write)
@@ -502,13 +500,11 @@ module csr
    // 12'h343 = 12'b0011_0100_0011  mtval                         (read-write)
    csr_std_wr #(0,12'h343,RSZ) Mtval                              (clk_in,reset_in, mode, TRUE, nxt_mcsr.mtval, mcsr.mtval);
 
-   `ifdef ext_N
    // ------------------------------ Machine Interrupt Pending bits
    // 12'h344 = 12'b0011_0100_0100  mip                           (read-write)  machine mode
    //  31:12   11    10    9     8     7     6     5     4     3     2     1     0
    // {20'b0, meip, 1'b0, seip, ueip, mtip, 1'b0, stip, utip, msip, 1'b0, ssip, usip};
    csr_std_wr #(0,12'h344,RSZ,32'hFFFF_F444) Mip                  (clk_in,reset_in, mode, TRUE, nxt_mcsr.mip, mcsr.mip);
-   `endif   // ext_N
 
 
    // ------------------------------ Machine Protection and Translation
