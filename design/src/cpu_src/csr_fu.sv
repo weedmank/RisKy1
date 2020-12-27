@@ -101,8 +101,6 @@ module csr_fu
    //    12'hB00 = 12'b1011_0000_0000  mcycle      (read-write)  machine mode
 
 
-   // full_case — at least one item is true
-   // parallel_case — at most one item is true
    always_comb
    begin
       csr_wr_data    = '0;
@@ -125,27 +123,18 @@ module csr_fu
          // of a CSRRS or CSRRC instruction is only the software-writable SEIP bit, ignoring the interrupt
          // value from the external interrupt controller. p. 30 riscv-privileged.pdf  see csr_fu.sv for implementation
 
-         case(funct3)   // {CSRRW,CSRRS,CSRRC,CSRRWI,CSRRSI,CSRRCI}
-            CSRRW: // 1
-            begin      // If rd=x0, then the instruction shall not read the CSR and shall not cause any of the side effects that might occur on a CSR read. riscv-spec p 53-54
-               if (((mode < lowest_priv) || !csr_avail || !writable))
-               begin
-                  ill_csr_access = TRUE;
-                  ill_csr_addr   = csr_addr;
-               end
-               else
-               begin
+         if (((mode < lowest_priv) || !csr_avail || !writable))
+         begin
+            ill_csr_access = TRUE;
+            ill_csr_addr   = csr_addr;
+         end
+         else // not an illegal CSR access
+         begin
+            case(funct3)   // {CSRRW,CSRRS,CSRRC,CSRRWI,CSRRSI,CSRRCI}
+               CSRRW: // 1
+               begin      // If rd=x0, then the instruction shall not read the CSR and shall not cause any of the side effects that might occur on a CSR read. riscv-spec p 53-54
                   csr_wr_data = Rs1_data;                // R[Rd] = CSR; CSR = R[rs1];          Atomic Read/Write CSR  p. 22
                   csr_wr = TRUE;
-               end
-
-               if (((mode < lowest_priv) || !csr_avail))
-               begin
-                  ill_csr_access = TRUE;
-                  ill_csr_addr   = csr_addr;
-               end
-               else
-               begin
                   csr_rd = (Rd_addr != 0); // if Rd = X0, don't allow any "side affects" due to read
                   if (csr_rd)
                   begin
@@ -154,134 +143,50 @@ module csr_fu
                         Rd_data |= (sw_irq << 9);  // the value returned in the rd destination register contains the logical-OR of the softwarewritable bit and the interrupt signal from the interrupt controller. p 30 riscv-privileged.pdf
                   end
                end
-            end
-            // For both CSRRS and CSRRC, if rs1=x0, then the instruction will not write to the CSR at all, and
-            // so shall not cause any of the side effects that might otherwise occur on a CSR write, such as raising
-            // illegal instruction exceptions on accesses to read-only CSRs
-            CSRRS: // 2
-            begin   // Other bits in the CSR are unaffected (though CSRs might have side effects when written). risv-spec p. 54
-               if (((mode < lowest_priv) || !csr_avail || !writable))
-               begin
-                  ill_csr_access = TRUE;
-                  ill_csr_addr   = csr_addr;
-               end
-               else
-               begin
+               // For both CSRRS and CSRRC, if rs1=x0, then the instruction will not write to the CSR at all, and
+               // so shall not cause any of the side effects that might otherwise occur on a CSR write, such as raising
+               // illegal instruction exceptions on accesses to read-only CSRs
+               CSRRS: // 2
+               begin   // Other bits in the CSR are unaffected (though CSRs might have side effects when written). risv-spec p. 54
                   csr_wr_data = csr_rd_data |  Rs1_data;   // R[Rd] = CSR; CSR = CSR | R[rs1];    Atomic Read and Set Bits in CSR  p. 22
                   csr_wr = (Rs1_addr != 0);
-               end
-
-               if (((mode < lowest_priv) || !csr_avail))
-               begin
-                  ill_csr_access = TRUE;
-                  ill_csr_addr   = csr_addr;
-               end
-               else
-               begin
                   csr_rd = TRUE;
                   Rd_data = csr_rd_data;
                   if (csr_addr[8:0] == 9'h144)  // Machine Interrupt Pending register - Mip and Supervisor Interrupt Pending register
                      Rd_data |= (sw_irq << 9);  // the value returned in the rd destination register contains the logical-OR of the softwarewritable bit and the interrupt signal from the interrupt controller. p 30 riscv-privileged.pdf
                end
-            end
-            CSRRC: // 3
-            begin
-               if (((mode < lowest_priv) || !csr_avail || !writable))
-               begin
-                  ill_csr_access = TRUE;
-                  ill_csr_addr   = csr_addr;
-               end
-               else
+               CSRRC: // 3
                begin
                   csr_wr_data = csr_rd_data & ~Rs1_data;   // R[Rd] = CSR; CSR = CSR & ~R[rs1];   Atomic Read and Clear Bits in CSR  p. 22
                   csr_wr = (Rs1_addr != 0);
-               end
-
-               if (((mode < lowest_priv) || !csr_avail))
-               begin
-                  ill_csr_access = TRUE;
-                  ill_csr_addr   = csr_addr;
-               end
-               else
-               begin
                   csr_rd = TRUE;
                   Rd_data = csr_rd_data;
                   if (csr_addr[8:0] == 9'h144)  // Machine Interrupt Pending register - Mip and Supervisor Interrupt Pending register
                      Rd_data |= (sw_irq << 9);  // the value returned in the rd destination register contains the logical-OR of the softwarewritable bit and the interrupt signal from the interrupt controller. p 30 riscv-privileged.pdf
                end
-            end
-            CSRRWI: // 5
-            begin
-               if (((mode < lowest_priv) || !csr_avail || !writable))
-               begin
-                  ill_csr_access = TRUE;
-                  ill_csr_addr   = csr_addr;
-               end
-               else
+               CSRRWI: // 5
                begin
                   csr_wr_data = imm_data;                // R[Rd] = CSR; CSR = imm;             p. 22-23
                   csr_wr = TRUE;
-               end
-
-               if (((mode < lowest_priv) || !csr_avail))
-               begin
-                  ill_csr_access = TRUE;
-                  ill_csr_addr   = csr_addr;
-               end
-               else
-               begin
                   csr_rd = (Rd_addr != 0); // if Rd = X0, don't allow any "side affects" due to read
                   if (csr_rd) Rd_data = csr_rd_data;
                end
-            end
-            CSRRSI: // 6
-            begin
-               if (((mode < lowest_priv) || !csr_avail || !writable))
-               begin
-                  ill_csr_access = TRUE;
-                  ill_csr_addr   = csr_addr;
-               end
-               else
+               CSRRSI: // 6
                begin
                   csr_wr_data = csr_rd_data |  imm_data;   // R[Rd] = CSR; CSR = CSR | imm;       Atomic Read and Set Bits in CSR  p. 22-23
                   csr_wr = (imm_data != 0);
-               end
-
-               if (((mode < lowest_priv) || !csr_avail))
-               begin
-                  ill_csr_access = TRUE;
-                  ill_csr_addr   = csr_addr;
-               end
-               else
-               begin
                   csr_rd = TRUE;
                   Rd_data = csr_rd_data;
                end
-            end
-            CSRRCI: // 7
-            begin
-               if (((mode < lowest_priv) || !csr_avail || !writable))
-               begin
-                  ill_csr_access = TRUE;
-                  ill_csr_addr   = csr_addr;
-               end
-               else
+               CSRRCI: // 7
                begin
                   csr_wr_data = csr_rd_data & ~imm_data;   // R[Rd] = CSR; CSR = CSR & ~imm;      Atomic Read and Clear Bits in CSR  p. 22-23
                   csr_wr = (imm_data != 0);
-               end
-
-               if (((mode < lowest_priv) || !csr_avail))
-               begin
-                  ill_csr_access = TRUE;
-                  ill_csr_addr   = csr_addr;
-               end
-               begin
                   csr_rd = TRUE;
                   Rd_data = csr_rd_data;
                end
-            end
-         endcase
-      end
-   end
+            endcase
+         end // illegal CSR access
+      end // valid
+   end // always_comb
 endmodule
