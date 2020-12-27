@@ -54,6 +54,7 @@ vlog  -sv -hazards +define+SIM_DEBUG  +cover                                    
 vlog  -sv -hazards +define+SIM_DEBUG  +cover                                                                         ../../src/cpu_src/csr_lo_cnt.sv
 vlog  -sv -hazards +define+SIM_DEBUG  +cover                                                                         ../../src/cpu_src/csr_std_wr.sv
 vlog  -sv -hazards +define+SIM_DEBUG  +cover                                                                         ../../src/cpu_src/csr_nxt_reg.sv
+vlog  -sv -hazards +define+SIM_DEBUG  +cover                                                                         ../../src/cpu_src/csr_regs.sv
 vlog  -sv -hazards +define+SIM_DEBUG  +cover                                                                         ../../src/cpu_src/decode.sv
 vlog  -sv -hazards +define+SIM_DEBUG  +cover                                                                         ../../src/cpu_src/decode_core.sv
 vlog  -sv -hazards +define+SIM_DEBUG  +cover                                                                         ../../src/cpu_src/execute.sv
