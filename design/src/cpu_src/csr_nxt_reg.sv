@@ -38,7 +38,7 @@ module csr_nxt_reg
    input    logic                csr_wr,
    input    logic      [RSZ-1:0] csr_wr_data,
 
-   input    logic                tot_retired,      // In this design, at most, 1 instruction can retire per clock cycle
+   input    logic                total_retired,    // In this design, at most, 1 instruction can retire per clock cycle
    input    var EXCEPTION        exception,
 
    `ifdef use_MHPM
@@ -914,7 +914,7 @@ module csr_nxt_reg
       else if (csr_wr && (csr_addr == 12'hB82))                               // writable in M_MODE
          {nxt_mcsr.minstret_hi,nxt_mcsr.minstret_lo}  = {csr_wr_data,mcsr.minstret_lo};
       else if (!mcsr.mcountinhibit[2])
-         {nxt_mcsr.minstret_hi,nxt_mcsr.minstret_lo}  = 2*RSZ ' ({mcsr.minstret_hi,mcsr.minstret_lo} + tot_retired);    // cast result to 2*RSZ bits before assigning
+         {nxt_mcsr.minstret_hi,nxt_mcsr.minstret_lo}  = 2*RSZ ' ({mcsr.minstret_hi,mcsr.minstret_lo} + total_retired);    // cast result to 2*RSZ bits before assigning
       else
          {nxt_mcsr.minstret_hi,nxt_mcsr.minstret_lo}  = {mcsr.minstret_hi,mcsr.minstret_lo}; // keep current value
 
