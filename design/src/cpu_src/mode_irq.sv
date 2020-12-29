@@ -36,8 +36,11 @@ module mode_irq
    output   logic          [1:0] nxt_mode,
 
    `ifdef ext_U
+   `ifdef ext_N
    input    logic                uret,
    `endif
+   `endif
+   
    `ifdef ext_S
    input    logic                sret,
    `endif
@@ -50,11 +53,15 @@ module mode_irq
 
    // only a few of these CSR registers are needed by this module
    `ifdef ext_U
+   `ifdef ext_N
    input var UCSR                  ucsr,              // Input:   current register state of all the User Mode Control & Status Registers
    `endif
+   `endif
+   
    `ifdef ext_S
    input var SCSR                  scsr,              // Input:   current register state of all the Supervisor Mode Control & Status Registers
    `endif
+
    input var MCSR                  mcsr               // Input:   current register state of all the Machine Mode Control & Status Registers
 );
 
@@ -69,9 +76,15 @@ module mode_irq
    // ---------------------- Interrupt Enable bits ----------------------
    // see Machine Mode Mie register 12'h304
    `ifdef ext_U
-      assign usie = ucsr.uie.usie;           // USIE - User       mode Software Interrupt Enable
-      assign utie = ucsr.uie.utie;           // UTIE - User       mode Timer    Interrupt Enable
-      assign ueie = ucsr.uie.ueie;           // UEIE - User       mode External Interrupt Enable
+      `ifdef ext_N
+         assign usie = ucsr.uie.usie;        // USIE - User       mode Software Interrupt Enable
+         assign utie = ucsr.uie.utie;        // UTIE - User       mode Timer    Interrupt Enable
+         assign ueie = ucsr.uie.ueie;        // UEIE - User       mode External Interrupt Enable
+      `else
+         assign usie = 0;
+         assign utie = 0;
+         assign ueie = 0;
+      `endif
    `else
       assign usie = 0;
       assign utie = 0;
@@ -96,9 +109,9 @@ module mode_irq
    // see Machine Mode Mip register 12'h344
    `ifdef ext_U
       `ifdef ext_N
-         assign usip = ucsr.uip.usip;           // USIP - User       mode Software Interrupt Pending
-         assign utip = ucsr.uip.utip;           // UTIP - User       mode Timer    Interrupt Pending
-         assign ueip = ucsr.uip.ueip;           // UEIP - User       mode External Interrupt Pending
+         assign usip = ucsr.uip.usip;        // USIP - User       mode Software Interrupt Pending
+         assign utip = ucsr.uip.utip;        // UTIP - User       mode Timer    Interrupt Pending
+         assign ueip = ucsr.uip.ueip;        // UEIP - User       mode External Interrupt Pending
       `else
          assign usip = 0;
          assign utip = 0;
@@ -144,13 +157,17 @@ module mode_irq
       interrupt_flag = FALSE; // default value
       if (mode == M_MODE)
          interrupt_flag = (mcsr.mstatus.mie & m_irq);
+         
       `ifdef ext_S
       if (mode == S_MODE)
          interrupt_flag = (m_irq  | (scsr.sstatus.sie & s_irq));
       `endif
+      
       `ifdef ext_U
+      `ifdef ext_N
       if (mode == U_MODE)
          interrupt_flag = (m_irq | s_irq | (ucsr.ustatus.uie & u_irq));
+      `endif
       `endif
    end
    
@@ -178,12 +195,14 @@ module mode_irq
          `endif
 
          `ifdef ext_U
+         `ifdef ext_N
          0:
          begin
             if      (usip & usie) interrupt_cause = 0;      // User Mode Software Interrupt
             else if (utip & utie) interrupt_cause = 4;      // User Mode Timer Interrupt
             else if (ueip & ueie) interrupt_cause = 8;      // User Mode External Interrupt
          end
+         `endif
          `endif
       endcase
    end
@@ -252,7 +271,6 @@ module mode_irq
          `endif
          `endif
       end
-      `endif
 
       // Traps that increase privilege level are termed vertical traps, while traps that remain at the same privilege level are termed
       // horizontal traps.The RISC-V privileged architecture provides flexible routing of traps to different privilege layers. p4 riscv-privileged.pdf
@@ -263,38 +281,43 @@ module mode_irq
          nxt_mode    = M_MODE;                              // default unless delegation occurs
          tvec        = mcsr.mtvec;                          // default: H_MODE should never exist
          `ifdef ext_S
+            // In systems with all three privilege modes (M/S/U), setting a bit in medeleg or mideleg will
+            // delegate the corresponding trap in (S-mode or U-mode) to the S-mode trap handler. p. 28 - riscv-privileged.pdf
+            if (mdlg && (mode <= S_MODE))
+            begin
+               tvec     = scsr.stvec;
+               nxt_mode = S_MODE;
+            end
             `ifdef ext_U
-               // In systems with all three privilege modes (M/S/U), setting a bit in medeleg or mideleg will
-               // delegate the corresponding trap in (S-mode or U-mode) to the S-mode trap handler. p. 28 - riscv-privileged.pdf
-               if (mdlg && (mode <= S_MODE))
-               begin
-                  tvec     = scsr.stvec;
-                  nxt_mode = S_MODE;
-               end
-               // If U-mode traps are supported, S-mode may in turn set corresponding bits in the sedeleg and sideleg registers
-               // to delegate traps that occur in U-mode to the U-mode trap handler.  see p. 28 riscv-privileged.pdf
-               if (sdlg && (mode == U_MODE))
-               begin
-                  tvec     = ucsr.utvec;
-                  nxt_mode = U_MODE;
-               end
+            `ifdef ext_N
+            // If U-mode traps are supported, S-mode may in turn set corresponding bits in the sedeleg and sideleg registers
+            // to delegate traps that occur in U-mode to the U-mode trap handler.  see p. 28 riscv-privileged.pdf
+            if (sdlg && (mode == U_MODE))
+            begin
+               tvec     = ucsr.utvec;
+               nxt_mode = U_MODE;
+            end
+            `endif // ext_N
             `endif // ext_U
          `else // !ext_S
             // In systems with two privilege modes (M/U) and support for U-mode traps, setting a bit in medeleg or mideleg will
             // delegate the corresponding trap in U-mode to the U-mode trap handler.
             `ifdef ext_U
+            `ifdef ext_N
                if (mdlg && (mode == U_MODE))
                begin
                   tvec     = ucsr.utvec;
                   nxt_mode = U_MODE;   // will cause ucsr.ucause, ucsr.uepc, and ucsr.utval to be updated with exception information. see csr_nxt_reg.sv
                end
             `endif
+            `endif
          `endif
       end
+      `endif // MDLG
 
       trap_pc = tvec[RSZ-1:2];                              // default trap_pc - 4 byte alignment (lower two bits not needed for passing this variable)
-      if ((nxt_mode > U_MODE) && interrupt_flag && (tvec[1:0] == 2'b01))
-         trap_pc = PC_SZ-2'(tvec[RSZ-1:2] + cause); // 4 byte aligment - since lower 2 bits are 0, no need to pass them. i.e logic [PC_SZ-1:2] trap_pc
+      if ((nxt_mode > U_MODE) & interrupt_flag & (tvec[1:0] == 2'b01))
+         trap_pc = (PC_SZ-2)'(tvec[RSZ-1:2] + cause);       // 4 byte aligment - since lower 2 bits are 0, no need to pass them. i.e logic [PC_SZ-1:2] trap_pc
 
       // mret, sret. uret come from EXE (which starts a PC reload), so these ONLY need to affect the mode.  The are mutually exclusive signals (only 1 should occur in a clock cycle)
       if (mret)
@@ -306,8 +329,10 @@ module mode_irq
       `endif
 
       `ifdef ext_U
+      `ifdef ext_N
       if (uret)
          nxt_mode = 2'b00;                                  // "When executing an URET instruction, ... the privilege mode is changed to User; ..."
+      `endif
       `endif
 
    end

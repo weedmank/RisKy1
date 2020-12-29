@@ -103,7 +103,7 @@ module mem
    assign is_st                        = E2M_bus.data.is_st;
    assign mode                         = E2M_bus.data.mode;
    assign sw_irq                       = E2M_bus.data.sw_irq;                       // msip_reg[3]. see irq.sv
-
+   
    assign is_ls                        = (is_ld | is_st);
 
    // control logic for interface to Execution Stage
@@ -316,7 +316,6 @@ module mem
                if (is_ld)
                   MIO_ack_data   = mtimecmp[2*RSZ-1:RSZ];
             end
-            `ifdef ext_N
             else if (ls_addr == MSIP_Base_Addr)
             begin
                MIO_ack           = TRUE;                                   // read or write
@@ -324,7 +323,6 @@ module mem
                if (is_ld)
                   MIO_ack_data   = {28'b0,sw_irq,3'b0};                    // Software Interrupt Pending Register
             end
-            `endif
             else // unknown internal I/O
             begin
                MIO_ack           = TRUE;                                   // read or write

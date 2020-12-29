@@ -41,7 +41,9 @@ module csr_av_rdata
    `endif
 
    `ifdef ext_U
+   `ifdef ext_N
    input var UCSR  ucsr,          // all of the User mode Control & Status Registers
+   `endif
    `endif
    `ifdef ext_S
    input var SCSR  scsr,          // all of the Supervisor mode Control & Status Registers
@@ -69,14 +71,10 @@ module csr_av_rdata
             csr_rd_avail   = TRUE;
             csr_rd_data    = ucsr.ustatus;            // see this in csr.sv
          end
-         `endif // ext_N
 
-         `ifdef ext_F
          // ------------------------------ User Floating-Point CSRs
          // 12'h001 - 12'h003
-         `endif   // ext_F
 
-         `ifdef ext_N
          // User Interrupt-Enable Register
          // 12'h004 = 12'b0000_0000_0100  uie         (read-write)  user mode
          12'h004:

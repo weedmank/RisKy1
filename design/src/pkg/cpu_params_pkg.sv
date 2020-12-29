@@ -19,14 +19,17 @@
 
 package cpu_params_pkg;
 import functions_pkg::*;
+   // "In systems with S-mode, the medeleg and mideleg registers must exist,..." see p. 28 riscv-privileged.pdf, csr_wr_mach.svh
 
-//   `ifndef ext_S
-//   `ifndef ext_U
-//      `define M_MODE_ONLY
-//   `endif
-//   `endif
-
+   // In systems with only M-mode and U-mode, the medeleg and mideleg registers should only be implemented if the N extension for user-mode interrupts is implemented.
+   // In systems with only M-mode, or with both M-mode and U-mode but without U-mode trap support, the medeleg and mideleg registers should not exist. see riscv-privileged.pdf p 28
+   `ifdef ext_S
       `define MDLG
+   `elsif ext_U
+      `ifdef ext_N // U-mode trap supprt
+         `define MDLG
+      `endif
+   `endif
 
    // The following M_xxxx are used in csr_wr_mach.svh and should be set by the user to a 32 bit value
    parameter   M_VENDOR_ID = "KIRK";
@@ -79,20 +82,21 @@ import functions_pkg::*;
    parameter   SEDLG_MASK           = 32'h0000_0000;
    parameter   SIDLG_INIT           = 32'h0000_0000;
    parameter   SIDLG_MASK           = 32'h0000_0000;
-   
+
    // MTVEC, STVEC, UTVEC  - values loaded into registers upon reset. Note: MODE >= 2 is Reserved see p 27 risv-privileged.pdf
    parameter   MTVEC_INIT           = 32'h0000_0000;
    parameter   STVEC_INIT           = 32'h0000_0000;
    parameter   UTVEC_INIT           = 32'h0000_0000;
-   
+
    // MCOUNTEREN, SCOUNTEREN - init values and mask values (a 1 in a bit means the corresponding reset value will always remain the same)
    parameter   MCNTEN_INIT          = 32'h0000_0000;
    parameter   MCNTEN_MASK          = 32'h0000_0000;                 // all bits are writable
-   parameter   SCNTEN_INIT          = 32'h0000_0000; 
+   parameter   SCNTEN_INIT          = 32'h0000_0000;
    parameter   SCNTEN_MASK          = 32'h0000_0000;                 // all bits are writable
-   
+
+
 //   parameter   WFI_IS_NOP           = TRUE;
-   
+
    parameter   NUM_MHPM = 0;                                         // CSR: number of mhpmcounter's and mhpmevent's, where first one starts at mphmcounter3 if NUM_MHPM > 0
    // NOTE: Max NUM_MHPM is 29
 
@@ -100,6 +104,8 @@ import functions_pkg::*;
 
    parameter   SET_MCOUNTINHIBIT = 0;                                // CSR: setting this to 1 will cause mcountinhibit to be a constant (Read Only) with bits defined by SET_MCOUNTINHIBIT_BITS
    parameter   SET_MCOUNTINHIBIT_BITS = 32'h0000_0000;
+
+   localparam  MINHIBIT_INIT = (SET_MCOUNTINHIBIT == 1) ? SET_MCOUNTINHIBIT_BITS : 0;
 
    // NOTE: The following PMP related logic is NOT IMPLEMENTED YET !!!!
 // `define     USE_PMPCFG                                            // CSR: comment this line out if you don't want logic for pmpcfg0-3 registers. see csr_wr_mach.sv and csr_rd_mach.svh
@@ -138,7 +144,7 @@ import functions_pkg::*;
    ;//                         ZY XWVU TSRQ PONM LKJI HGFE DCBA
 
    parameter   MISA_MASK = 32'hFFFF_FFFF; // each bit == 1 specifies Read Only. Currently, no logic is implemented to allow dynamic change of this register
-   
+
 // Options to add user enabled HINTs and RESERVEs.  See decode_core.sv
 // Logic related to each specific hint will need to be decoded and added to file execute.sv
 // Example: if "`define H_C_NOP" line below is uncommented then the C.NOP related HINT logic (in decode_core.sv) will be included during the RTL compile. The user will
@@ -182,9 +188,94 @@ import functions_pkg::*;
    //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
    //!!!      WARNING: The localparams below are not intended to be user modified      !!!!
    //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-   parameter   M_MODE      = 2'b11;                                  // Machine Mode
-   parameter   S_MODE      = 2'b01;                                  // Supervisor Mode
-   parameter   U_MODE      = 2'b00;                                  // User Mode
+   parameter M_MODE        = 2'b11;          // Machine Mode
+   parameter S_MODE        = 2'b01;          // Supervisor Mode
+   parameter U_MODE        = 2'b00;          // User Mode
+
+   parameter UIE_RO_MASK   = 13'h0001;       // Read Only - value read will be INIT value for mstatus register in csr_regs.sv
+   parameter UPIE_RO_MASK  = 13'h0010;
+   parameter SIE_RO_MASK   = 13'h0002;       // Read Only if ext_S not defined
+   parameter SPIE_RO_MASK  = 13'h0020;
+   parameter SPP_RO_MASK   = 13'h0100;
+   parameter MIE_RO_MASK   = 13'h0008;
+   parameter MPIE_RO_MASK  = 13'h0080;
+   parameter MPP_RO_MASK   = 13'h1800;
+
+   // MSTATUS Read_only masks change based on extensions needed.  Each mask bit disables writing to the bit and the read value will be the init value
+   //         Note: look at csr_ff.sv and notice that each RO bit will become tied to a logic value instead of creating a flip flop.
+   //           31:13  12:11  10:9   8    7     6     5     4     3    2     1    0
+   //mstatus:  {       mpp,   2'b0,  spp, mpie, 1'b0, spie, upie, mie, 1'b0, sie, uie};
+   `ifdef ext_U
+      `ifdef ext_N
+         parameter M_UIE_RO_MASK   = 13'h0000;
+         parameter M_UPIE_RO_MASK  = 13'h0000;
+      `else
+         parameter M_UIE_RO_MASK   = UIE_RO_MASK;  // Read Only - value read will be INIT value for mstatus register in csr_regs.sv
+         parameter M_UPIE_RO_MASK  = UPIE_RO_MASK;
+      `endif
+   `else
+      parameter M_UIE_RO_MASK   = UIE_RO_MASK;     // Read Only - value read will be INIT value for mstatus register in csr_regs.sv
+      parameter M_UPIE_RO_MASK  = UPIE_RO_MASK;
+   `endif
+
+   `ifdef ext_S
+      parameter M_SIE_RO_MASK   = 13'h0000;
+      parameter M_SPIE_RO_MASK  = 13'h0000;
+      parameter M_SPP_RO_MASK   = 13'h0000;
+   `else
+      parameter M_SIE_RO_MASK   = SIE_RO_MASK;     // Read Only if ext_S not defined
+      parameter M_SPIE_RO_MASK  = SPIE_RO_MASK;
+      parameter M_SPP_RO_MASK   = SPP_RO_MASK;
+   `endif
+
+
+   localparam MSTAT_INIT   = {M_MODE,11'b0};   // init to M_MODE
+   localparam MSTAT_MASK   = M_SPP_RO_MASK | M_SPIE_RO_MASK | M_UPIE_RO_MASK | M_SIE_RO_MASK | M_UIE_RO_MASK | 32'hFFFF_E644;  // WARNING: bits 31:13 have not been implemented yet 12/28/2020
+
+   // SSTATUS Read_only masks change based on extensions needed.  Each mask bit disables writing to the bit and the read value will be the init value
+   //         Note: look at csr_ff.sv and notice that each RO bit will become tied to a logic value instead of creating a flip flop.
+   // 31 30:20 19    18  17   16:15   14:13   12:9 8   7    6   5    4    3:2  1   0
+   // SD WPRI  MXR   SUM WPRI XS[1:0] FS[1:0] WPRI SPP WPRI UBE SPIE UPIE WPRI SIE UIE
+   localparam SSTAT_INIT   = 0;
+   localparam SSTAT_MASK   = MPP_RO_MASK | MPIE_RO_MASK | MIE_RO_MASK | 32'hFFFF_E644;  // WARNING: bits 31:13 have not been implemented yet 12/28/2020
+
+   localparam USTAT_INIT   = 0;
+   localparam USTAT_MASK   = MPP_RO_MASK | SPP_RO_MASK | MPIE_RO_MASK | SPIE_RO_MASK | MIE_RO_MASK | SIE_RO_MASK | 32'hFFFF_E644;  // WARNING: bits 31:13 have not been implemented yet 12/28/2020
+
+
+   // MIP Read_only masks change based on extensions needed.  Each mask bit disables writing to the bit and the read value will be the init value
+   //         Note: look at csr_ff.sv and notice that each RO bit will become tied to a logic value instead of creating a flip flop.
+   //  31:12   11    10    9     8     7     6     5     4     3     2     1     0
+   // {20'b0, meip, 1'b0, seip, ueip, mtip, 1'b0, stip, utip, msip, 1'b0, ssip, usip};
+   `ifdef ext_U
+      `ifdef ext_N
+         parameter UEIP_RO_MASK  = 10'h000;
+         parameter UTIP_RO_MASK  = 10'h000;
+         parameter USIP_RO_MASK  = 10'h000;
+      `else
+         parameter UEIP_RO_MASK  = 10'h100;  // Read Only - value read will be INIT value for MIP register in csr_regs.sv
+         parameter UTIP_RO_MASK  = 10'h010;
+         parameter USIP_RO_MASK  = 10'h001;
+      `endif
+   `else
+      parameter UEIP_RO_MASK  = 10'h100;     // Read Only - value read will be INIT value for MIP register in csr_regs.sv
+      parameter UTIP_RO_MASK  = 10'h010;
+      parameter USIP_RO_MASK  = 10'h001;
+   `endif
+
+   `ifdef ext_S
+      parameter SEIP_RO_MASK  = 10'h000;
+      parameter STIP_RO_MASK  = 10'h000;
+      parameter SSIP_RO_MASK  = 10'h000;
+   `else
+      parameter SEIP_RO_MASK  = 10'h200;     // Read Only if ext_S not defined
+      parameter STIP_RO_MASK  = 10'h020;
+      parameter SSIP_RO_MASK  = 10'h002;
+   `endif
+   localparam MIP_INIT     = 0;
+   localparam MIP_MASK     = SEIP_RO_MASK | UEIP_RO_MASK | STIP_RO_MASK | UTIP_RO_MASK | SSIP_RO_MASK | USIP_RO_MASK | 32'hFFFF_F444;
+   localparam MIE_INIT     = 0;
+   localparam MIE_MASK     = 32'hFFFF_F444;
 
    `ifdef ext_C
    parameter   is_IALIGN16 = 1'b1;                                   // 16 bit instruction alignment

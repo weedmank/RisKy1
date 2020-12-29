@@ -496,6 +496,7 @@ module RisKy1_core
    // 5th Stage = Write Back Stage
    WB_2_CSR_wr_intf  csr_wr_bus();
    logic             trigger_wfi;
+
    wb WB
    (
       .reset_in(reset_in),                                                    // Input:  system reset
@@ -605,7 +606,7 @@ module RisKy1_core
    begin
       if (reset_in || ext_irq)
          cpu_halt <= FALSE;
-      else if (trigger_wfi)
+      else if (trigger_wfi)  // This code is not reachable until trigger_wfi is not a 0 constant in wb.sv
          cpu_halt <= TRUE;
    end
 

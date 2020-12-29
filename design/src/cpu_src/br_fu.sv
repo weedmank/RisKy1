@@ -51,7 +51,9 @@ module br_fu
    logic    [PC_SZ-1:0] sepc;
    `endif
    `ifdef ext_U
+   `ifdef ext_N
    logic    [PC_SZ-1:0] uepc;
+   `endif
    `endif
 
    logic    [PC_SZ-1:0] no_br_pc;         // PC + 4 (32 bit instruction) or PC + 2 (compressed 16 bit instruction)
@@ -71,7 +73,9 @@ module br_fu
    assign sepc       = brfu_bus.sepc;
    `endif
    `ifdef ext_U
+   `ifdef ext_N
    assign uepc       = brfu_bus.uepc;
+   `endif
    `endif
 
    always_comb
@@ -169,7 +173,9 @@ module br_fu
          B_SRET:  br_pc = sepc;
          `endif
          `ifdef ext_U
+         `ifdef ext_N
          B_URET:  br_pc = uepc;
+         `endif
          `endif
       endcase
    end

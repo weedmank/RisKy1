@@ -166,10 +166,6 @@ module wb
    assign EV_EXC_bus.exception         = exception;
    assign EV_EXC_bus.current_events    = current_events;                            // number of retired instructions for current clock cycle
 
-
-   //------------------- CPU Halt Logic ------------------
-   assign trigger_wfi = FALSE;      //!!!!!!!!!!!!!!!!! temporary !!!!!!!!!!!!!!!!!!!!
-
    //-----------------------------------------------------
    // Interrupt Code   Description - riscv_privileged.pdf p 37
    // 0                User software interrupt
@@ -238,6 +234,8 @@ module wb
 
       current_events    = '0;
 
+      trigger_wfi       = FALSE;
+      
       // Note: All Exceptions are associated with trap_pc
       if (M2W_bus.valid)                                                            // should this instruction be processed by this stage?
       begin
@@ -499,13 +497,7 @@ module wb
 // !!!!!!!!!!!!!! NEEDS TO BE COMPLETED !!!!!!!!!!!!!!
 //                     if (mstatus.twi || (D2E_bus.data.funct3 > mode))               // see riscv_privileged-20190608.pdf  p.41
 //                     begin
-//                        rld_pc_flag             = TRUE;                             // flush pipeline and reload new fetch address
-//                        rld_pc_addr             = trap_pc;
-//
-//                        exception.pc            = ipd.pc;                           // address of current instruction to be saved in mepc, sepc, or uepc register
-//                        exception.tval          = ipd.instruction;                  // current Instruction
-//                        exception.cause         = 2;                                // 2 = Illegal Instruction
-//                        exception.flag          = TRUE;                             // control signal to save exception.pc, exception.tval and exception.cause in csr.sv
+                     trigger_wfi = TRUE;
 //                     end
                   end
                endcase

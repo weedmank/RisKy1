@@ -480,16 +480,9 @@ import cpu_params_pkg::*;
    typedef struct packed {
       MSTATUS_SIGS                           mstatus;          // 12'h300
       logic                        [RSZ-1:0] misa;             // 12'h301
-      `ifdef ext_S   // "In systems with S-mode, the medeleg and mideleg registers must exist,..." see p. 28 riscv-privileged.pdf, csr_wr_mach.svh
+      `ifdef MDLG   // "In systems with S-mode, the medeleg and mideleg registers must exist,..." see p. 28 riscv-privileged.pdf, csr_wr_mach.svh
       logic                        [RSZ-1:0] medeleg;          // 12'h302
-         `ifdef ext_N
-          logic                    [RSZ-1:0] mideleg;          // 12'h303
-          `endif
-      `elsif ext_U
-         logic                     [RSZ-1:0] medeleg;          // 12'h302
-         `ifdef ext_N
-         logic                     [RSZ-1:0] mideleg;          // 12'h303
-         `endif
+      logic                        [RSZ-1:0] mideleg;          // 12'h303
       `endif
       MIE_SIGS                               mie;              // 12'h304
       logic                        [RSZ-1:0] mtvec;            // 12'h305

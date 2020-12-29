@@ -138,7 +138,9 @@ module execute
    logic       [PC_SZ-1:0] sepc;
    `endif
    `ifdef ext_U
+   `ifdef ext_N
    logic       [PC_SZ-1:0] uepc;
+   `endif
    `endif
 
    // --------------------------------- csr_exe_bus signal assignments
@@ -150,8 +152,10 @@ module execute
    assign csr_exe_bus.sret    = sret;
    `endif
    `ifdef ext_U
+   `ifdef ext_N
    logic                   uret;
    assign csr_exe_bus.uret    = uret;
+   `endif
    `endif
 
    // signals from csr.sv
@@ -161,7 +165,9 @@ module execute
    assign sepc    = csr_exe_bus.sepc;
    `endif
    `ifdef ext_U
+   `ifdef ext_N
    assign uepc    = csr_exe_bus.uepc;
+   `endif
    `endif
 
    // --------------------------------- fu_done goes high whenever an instruction finishes execution.
@@ -251,7 +257,9 @@ module execute
    assign brfu_bus.sepc        = sepc;
    `endif
    `ifdef ext_U
+   `ifdef ext_N
    assign brfu_bus.uepc        = uepc;
+   `endif
    `endif
 
    assign br_fu_done = D2E_bus.valid & (ig_type == BR_INSTR);  // This functional unit only takes 1 clock cycle
@@ -439,10 +447,6 @@ module execute
          CSD = csr_rd_bus.csr_rd_data; // value calculated in CSRFU
    end
 
-   `ifdef ext_N
-   logic    trigger_wfi;
-   `endif
-
    // ****** Decide which Functional Unit output data will get used and passed to next stage *****
    // record of signals for WB stage verification tests BEFORE changes are made (i.e. changes to Registers, Memory, CSRs, etc..)
    always_comb
@@ -460,11 +464,9 @@ module execute
       sret              = FALSE;
       `endif
       `ifdef ext_U
+      `ifdef ext_N
       uret              = FALSE;
       `endif
-
-      `ifdef ext_N
-         trigger_wfi    = FALSE;
       `endif
 
       if (D2E_bus.valid)                                                            // should this instruction be processed by this stage? Default exe_dout.? values may be overriden inside this if()
@@ -505,7 +507,8 @@ module execute
                // -------------- URET,SRET,MRET --------------
                case(op_type)
                   `ifdef ext_U
-                  B_URET:                                                           // URET
+                  `ifdef ext_N
+                  B_URET:                                                           // URET - an Extension N instruction
                   begin // "OK to use in all modes though maybe technically nonsensical in S or M mode"
                      if (predicted_addr != uepc)
                      begin // this instruction and newer are flushed from the pipeline
@@ -515,6 +518,7 @@ module execute
                      else
                         uret  = TRUE;                                               // notify csr.sv
                   end
+                  `endif // ext_N
                   `endif // ext_U
 
                   `ifdef ext_S
@@ -637,7 +641,7 @@ module execute
 
 //            SYS_INSTR:
 //            begin
-//               unique case(op_type)
+//               case(op_type)
 //                  `ifdef ext_ZiF
 //                  FENCEI:
 //                  begin
@@ -652,24 +656,9 @@ module execute
 //                  end
 //                  `endif
 //
-//                  ECALL: // see MEM stage
-//                  begin
-//                  end
-//
-//                  EBREAK:
-//                  begin
-//                  end
-//
-//                  WFI:                                                              // NOTE: "...a legal implementation is to simply implement WFI as a NOP"
-//                  begin
-// !!!!!!!!!!!!!! NEEDS TO BE COMPLETED !!!!!!!!!!!!!!
-//                     if (mstatus.twi || (D2E_bus.data.funct3 > mode))               // see riscv_privileged-20190608.pdf  p.41
-//                     begin
-//                        ...
-//                     end
-//                     else
-//                        trigger_wfi       = TRUE;
-//                  end
+//                  ECALL:    // see WB stage
+//                  EBREAK:   // see WB stage
+//                  WFI:      // see WB stage
 //               endcase
 //            end
 

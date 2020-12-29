@@ -11,7 +11,7 @@
 // ----------------------------------------------------------------------------------------------------
 // Project       :  RisKy1 - new 5 stage pipelined RISC-V ISA based CPU tailored to the RISC-V RV32IM
 // Editor        :  Notepad++
-// File          :  csr_std_wr.sv
+// File          :  csr_ff.sv
 // Description   :  Standard Write Only portion of a CSR
 //               :
 // Designer      :  Kirk Weedman - kirk@hdlexpress.com
@@ -21,10 +21,9 @@
 import functions_pkg::*;
 import cpu_params_pkg::*;
 
-module csr_std_wr
+module csr_ff
   #(
       parameter INIT_VALUE = 0,
-      parameter ADDR = 0,
       parameter SZ = RSZ,
       parameter ROmask = 0
    )
@@ -32,15 +31,9 @@ module csr_std_wr
    input       logic             clk_in,
    input       logic             reset_in,
 
-   input       logic       [1:0] mode,
-   input       logic             csr_wr,
    input       logic    [SZ-1:0] csr_data,
    output      logic    [SZ-1:0] csr_name
 );
-   logic       [1:0] lowest_priv;
-
-   assign lowest_priv = ADDR[9:8];
-
    genvar m;
    generate
       for (m = 0; m < SZ; m++)
@@ -52,7 +45,7 @@ module csr_std_wr
             begin
                if (reset_in)
                   csr_name[m] <= INIT_VALUE[m];
-               else if (csr_wr & (mode >= lowest_priv))
+               else
                   csr_name[m] <= csr_data[m];
             end
       end

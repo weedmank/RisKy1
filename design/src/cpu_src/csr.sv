@@ -52,9 +52,12 @@ module csr
 );
 
    `ifdef ext_U
+   `ifdef ext_N
    UCSR              nxt_ucsr;
    UCSR              ucsr;                         // all of the User mode Control & Status Registers
    `endif
+   `endif
+   
    `ifdef ext_S
    SCSR              nxt_scsr;
    SCSR              scsr;                         // all of the Supervisor mode Control & Status Registers
@@ -116,7 +119,9 @@ module csr
    assign csr_exe_bus.sepc             = scsr.sepc;
    `endif
    `ifdef ext_U
+   `ifdef ext_N
    assign csr_exe_bus.uepc             = ucsr.uepc;
+   `endif
    `endif
    assign csr_exe_bus.trap_pc          = trap_pc;
    assign csr_exe_bus.interrupt_flag   = interrupt_flag;
@@ -129,8 +134,10 @@ module csr
    assign sret = csr_exe_bus.sret;
    `endif
    `ifdef ext_U
+   `ifdef ext_N
    logic    uret;
    assign uret = csr_exe_bus.uret;
+   `endif
    `endif
 
    // ================================================================== Next CSR Register Contents ======================================================
@@ -157,9 +164,11 @@ module csr
       .nxt_mode(nxt_mode),                                  // Input:
 
       `ifdef ext_U
+      `ifdef ext_N
       .uret(uret),                                          // Input:
       .ucsr(ucsr),                                          // Input:   current register state of all the User Mode Control & Status Registers
       .nxt_ucsr(nxt_ucsr),                                  // Output:  next register state of all the User Mode Control & Status Registers
+      `endif
       `endif
 
       `ifdef ext_S
@@ -180,7 +189,6 @@ module csr
       .reset_in(reset_in),                                  // Input:
 
       .ext_irq(ext_irq),                                    // Input:
-      .mode(mode),                                          // Input:
       .current_events(current_events),                      // Input:
 
       .total_retired(total_retired),                        // Output:  needed by csr_nxt_reg.sv
@@ -189,8 +197,10 @@ module csr
       `endif
 
       `ifdef ext_U
+      `ifdef ext_N
       .ucsr(ucsr),                                          // Output:  all of the User mode Control & Status Registers
       .nxt_ucsr(nxt_ucsr),                                  // Input:   all of the next User mode Control & Status Registers
+      `endif
       `endif
 
       `ifdef ext_S
@@ -215,10 +225,14 @@ module csr
       .mode(mode),                                          // Input:
 
       `ifdef ext_U
+      `ifdef ext_N
       .ucsr(ucsr),                                          // Input:   all of the User Mode Control & Status Registers
       `endif
+      `endif
+
       `ifdef ext_S
       .scsr(scsr),                                          // Input:   all of the Supervisor Mode Control & Status Registers
+
       `endif
       .mcsr(mcsr)                                           // Input:   all of the Machine Mode Control & Status Registers
    );
@@ -234,8 +248,11 @@ module csr
       .nxt_mode(nxt_mode),                                  // output:  next mode - needed by csr_nxt_reg
 
       `ifdef ext_U
+      `ifdef ext_N
       .uret(uret),
       `endif
+      `endif
+      
       `ifdef ext_S
       .sret(sret),
       `endif
@@ -247,11 +264,15 @@ module csr
       .interrupt_cause(interrupt_cause),                    // Output:  needed in WB logic
 
       `ifdef ext_U
+      `ifdef ext_N
       .ucsr(ucsr),                                          // Input:   current register state of all the User Mode Control & Status Registers
       `endif
+      `endif
+
       `ifdef ext_S
       .scsr(scsr),                                          // Input:   current register state of all the Supervisor Mode Control & Status Registers
       `endif
+
       .mcsr(mcsr)                                           // Input:   current register state of all the Machine Mode Control & Status Registers
    );
 
@@ -272,7 +293,9 @@ module csr
    SCSR             nxt_FWD_scsr;
    `endif
    `ifdef ext_U
+   `ifdef ext_N
    UCSR             nxt_FWD_ucsr;
+   `endif
    `endif
 
    csr_nxt_reg cnr_2 (
@@ -296,9 +319,11 @@ module csr
       .nxt_mode(nxt_mode),
 
       `ifdef ext_U
+      `ifdef ext_N
       .uret(uret),                                          // Input:
       .ucsr(ucsr),                                          // Input:   current register state of all the User Mode Control & Status Registers
       .nxt_ucsr(nxt_FWD_ucsr),                              // Output:  next register state of all the User Mode Control & Status Registers
+      `endif
       `endif
 
       `ifdef ext_S
@@ -322,11 +347,15 @@ module csr
       .mode(mode),                                          // Input:
 
       `ifdef ext_U
+      `ifdef ext_N
       .ucsr(nxt_FWD_ucsr),                                  // Input:   all of the User Mode Control & Status Registers
       `endif
+      `endif
+      
       `ifdef ext_S
       .scsr(nxt_FWD_scsr),                                  // Input:   all of the Supervisor Mode Control & Status Registers
       `endif
+      
       .mcsr(nxt_FWD_mcsr)                                   // Input:   all of the Machine Mode Control & Status Registers
    );
 

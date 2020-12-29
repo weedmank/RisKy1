@@ -96,7 +96,9 @@ interface BFU_intf;
       logic       [PC_SZ-1:0] sepc;
       `endif
       `ifdef ext_U
+      `ifdef ext_N
       logic       [PC_SZ-1:0] uepc;
+      `endif
       `endif
 
       logic       [PC_SZ-1:0] no_br_pc;   // address of instruction immediately following this branch instruction
@@ -105,8 +107,8 @@ interface BFU_intf;
       logic                   mis;        // misaligned address flag
       `endif
 
-      modport master (output Rs1_data, Rs2_data, pc, imm, funct3, ci, sel_x, sel_y, op, mepc, `ifdef ext_S sepc, `endif `ifdef ext_U uepc, `endif input  no_br_pc, `ifndef ext_C mis, `endif br_pc);
-      modport slave  (input  Rs1_data, Rs2_data, pc, imm, funct3, ci, sel_x, sel_y, op, mepc, `ifdef ext_S sepc, `endif `ifdef ext_U uepc, `endif output no_br_pc, `ifndef ext_C mis, `endif br_pc);
+      modport master (output Rs1_data, Rs2_data, pc, imm, funct3, ci, sel_x, sel_y, op, mepc, `ifdef ext_S sepc, `endif `ifdef ext_U `ifdef ext_N uepc, `endif `endif input  no_br_pc, `ifndef ext_C mis, `endif br_pc);
+      modport slave  (input  Rs1_data, Rs2_data, pc, imm, funct3, ci, sel_x, sel_y, op, mepc, `ifdef ext_S sepc, `endif `ifdef ext_U `ifdef ext_N uepc, `endif `endif output no_br_pc, `ifndef ext_C mis, `endif br_pc);
 endinterface: BFU_intf
 
 `ifdef ext_M
@@ -344,7 +346,9 @@ interface CSR_EXE_intf;
    logic                     [RSZ-1:0] sepc;             // Supervisor Exception PC
    `endif
    `ifdef ext_U
+   `ifdef ext_N
    logic                     [RSZ-1:0] uepc;             // User Exception PC
+   `endif
    `endif
    logic                         [1:0] mode;
    logic                               interrupt_flag;   // 1 = take an interrupt trap
@@ -356,13 +360,15 @@ interface CSR_EXE_intf;
    logic                               sret;             // Supervisor Mode return flag
    `endif
    `ifdef ext_U
+   `ifdef ext_N
    logic                               uret;             // User Mode return flag
+   `endif
    `endif
    logic                               mret;             // Machine mode return flag
 
-   modport master(output   mepc, `ifdef ext_S sepc, `endif `ifdef ext_U uepc, `endif mode, interrupt_flag, interrupt_cause, trap_pc,
-                  input  `ifdef ext_S sret, `endif `ifdef ext_U uret, `endif mret);
-   modport  slave(input    mepc, `ifdef ext_S sepc, `endif `ifdef ext_U uepc, `endif mode, interrupt_flag, interrupt_cause, trap_pc,
-                  output `ifdef ext_S sret, `endif `ifdef ext_U uret, `endif mret);
+   modport master(output  mepc, `ifdef ext_S sepc, `endif `ifdef ext_U `ifdef ext_N uepc, `endif `endif mode, interrupt_flag, interrupt_cause, trap_pc,
+                  input  `ifdef ext_S sret, `endif `ifdef ext_U `ifdef ext_N uret, `endif `endif mret);
+   modport  slave(input   mepc, `ifdef ext_S sepc, `endif `ifdef ext_U `ifdef ext_N uepc, `endif `endif mode, interrupt_flag, interrupt_cause, trap_pc,
+                  output `ifdef ext_S sret, `endif `ifdef ext_U `ifdef ext_N uret, `endif `endif mret);
 
 endinterface: CSR_EXE_intf
