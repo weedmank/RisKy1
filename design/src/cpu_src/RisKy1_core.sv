@@ -303,7 +303,7 @@ module RisKy1_core
    M2W_intf                            M2W_bus();
 
    // interface between MEM stage and CSR Functional Unit inside EXE stage
-   EV_EXC_intf                         EV_EXC_bus();
+   WB_CSR_intf                         WB_CSR_bus();
 
    // signals shared between CSR and EXE stage
    CSR_EXE_intf                        csr_exe_bus();
@@ -531,7 +531,7 @@ module RisKy1_core
       .csr_wr_bus(csr_wr_bus),                                                // writes data to a specific CSR
 
       // signals from WB stage
-      .EV_EXC_bus(EV_EXC_bus)                                                 // master -> signals needed by CSR
+      .WB_CSR_bus(WB_CSR_bus)                                                 // master -> signals needed by CSR
    );
 
    csr CSREGS
@@ -546,7 +546,7 @@ module RisKy1_core
       .csr_exe_bus(csr_exe_bus),
 
       // signals from WB stage
-      .EV_EXC_bus(EV_EXC_bus),                                                // Input:   signals needed by CSR logic
+      .WB_CSR_bus(WB_CSR_bus),                                                // Input:   signals needed by CSR logic
 
       .mtime(mtime),                                                          // Input:   mtime counter from irq module can be read through CSRs
 

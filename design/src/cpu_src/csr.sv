@@ -37,7 +37,7 @@ module csr
    CSR_EXE_intf.master        csr_exe_bus,
 
    // signals from WB stage
-   EV_EXC_intf.slave          EV_EXC_bus,                   // Events and Exception information (see wb.sv)
+   WB_CSR_intf.slave          WB_CSR_bus,                   // Events and Exception information (see wb.sv)
 
    input    logic [RSZ*2-1:0] mtime,
 
@@ -57,7 +57,7 @@ module csr
    UCSR              ucsr;                         // all of the User mode Control & Status Registers
    `endif
    `endif
-   
+
    `ifdef ext_S
    SCSR              nxt_scsr;
    SCSR              scsr;                         // all of the Supervisor mode Control & Status Registers
@@ -74,10 +74,22 @@ module csr
    EVENTS            current_events;
    logic             total_retired;                // In this design, at most, 1 instruction can retire per clock cycle
 
-   assign exception        = EV_EXC_bus.exception;
-   assign current_events   = EV_EXC_bus.current_events;
-   assign sw_irq           = EV_EXC_bus.sw_irq;
+   assign exception        = WB_CSR_bus.exception;
+   assign current_events   = WB_CSR_bus.current_events;
+   assign sw_irq           = WB_CSR_bus.sw_irq;
 
+   logic    mret;
+   assign   mret = WB_CSR_bus.mret;
+   `ifdef ext_S
+   logic    sret;
+   assign   sret = WB_CSR_bus.sret;
+   `endif
+   `ifdef ext_U
+   `ifdef ext_N
+   logic    uret;
+   assign   uret = WB_CSR_bus.uret;
+   `endif
+   `endif
    // ----------------------------------- csr_nxt_bus interface
    logic             nxt_csr_wr;
    logic      [11:0] nxt_csr_wr_addr;
@@ -109,9 +121,9 @@ module csr
    assign csr_rd_bus.csr_rd_avail   = csr_rd_avail;
 
    // ----------------------------------- signals shared between csr.sv and EXE stage
-   logic                   [PC_SZ-1:2] trap_pc;             // Output:  trap vector handler address.
-   logic                               interrupt_flag;      // 1 = take an interrupt trap
-   logic                         [3:0] interrupt_cause;     // value specifying what type of interrupt
+   logic                   [PC_SZ-1:2] trap_pc;       // Output:  trap vector handler address.
+   logic                               irq_flag;      // 1 = take an interrupt trap
+   logic                     [RSZ-1:0] irq_cause;     // value specifying what type of interrupt
    assign csr_exe_bus.mode             = mode;
 
    assign csr_exe_bus.mepc             = mcsr.mepc;
@@ -124,21 +136,8 @@ module csr
    `endif
    `endif
    assign csr_exe_bus.trap_pc          = trap_pc;
-   assign csr_exe_bus.interrupt_flag   = interrupt_flag;
-   assign csr_exe_bus.interrupt_cause  = interrupt_cause;
-
-   logic    mret;
-   assign mret = csr_exe_bus.mret;
-   `ifdef ext_S
-   logic    sret;
-   assign sret = csr_exe_bus.sret;
-   `endif
-   `ifdef ext_U
-   `ifdef ext_N
-   logic    uret;
-   assign uret = csr_exe_bus.uret;
-   `endif
-   `endif
+   assign csr_exe_bus.irq_flag         = irq_flag;
+   assign csr_exe_bus.irq_cause        = irq_cause;
 
    // ================================================================== Next CSR Register Contents ======================================================
    // Combo logic: The next state of all Control & Status Registers is determined and output as nxt_mcsr,nxt_scsr,nxt_ucsr (depending on type of CSR).
@@ -242,7 +241,8 @@ module csr
       .reset_in(reset_in),
       .clk_in(clk_in),
 
-      .exception_flag(exception.flag),                      // Input:
+      .retire_exception_flag(exception.flag),               // Input:   An exception occured for the retiring instruction
+      .retire_interrupt_flag(exception.cause[RSZ-1]),       // Input:   cause bit set if exception is due to an interrupt
 
       .mode(mode),                                          // Output:  current mode
       .nxt_mode(nxt_mode),                                  // output:  next mode - needed by csr_nxt_reg
@@ -252,7 +252,7 @@ module csr
       .uret(uret),
       `endif
       `endif
-      
+
       `ifdef ext_S
       .sret(sret),
       `endif
@@ -260,8 +260,9 @@ module csr
 
       .trap_pc(trap_pc),                                    // Output:  needed in WB logic
       .ext_irq(ext_irq),                                    // Input:
-      .interrupt_flag(interrupt_flag),                      // Output:  needed in WB logic
-      .interrupt_cause(interrupt_cause),                    // Output:  needed in WB logic
+
+      .irq_flag(irq_flag),                                  // Output:  needed in EXE logic
+      .irq_cause(irq_cause),                                // Output:  needed in EXE logic
 
       `ifdef ext_U
       `ifdef ext_N
@@ -351,11 +352,11 @@ module csr
       .ucsr(nxt_FWD_ucsr),                                  // Input:   all of the User Mode Control & Status Registers
       `endif
       `endif
-      
+
       `ifdef ext_S
       .scsr(nxt_FWD_scsr),                                  // Input:   all of the Supervisor Mode Control & Status Registers
       `endif
-      
+
       .mcsr(nxt_FWD_mcsr)                                   // Input:   all of the Machine Mode Control & Status Registers
    );
 

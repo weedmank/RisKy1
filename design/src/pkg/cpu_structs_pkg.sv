@@ -148,7 +148,7 @@ import cpu_params_pkg::*;
    typedef struct packed {
       logic       [PC_SZ-1:0] pc;                              // new program counter due to exception
       logic         [RSZ-1:0] tval;                            // trap value (information)
-      logic             [3:0] cause;                           // 0 - 15, 2 = illegal instruction
+      logic         [RSZ-1:0] cause;                           // 0 - 15, 2 = illegal instruction
       logic                   flag;                            // 1 = take an exception trap
    } EXCEPTION;
 
@@ -167,7 +167,7 @@ import cpu_params_pkg::*;
 //    logic   [RET_SZ:0] [n-1:0] ret_cnt;                      // general format to use if more than 1 instruction retires per clock cycle - where n is the number of bits needed to hold maximum count
       logic        [RET_SZ:0] ret_cnt;                         // only 1 instruction maximum retires per clock cycle in this pipelined RV32imc... design
       logic                   e_flag;                          // e_flag = 1 = the type of problem that occured with this instrucion is specified in e_cause
-      logic             [3:0] e_cause;                         // 0 = Instruction Address Misaligned
+      logic         [RSZ-1:0] e_cause;                         // 0 = Instruction Address Misaligned
                                                                // 1 = Instruction Access Fault
                                                                // 2 = Illegal Instruction
                                                                // 3 = Environment Break
@@ -201,7 +201,7 @@ import cpu_params_pkg::*;
       logic             [1:0] mode;                            // mode can change on any clock cycle, but we want to pass value associated with current instruction
       logic                   sw_irq;
       logic                   interrupt_flag;                  // 1 = take an interrupt trap
-      logic             [3:0] interrupt_cause;                 // value specifying what type of interrupt
+      logic         [RSZ-1:0] interrupt_cause;                 // value specifying what type of interrupt
       logic       [PC_SZ-1:2] trap_pc;                         // Output:  trap vector handler address. 4 byte alignmen
 
       // GPR/FPR information (gets pased to MEM stage which passes it to WB stage)
@@ -235,7 +235,7 @@ import cpu_params_pkg::*;
       logic             [1:0] mode;
       logic                   sw_irq;
       logic                   interrupt_flag;                  // 1 = take an interrupt trap
-      logic             [3:0] interrupt_cause;                 // value specifying what type of interrupt
+      logic         [RSZ-1:0] interrupt_cause;                 // value specifying what type of interrupt
       logic       [PC_SZ-1:2] trap_pc;                         // Output:  trap vector handler address. 4 byte alignment
 
       // GPR/FPR information
@@ -494,7 +494,7 @@ import cpu_params_pkg::*;
 
       logic                        [RSZ-1:0] mscratch;         // 12'h340
       logic                      [PC_SZ-1:0] mepc;             // 12'h341
-      logic                            [3:0] mcause;           // 12'h342
+      logic                        [RSZ-1:0] mcause;           // 12'h342
       logic                        [RSZ-1:0] mtval;            // 12'h343
       MIP_SIGS                               mip;              // 12'h344
 
@@ -594,7 +594,7 @@ import cpu_params_pkg::*;
       logic                        [RSZ-1:0] scounteren;       // 12'h106
       logic                        [RSZ-1:0] sscratch;         // 12'h140
       logic                      [PC_SZ-1:0] sepc;             // 12'h141
-      logic                            [3:0] scause;           // 12'h142
+      logic                        [RSZ-1:0] scause;           // 12'h142
       logic                        [RSZ-1:0] stval;            // 12'h143
       SIP_SIGS                               sip;              // 12'h144
       logic                        [RSZ-1:0] satp;             // 12'h180
@@ -608,7 +608,7 @@ import cpu_params_pkg::*;
       logic                        [RSZ-1:0] utvec;            // 12'h005
       logic                        [RSZ-1:0] uscratch;         // 12'h040
       logic                      [PC_SZ-1:0] uepc;             // 12'h041
-      logic                            [3:0] ucause;           // 12'h042
+      logic                        [RSZ-1:0] ucause;           // 12'h042
       logic                        [RSZ-1:0] utval;            // 12'h043
       UIP_SIGS                               uip;              // 12'h044
    } UCSR;

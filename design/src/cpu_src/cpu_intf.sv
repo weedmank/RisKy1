@@ -298,15 +298,23 @@ interface L1DC_intf;
 endinterface: L1DC_intf
 
 //------------------------ information shared betwee CSR Functional Unit and WB stage ------------------------
-interface EV_EXC_intf;
+interface WB_CSR_intf;
       logic                   sw_irq;           // msip_reg[3] = Software Interrupt Pending - from EXE stage. see csr_fu.sv
       EXCEPTION               exception;
       EVENTS                  current_events;   // number of retired instructions for current clock cycle
+      logic                   mret;
+      `ifdef ext_S
+      logic                   sret;
+      `endif
+      `ifdef ext_U
+      `ifdef ext_N
+      logic                   uret;
+      `endif
+      `endif
+      modport master (output sw_irq, exception, current_events, `ifdef ext_U `ifdef ext_N uret, `endif `endif `ifdef ext_S sret, `endif mret);
+      modport slave  (input  sw_irq, exception, current_events, `ifdef ext_U `ifdef ext_N uret, `endif `endif `ifdef ext_S sret, `endif mret);
 
-      modport master (output sw_irq, exception, current_events);
-      modport slave  (input  sw_irq, exception, current_events);
-
-endinterface: EV_EXC_intf
+endinterface: WB_CSR_intf
 
 //------------------------ Loads & Stores that need to be saved into the LS Queue ------------------------
 `ifdef add_LSQ
@@ -351,24 +359,11 @@ interface CSR_EXE_intf;
    `endif
    `endif
    logic                         [1:0] mode;
-   logic                               interrupt_flag;   // 1 = take an interrupt trap
-   logic                         [3:0] interrupt_cause;  // value specifying what type of interrupt
+   logic                               irq_flag;         // 1 = take an interrupt trap
+   logic                     [RSZ-1:0] irq_cause;        // value specifying what type of interrupt
    logic                   [PC_SZ-1:2] trap_pc;          // Output:  trap vector handler address. 4 byte alignment
 
-   // signals from EXE stage - Note: partial pipeline flush will occur when xret == TRUE & PC reloads
-   `ifdef ext_S
-   logic                               sret;             // Supervisor Mode return flag
-   `endif
-   `ifdef ext_U
-   `ifdef ext_N
-   logic                               uret;             // User Mode return flag
-   `endif
-   `endif
-   logic                               mret;             // Machine mode return flag
-
-   modport master(output  mepc, `ifdef ext_S sepc, `endif `ifdef ext_U `ifdef ext_N uepc, `endif `endif mode, interrupt_flag, interrupt_cause, trap_pc,
-                  input  `ifdef ext_S sret, `endif `ifdef ext_U `ifdef ext_N uret, `endif `endif mret);
-   modport  slave(input   mepc, `ifdef ext_S sepc, `endif `ifdef ext_U `ifdef ext_N uepc, `endif `endif mode, interrupt_flag, interrupt_cause, trap_pc,
-                  output `ifdef ext_S sret, `endif `ifdef ext_U `ifdef ext_N uret, `endif `endif mret);
+   modport master(output  mepc, `ifdef ext_S sepc, `endif `ifdef ext_U `ifdef ext_N uepc, `endif `endif mode, irq_flag, irq_cause, trap_pc);
+   modport  slave(input   mepc, `ifdef ext_S sepc, `endif `ifdef ext_U `ifdef ext_N uepc, `endif `endif mode, irq_flag, irq_cause, trap_pc);
 
 endinterface: CSR_EXE_intf

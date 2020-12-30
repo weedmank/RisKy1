@@ -88,7 +88,7 @@ module csr_regs
 
       // ------------------------------ User Exception Cause
       // 12'h042 = 12'b0000_0100_0010  ucause               (read-write)
-      csr_ff #(0,4,32'h0) Ucause                            (clk_in,reset_in, nxt_ucsr.ucause, ucsr.ucause); // ucause is currently 4 Flops wide
+      csr_ff #(0,32) Ucause                                 (clk_in,reset_in, nxt_ucsr.ucause, ucsr.ucause); // ucause is currently 4 Flops wide
 
       // ------------------------------ User Exception Trap Value    see riscv-privileged p. 38-39
       // 12'h043 = 12'b0000_0100_0011  utval                (read-write)
@@ -153,7 +153,7 @@ module csr_regs
 
       // ------------------------------ Supervisor Exception Cause
       // 12'h142 = 12'b0001_0100_0010  scause               (read-write)
-      csr_ff #(0,4) Scause                                  (clk_in,reset_in, nxt_scsr.scause, scsr.scause);   // scause is currently 4 Flops wide
+      csr_ff #(0,RSZ) Scause                                (clk_in,reset_in, nxt_scsr.scause, scsr.scause);   // scause is currently 4 Flops wide
 
       // ------------------------------ Supervisor Exception Trap Value                       see riscv-privileged p. 38-39
       // 12'h143 = 12'b0001_0100_0011  stval                (read-write)
@@ -177,8 +177,8 @@ module csr_regs
    // mie,sie,uie    - global interrupt enables
    // mpie,spie,upie - pending interrupt enables
    // mpp, spp       - previous privileged mode stacks
-   //  31        22   21  20   19   18   17   16:15 14:13 12:11 10:9  8    7     6     5     4      3     2     1    0
-   // {sd, 8'b0, tsr, tw, tvm, mxr, sum, mprv,   xs fs,   mpp,  2'b0, spp, mpie, 1'b0, spie, upie,  mie, 1'b0,  sie, uie};
+   //  31        22   21  20   19   18   17    16:15 14:13 12:11 10:9  8    7     6     5     4      3     2     1    0
+   // {sd, 8'b0, tsr, tw, tvm, mxr, sum, mprv, xs,   fs,   mpp,  2'b0, spp, mpie, 1'b0, spie, upie,  mie, 1'b0,  sie, uie};
 
    // register currently creates flops for bits 12:11,8,7,5,4,3,1,0
    csr_ff #(MSTAT_INIT,13,MSTAT_MASK) Mstatus               (clk_in,reset_in, nxt_mcsr.mstatus, mcsr.mstatus); // only lower 13 bits implemented 12/21/2020
@@ -202,15 +202,16 @@ module csr_regs
 
    // ------------------------------ Machine Interrupt Enable Register
    // 12'h304 = 12'b0011_0000_0100  mie                     (read-write)
-   //  31:12   11    10    9     8     7     6     5     4     3     2     1     0
-   // {20'b0, meie, WPRI, seie, ueie, mtie, WPRI, stie, utie, msie, WPRI, ssie, usie};
-   // Read Only bits of 32'hFFFF_F444;  // Note: bits 31:12, 10, 6, 2 are not writable and are "hardwired" to 0 (init value = 0 at reset)
+   //  31:12  11    10    9     8     7     6     5     4     3     2     1     0
+   // {WPRI, meie, WPRI, seie, ueie, mtie, WPRI, stie, utie, msie, WPRI, ssie, usie};
+   // Note: bits 31:12 are WPRI. Also bits 10,6,2 are WPRI
    csr_ff #(MIP_INIT,RSZ,MIP_MASK)  Mie                     (clk_in,reset_in, nxt_mcsr.mie, mcsr.mie);
 
    // ------------------------------ Machine Trap Handler Base Address
    // 12'h305 = 12'b0011_0000_0101  mtvec                   (read-write)
    // Current design only allows MODE of 0 or 1 - thus bit 1 forced to retain it's reset value which is 0.
    csr_ff #(MTVEC_INIT & ~32'd2,RSZ,32'h2) Mtvec            (clk_in,reset_in, nxt_mcsr.mtvec, mcsr.mtvec);
+   // WARNING: I force bit 1 to always be 0, but it could be that if a non legal value is written the user wants the value to go specifically to 1 or 0
 
    // ------------------------------ Machine Counter Enable
    // 12'h306 = 12'b0011_0000_0110  mcounteren              (read-write)
@@ -242,11 +243,11 @@ module csr_regs
    // ------------------------------ Machine Exception Program Counter
    // Used by MRET instruction at end of Machine mode trap handler
    // 12'h341 = 12'b0011_0100_0001  mepc                    (read-write)   see riscv-privileged p 36
-   csr_ff #(0,PC_SZ,32'h1) Mepc                             (clk_in,reset_in, nxt_mcsr.mepc, mcsr.mepc);    // LSbit always remains at 0 (reset init value)
+   csr_ff #(0,PC_SZ,32'h1) Mepc                             (clk_in,reset_in, nxt_mcsr.mepc, mcsr.mepc);    // LSbit always remains at 0 (reset init value) p. 36 riscv-privileged
 
    // ------------------------------ Machine Exception Cause
    // 12'h342 = 12'b0011_0100_0010  mcause                  (read-write)
-   csr_ff #(0,4) Mcause                                     (clk_in,reset_in, nxt_mcsr.mcause, mcsr.mcause);   // mcause is currently 4 Flops wide
+   csr_ff #(0,RSZ) Mcause                                   (clk_in,reset_in, nxt_mcsr.mcause, mcsr.mcause);   // mcause is currently 4 Flops wide
 
    // ------------------------------ Machine Exception Trap Value
    // 12'h343 = 12'b0011_0100_0011  mtval                   (read-write)

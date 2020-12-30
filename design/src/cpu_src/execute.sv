@@ -144,20 +144,6 @@ module execute
    `endif
 
    // --------------------------------- csr_exe_bus signal assignments
-   // signals to csr.sv
-   logic                   mret;
-   assign csr_exe_bus.mret    = mret;
-   `ifdef ext_S
-   logic                   sret;
-   assign csr_exe_bus.sret    = sret;
-   `endif
-   `ifdef ext_U
-   `ifdef ext_N
-   logic                   uret;
-   assign csr_exe_bus.uret    = uret;
-   `endif
-   `endif
-
    // signals from csr.sv
    assign mode    = csr_exe_bus.mode;
    assign mepc    = csr_exe_bus.mepc;
@@ -459,25 +445,16 @@ module execute
 
       op_type           = '0;
       predicted_addr    = '0;
-      mret              = FALSE;
-      `ifdef ext_S
-      sret              = FALSE;
-      `endif
-      `ifdef ext_U
-      `ifdef ext_N
-      uret              = FALSE;
-      `endif
-      `endif
 
       if (D2E_bus.valid)                                                            // should this instruction be processed by this stage? Default exe_dout.? values may be overriden inside this if()
       begin
          op_type                    = D2E_bus.data.op;
          predicted_addr             = D2E_bus.data.predicted_addr;
 
-         // trap_pc, interrupt_flag, interrupt_cause need to come from CSR in this stage so they can be passed to next stages as they relate to current instruction
+         // trap_pc, irq_flag, irq_cause need to come from CSR in this stage so they can be passed to next stages as they relate to current instruction
          exe_dout.trap_pc           = csr_exe_bus.trap_pc;                          // trap_pc, interrupt_flag, interrupt_cause not used in this stage,but needed in WB stage
-         exe_dout.interrupt_flag    = csr_exe_bus.interrupt_flag;
-         exe_dout.interrupt_cause   = csr_exe_bus.interrupt_cause;
+         exe_dout.interrupt_flag    = csr_exe_bus.irq_flag;
+         exe_dout.interrupt_cause   = csr_exe_bus.irq_cause;
 
          exe_dout.ipd               = D2E_bus.data.ipd;                             // pass on to next stage
          exe_dout.ci                = ci;                                           // 1 = compressed 16 bit instruction, 0 = 32 bit instruction
@@ -507,7 +484,7 @@ module execute
                // -------------- URET,SRET,MRET --------------
                case(op_type)
                   `ifdef ext_U
-                  `ifdef ext_N
+                  `ifdef ext_N // use same ifdef logic in wb.sv
                   B_URET:                                                           // URET - an Extension N instruction
                   begin // "OK to use in all modes though maybe technically nonsensical in S or M mode"
                      if (predicted_addr != uepc)
@@ -515,8 +492,6 @@ module execute
                         rld_pc_flag       = TRUE;
                         rld_pc_addr       = uepc;                                   // reload PC and flush pipeline
                      end
-                     else
-                        uret  = TRUE;                                               // notify csr.sv
                   end
                   `endif // ext_N
                   `endif // ext_U
@@ -531,8 +506,6 @@ module execute
                            rld_pc_flag       = TRUE;
                            rld_pc_addr       = sepc;                                // reload PC and flush pipeline
                         end
-                        else
-                           sret  = TRUE;                                            // notify csr.sv
                      end
                   end
                   `endif // ext_S
@@ -546,8 +519,6 @@ module execute
                            rld_pc_flag       = TRUE;                                // flush pipeline and reload new fetch address
                            rld_pc_addr       = mepc;                                // reload PC and flush pipeline
                         end
-                        else
-                           mret  = TRUE;                                            // notify csr.sv
                      end
                   end
 

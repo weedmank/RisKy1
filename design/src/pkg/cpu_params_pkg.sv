@@ -275,7 +275,7 @@ import functions_pkg::*;
    localparam MIP_INIT     = 0;
    localparam MIP_MASK     = SEIP_RO_MASK | UEIP_RO_MASK | STIP_RO_MASK | UTIP_RO_MASK | SSIP_RO_MASK | USIP_RO_MASK | 32'hFFFF_F444;
    localparam MIE_INIT     = 0;
-   localparam MIE_MASK     = 32'hFFFF_F444;
+   localparam MIE_MASK     = 32'h0; // Note: bits 31:12 are WPRI. Also bits 10,6,2 are WPRI
 
    `ifdef ext_C
    parameter   is_IALIGN16 = 1'b1;                                   // 16 bit instruction alignment
@@ -288,6 +288,7 @@ import functions_pkg::*;
    localparam  RSZ         = XLEN;                                   // General Purpose Register width
    localparam  MAX_GPR     = 32;                                     // maximum number of CPU General Purpose Registers
    localparam  MAX_CSR     = 4096;                                   // maximum number of CSR Registers
+   localparam  DEL_SZ      = bit_size(RSZ-1);                        // Number of bits that define "cause" when indexing a delegation register. see mode_irq.sv
 
    localparam  FLEN        = 32;
    localparam  MAX_FPR     = 32;                                     // maximum number of CPU Single Precision Floating Point Registers

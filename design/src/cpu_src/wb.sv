@@ -57,7 +57,7 @@ module wb
 
    WB_2_CSR_wr_intf.master                csr_wr_bus,
 
-   EV_EXC_intf.master                     EV_EXC_bus                                // Events and Exception information (see csr_fu.sv inside execute.sv)
+   WB_CSR_intf.master                     WB_CSR_bus                                // Events and Exception information (see csr_fu.sv inside execute.sv)
 );
 
    // signals from MEM stage
@@ -92,7 +92,7 @@ module wb
    logic             [1:0] mode;                                                    // CPU mode when this instruction was in EXE stage
    logic       [PC_SZ-1:0] trap_pc;                                                 // Output:  trap vector handler address.
    logic                   interrupt_flag;                                          // 1 = take an interrupt trap
-   logic             [3:0] interrupt_cause;                                         // value specifying what type of interrupt
+   logic         [RSZ-1:0] interrupt_cause;                                         // value specifying what type of interrupt
 
 
    // --------------------------------- signals from MEM stage that are used in WB stage
@@ -162,9 +162,25 @@ module wb
    EXCEPTION               exception;
    EVENTS                  current_events;                                          // number of retired instructions for current clock cycle
 
-   //-------------------- EV_EXC_bus --------------------
-   assign EV_EXC_bus.exception         = exception;
-   assign EV_EXC_bus.current_events    = current_events;                            // number of retired instructions for current clock cycle
+   //-------------------- WB_CSR_bus --------------------
+   logic   mret;
+   assign WB_CSR_bus.mret  = mret;
+
+   `ifdef ext_S
+   logic   sret;
+   assign WB_CSR_bus.sret  = sret;
+   `endif
+
+   `ifdef ext_U
+   `ifdef ext_N
+   logic   uret;
+   assign WB_CSR_bus.uret  = uret;
+   `endif
+   `endif
+
+   assign WB_CSR_bus.exception         = exception;
+   assign WB_CSR_bus.current_events    = current_events;                            // number of retired instructions for current clock cycle
+
 
    //-----------------------------------------------------
    // Interrupt Code   Description - riscv_privileged.pdf p 37
@@ -224,7 +240,7 @@ module wb
       wb_csr_wr_data    = '0;
       wb_csr_fwd_data   = '0;
 
-      EV_EXC_bus.sw_irq = '0;                                                       // msip_reg[3] = Software Interrupt Pending - from EXE stage
+      WB_CSR_bus.sw_irq = '0;                                                       // msip_reg[3] = Software Interrupt Pending - from EXE stage
 
       rld_pc_flag       = FALSE;
       rld_ic_flag       = FALSE;
@@ -235,7 +251,19 @@ module wb
       current_events    = '0;
 
       trigger_wfi       = FALSE;
-      
+
+      mret              = FALSE;
+
+      `ifdef ext_S
+      sret              = FALSE;
+      `endif
+
+      `ifdef ext_U
+      `ifdef ext_N
+      uret              = FALSE;
+      `endif
+      `endif
+
       // Note: All Exceptions are associated with trap_pc
       if (M2W_bus.valid)                                                            // should this instruction be processed by this stage?
       begin
@@ -295,10 +323,13 @@ module wb
                // -------------- xRET --------------
                case(op_type)
                   `ifdef ext_U
+                  `ifdef ext_N      // see same logic in execute.sv
                   B_URET:                                                           // URET
                   begin // "OK to use in all modes though maybe technically nonsensical in S or M mode"
+                     uret  = TRUE;
                      current_events.ret_cnt[BXX_RET] = 1'b1;                        // number of BXX instructions retiring this clock cycle
                   end
+                  `endif // ext_N
                   `endif // ext_U
 
                   `ifdef ext_S
@@ -317,6 +348,8 @@ module wb
                         current_events.e_flag   = TRUE;
                         current_events.e_cause  = exception.cause;
                      end
+                     else
+                        sret                    = TRUE;
 
                      current_events.ret_cnt[BXX_RET] = 1'b1;                        // number of BXX instructions retiring this clock cycle
                   end
@@ -337,6 +370,8 @@ module wb
                         current_events.e_flag   = TRUE;
                         current_events.e_cause  = exception.cause;
                      end
+                     else
+                        mret                    = TRUE;
 
                      current_events.ret_cnt[BXX_RET] = 1'b1;                        // number of BXX instructions retiring this clock cycle
                   end
@@ -531,7 +566,7 @@ module wb
                   wb_csr_wr_data          = M2W_bus.data.csr_wr_data;
                   wb_csr_fwd_data         = M2W_bus.data.csr_fwd_data;
 
-                  EV_EXC_bus.sw_irq       = M2W_bus.data.sw_irq;                    // from EXE stage - now needed in csr_fu.sv to complete instruction
+                  WB_CSR_bus.sw_irq       = M2W_bus.data.sw_irq;                    // from EXE stage - now needed in csr_fu.sv to complete instruction
                end
 
                current_events.ret_cnt[CSR_RET] = 1'b1;                              // number of CSR instructions retiring this clock cycle

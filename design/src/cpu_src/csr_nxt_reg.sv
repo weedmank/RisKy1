@@ -592,7 +592,7 @@ module csr_nxt_reg
       if (exception.flag & (nxt_mode == M_MODE))
          nxt_mcsr.mcause   = exception.cause;                                 // save code for exception cause
       else if (csr_wr & (csr_addr == 12'h342) & (mode == M_MODE))             // writable in M_MODE
-         nxt_mcsr.mcause   = csr_wr_data[3:0];                                // Sotware settable - currently mcause is only 4 bits wide
+         nxt_mcsr.mcause   = csr_wr_data;                                     // Sotware settable
       else
          nxt_mcsr.mcause   = mcsr.mcause;                                     // keep current value
 
