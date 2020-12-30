@@ -50,9 +50,9 @@ vlog  -sv -hazards +define+SIM_DEBUG  +cover                                    
 vlog  -sv -hazards +define+SIM_DEBUG  +cover                                                                         ../../src/cpu_src/br_fu.sv
 vlog  -sv -hazards +define+SIM_DEBUG  +cover                                                                         ../../src/cpu_src/csr.sv
 vlog  -sv -hazards +define+SIM_DEBUG  +cover                                                                         ../../src/cpu_src/csr_av_rdata.sv
+vlog  -sv -hazards +define+SIM_DEBUG  +cover                                                                         ../../src/cpu_src/csr_ff.sv
 vlog  -sv -hazards +define+SIM_DEBUG  +cover                                                                         ../../src/cpu_src/csr_fu.sv
 vlog  -sv -hazards +define+SIM_DEBUG  +cover                                                                         ../../src/cpu_src/csr_lo_cnt.sv
-vlog  -sv -hazards +define+SIM_DEBUG  +cover                                                                         ../../src/cpu_src/csr_std_wr.sv
 vlog  -sv -hazards +define+SIM_DEBUG  +cover                                                                         ../../src/cpu_src/csr_nxt_reg.sv
 vlog  -sv -hazards +define+SIM_DEBUG  +cover                                                                         ../../src/cpu_src/csr_regs.sv
 vlog  -sv -hazards +define+SIM_DEBUG  +cover                                                                         ../../src/cpu_src/decode.sv
