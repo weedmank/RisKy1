@@ -64,7 +64,6 @@ module  top_tb1 ();
          $display("   Simulation Debugging logic");
       `endif
 
-
       clock_cycle = 0;
 
       do
