@@ -88,17 +88,20 @@ import functions_pkg::*;
    parameter   STVEC_INIT           = 32'h0000_0000;
    parameter   UTVEC_INIT           = 32'h0000_0000;
 
+   parameter   NUM_MHPM = 0;                                         // CSR: number of mhpmcounter's and mhpmevent's, where first one starts at mphmcounter3 if NUM_MHPM > 0
+   // NOTE: Max NUM_MHPM is 29
+
    // MCOUNTEREN, SCOUNTEREN - init values and mask values (a 1 in a bit means the corresponding reset value will always remain the same)
    parameter   MCNTEN_INIT          = 32'h0000_0000;
-   parameter   MCNTEN_MASK          = 32'h0000_0000;                 // all bits are writable
+   parameter   MCNTEN_MASK          = 32'hFFFF_FFFF << (3+NUM_MHPM); // Mask bits that are 1 correspond to unimplemented hpm counters) and the coresspnding mcounten bits will read as 0
+
    parameter   SCNTEN_INIT          = 32'h0000_0000;
-   parameter   SCNTEN_MASK          = 32'h0000_0000;                 // all bits are writable
+   parameter   SCNTEN_MASK          = 32'hFFFF_FFFF << (3+NUM_MHPM); // Mask bits that are 1 correspond to unimplemented hpm counters) and the coresspnding scounten bits will read as 0
+
+   parameter   MCS_INIT             = 32'h0000_0000;                 // Reset: The mcause register is set to a value indicating the cause of the reset. riscv-privileged.pdf p 42
 
 
 //   parameter   WFI_IS_NOP           = TRUE;
-
-   parameter   NUM_MHPM = 0;                                         // CSR: number of mhpmcounter's and mhpmevent's, where first one starts at mphmcounter3 if NUM_MHPM > 0
-   // NOTE: Max NUM_MHPM is 29
 
    parameter   NUM_EVENTS = 24;                                      // Number of event selectors to use. See EV_SEL_SZ below, then csr_mhpmevent[], and events[] in csr_wr_mach.sv
 
@@ -118,7 +121,7 @@ import functions_pkg::*;
    // parameters related to Memory, L1 D$ and L1 I$
    parameter   CL_LEN   = 32; // cache line length in bytes
 
-                        //   MXL     ZY XWVU TSRQ PONM LKJI HGFE DCBA
+                  //   MXL     ZY XWVU TSRQ PONM LKJI HGFE DCBA
    parameter MISA = 32'b0100_0000_0000_0000_0000_0001_0000_0000      /* MXLEN bits = 2'b01 = RV32, and I bit -----> RV32I */
    `ifdef ext_A
                   | 32'b0000_0000_0000_0000_0000_0000_0000_0001      /* A bit - Atomic Instruction support */
@@ -276,12 +279,6 @@ import functions_pkg::*;
    localparam MIP_MASK     = SEIP_RO_MASK | UEIP_RO_MASK | STIP_RO_MASK | UTIP_RO_MASK | SSIP_RO_MASK | USIP_RO_MASK | 32'hFFFF_F444;
    localparam MIE_INIT     = 0;
    localparam MIE_MASK     = 32'h0; // Note: bits 31:12 are WPRI. Also bits 10,6,2 are WPRI
-
-   `ifdef ext_C
-   parameter   is_IALIGN16 = 1'b1;                                   // 16 bit instruction alignment
-   `else
-   parameter   is_IALIGN16 = 1'b0;                                   // 32 bit instruction alignment
-   `endif
 
    localparam  XLEN        = 6'd32;                                  // instruction word width
    localparam  CI_SZ       = 5'd16;                                  // compressed instruction word width
