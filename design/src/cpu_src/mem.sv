@@ -103,7 +103,7 @@ module mem
    assign is_st                        = E2M_bus.data.is_st;
    assign mode                         = E2M_bus.data.mode;
    assign sw_irq                       = E2M_bus.data.sw_irq;                       // msip_reg[3]. see irq.sv
-   
+
    assign is_ls                        = (is_ld | is_st);
 
    // control logic for interface to Execution Stage

@@ -143,8 +143,14 @@ module mode_irq
 
    // ---------------------- IRQs ----------------------
    assign m_irq = (msip & msie) | (mtip & mtie) | (meip & meie);  // any of the machine mode interrupts
+   `ifdef ext_S
    assign s_irq = (ssip & ssie) | (stip & stie) | (seip & seie);  // any of the supervisor mode interrupts
+   `endif
+   `ifdef ext_U
+   `ifdef ext_N
    assign u_irq = (usip & usie) | (utip & utie) | (ueip & ueie);  // any of the user mode interrupts
+   `endif
+   `endif
 
    // When a hart is executing in privilege mode x, interrupts are globally enabled when xIE=1 and
    // globally disabled when xIE=0. Interrupts for lower-privilege modes, w<x, are always globally
@@ -237,11 +243,14 @@ module mode_irq
    // whereas interrupts cause the pc to be set to the address in the BASE field plus four times the interrupt cause number.
    // For example, a supervisor-mode timer interrupt (see Table 4.2) causes the  pc to be set to BASE+0x14.
    // Setting MODE=Vectored may impose a stricter alignment constraint on BASE.
-   logic      [DEL_SZ-1:0] cause;         // index into delegation registers can only be from 0 to RSZ-1
    logic         [RSZ-1:0] tvec;
    logic                   mdlg,sdlg;
 
+   `ifdef MDLG
+   logic      [DEL_SZ-1:0] cause;         // index into delegation registers can only be from 0 to RSZ-1
+
    assign cause = mcsr.mcause[DEL_SZ-1:0];
+   `endif
 
    always_comb
    begin
@@ -255,7 +264,7 @@ module mode_irq
       sdlg        = FALSE;
 
       `ifdef MDLG
-      if (retire_exception_flag)             // exception flag from instruction that is retiring in stage WB.
+      if (retire_exception_flag)             // exception flag from instruction that tried to retire in stage WB, but instead it caused an exception
       begin
          mdlg     = mcsr.medeleg[cause];     // Machine    delegation bit based on mcause
          `ifdef ext_S
@@ -315,31 +324,30 @@ module mode_irq
                `endif
             `endif
          end
+      
+         // trap_pc only used during an exception
+         trap_pc = tvec[RSZ-1:2];                                 // default trap_pc - 4 byte alignment (lower two bits not needed for passing this variable)
+         if ((nxt_mode > U_MODE) & retire_interrupt_flag & (tvec[1:0] == 2'b01))
+            trap_pc = (PC_SZ-2)'(tvec[RSZ-1:2] + cause);          // 4 byte aligment - since lower 2 bits are 0, no need to pass them. i.e logic [PC_SZ-1:2] trap_pc
       end
-      else
       `endif // MDLG
-      begin // unless the instruction retiring has an exception, check the mret,sret,uret flags
-         // mret, sret. uret come from EXE (which starts a PC reload), so these ONLY need to affect the mode.  The are mutually exclusive signals (only 1 should occur in a clock cycle)
-         if (mret)
-            nxt_mode = mpp;                                    // "When executing an MRET instruction, supposing MPP holds the value y, ... the privilege mode is changed to y; ..."
+      
+      
+      // MRET, SRET, URET will not occur if an exception occurrs (i.e. retire_exception_flag)
+      // mret, sret. uret come from retirement stage WB, so these ONLY need to affect the mode.  The are mutually exclusive signals (only 1 should occur in a clock cycle)
+      if (mret)
+         nxt_mode = mpp;                                    // "When executing an MRET instruction, supposing MPP holds the value y, ... the privilege mode is changed to y; ..."
 
-         `ifdef ext_S
-         if (sret)
-            nxt_mode = {1'b0,spp};                             // "When executing an SRET instruction, supposing SPP holds the value y, ... the privilege mode is changed to y; ..."
-         `endif
+      `ifdef ext_S
+      if (sret)
+         nxt_mode = {1'b0,spp};                             // "When executing an SRET instruction, supposing SPP holds the value y, ... the privilege mode is changed to y; ..."
+      `endif
 
-         `ifdef ext_U
-         `ifdef ext_N
-         if (uret)
-            nxt_mode = 2'b00;                                  // "When executing an URET instruction, ... the privilege mode is changed to User; ..."
-         `endif
-         `endif
-      end
-
-      trap_pc = tvec[RSZ-1:2];                                 // default trap_pc - 4 byte alignment (lower two bits not needed for passing this variable)
-      if ((nxt_mode > U_MODE) & retire_interrupt_flag & (tvec[1:0] == 2'b01))
-         trap_pc = (PC_SZ-2)'(tvec[RSZ-1:2] + cause);          // 4 byte aligment - since lower 2 bits are 0, no need to pass them. i.e logic [PC_SZ-1:2] trap_pc
-
-
+      `ifdef ext_U
+      `ifdef ext_N
+      if (uret)
+         nxt_mode = 2'b00;                                  // "When executing an URET instruction, ... the privilege mode is changed to User; ..."
+      `endif
+      `endif
    end
 endmodule
