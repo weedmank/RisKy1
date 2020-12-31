@@ -328,7 +328,45 @@ import cpu_params_pkg::*;
    } LSQ_Data;
 `endif
 
-
+   // ------------------------------ PMP Config 
+   // structure related to pmpcfg
+   typedef struct packed {
+      logic                   r0;                              // WARL
+      logic                   w0;                              // WARL
+      logic                   x0;                              // WARL
+      logic                   a0;                              // WARL
+      logic             [1:0] WIRI;                            // WARL
+      logic                   lo;                              // WARL
+      logic            [23:0] res;                             // unimplemented
+   } PMP_CFG;
+   
+   // ------------------------------ SATP 
+   // structure related to pmpcfg
+   typedef struct packed {
+      logic                   mode;                            // WARL
+      logic             [8:0] asid;                            // WARL
+      logic            [21:0] ppn;                             // WARL
+   } SATP;
+   
+   // ------------------------------ FCSR 
+   // structure related to pmpcfg
+   typedef union packed {
+      struct packed {
+         logic         [23:0] res;
+         logic          [2:0] frm;
+         logic          [4:0] fflags;
+      } flags;
+      struct packed {
+         logic         [26:0] n;
+         logic                nv;                              // inexact
+         logic                dz;                              // underflow
+         logic                of;                              // overflow
+         logic                uf;                              // divide by zero
+         logic                nx;                              // invalid operation
+      } bits;
+   } FCSR;
+   
+   // ------------------------------ Machine Status Register
    // 12'h300 = 12'b0011_0000_0000  mstatus                    (read-write)  user mode
    //  31        22   21  20   19   18   17   16:15 14:13 12:11  10:9    8    7     6     5     4      3     2     1    0
    // {sd, 8'b0, tsr, tw, tvm, mxr, sum, mprv,   xs,   fs,  mpp, 2'b0,  spp, mpie, 1'b0, spie, upie,  mie, 1'b0,  sie, uie};
@@ -356,6 +394,7 @@ import cpu_params_pkg::*;
       logic                   uie;
    } MSTATUS_SIGS;
 
+   // ------------------------------ Machine Interrupt Enable Register
    // 12'h304 = 12'b0011_0000_0100  mie                        (read-write)
    //  31:12   11    10    9     8     7     6     5     4     3     2     1     0
    // {20'b0, meie, WPRI, seie, ueie, mtie, WPRI, stie, utie, msie, WPRI, ssie, usie};
@@ -397,6 +436,7 @@ import cpu_params_pkg::*;
    } MIP_SIGS;
 
 
+   // ------------------------------ Supervisor Status Register
    // 12'h100 = 12'b0001_0000_0000  sstatus                    (read-write)  Supervisor mode
    //  31        22   21  20   19   18   17   16:15 14:13 12:11  10:9    8    7     6     5     4     3     2     1    0
    // {sd, 8'b0, tsr, tw, tvm, mxr, sum, mprv, xs,   fs,  2'b0,  2'b0,  spp, 1'b0, 1'b0, spie, 1'b0, 1'b0, 1'b0,  sie, 1'b0};
