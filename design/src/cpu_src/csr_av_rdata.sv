@@ -50,7 +50,28 @@ module csr_av_rdata
    `endif
    input var MCSR  mcsr           // all of the Machine mode Control & Status Registers
 );
-   logic    av;
+   logic             av;
+
+   // The counter-enable registers mcounteren and scounteren are 32-bit registers that control the
+   // availability of the hardware performance-monitoring counters to the next-lowest privileged mode....
+   // When the CY, TM, IR, or HPMn bit in the mcounteren register is clear, attempts to read the
+   // cycle, time, instret, or hpmcountern register while executing in S-mode or U-mode will cause
+   // an illegal instruction exception. When one of these bits is set, access to the corresponding register
+   // is permitted in the next implemented privilege mode (S-mode if implemented, otherwise U-mode). riscv-privileged.pdf p 34
+   always_comb
+   begin
+      // see p 34 riscv-privileged.pdf
+      av = FALSE;
+      if (mode == M_MODE)                          // Machine mode
+         av = TRUE;
+
+      if (mode == S_MODE)                          // Supervisor mode
+         av = mcsr.mcounteren[csr_rd_addr[4:0]];   // lower 5 bits of csr_addr determine index into mcounteren[]
+
+      // "scounteren must be implemented" see riscv-privileged.pdf p 60
+      if (mode == U_MODE)                          // User mode
+         av = scsr.scounteren[csr_rd_addr[4:0]];
+   end
 
    always_comb
    begin
@@ -105,7 +126,7 @@ module csr_av_rdata
          12'h041:
          begin
             csr_rd_avail   = TRUE;
-            csr_rd_data    = ucsr.uepc & (is_IALIGN16 ? ~32'h1 : ~32'h3); // bit 1 is masked when read when is_IALIGN16 == FALSE (32 bit alignment)
+            csr_rd_data    = ucsr.uepc;
          end
 
          // ------------------------------ User Exception Cause
@@ -184,7 +205,11 @@ module csr_av_rdata
             csr_rd_avail   = TRUE;
             csr_rd_data    = scsr.stvec;
          end
+      `endif
 
+         // The counter-enable register scounteren is a 32-bit register that controls the availability of the
+         // hardware performance monitoring counters to U-mode....scounteren MUST be implemented.
+         // However, any of the bits may contain a hardwired value of zero.                           see riscv-privileged p 60
          // ------------------------------ Supervisor Counter Enable.
          // 12'h106 = 12'b0001_0000_0110  scounteren  (read-write)
          12'h106:
@@ -193,6 +218,7 @@ module csr_av_rdata
             csr_rd_data    = scsr.scounteren;
          end      // see csr_rd_cntr_tmr.svh
 
+      `ifdef ext_S
          // ------------------------------ Supervisor Scratch Register
          // Scratch register for supervisor trap handlers.
          // 12'h140 = 12'b0001_0100_0000  sscratch    (read-write)
@@ -207,7 +233,7 @@ module csr_av_rdata
          12'h141:
          begin
             csr_rd_avail   = TRUE;
-            csr_rd_data    = scsr.sepc & (is_IALIGN16 ? ~32'h1 : ~32'h3);
+            csr_rd_data    = scsr.sepc;
          end
 
          // ------------------------------ Supervisor Trap Cause.
@@ -348,7 +374,7 @@ module csr_av_rdata
          12'h341:
          begin
             csr_rd_avail   = TRUE;
-            csr_rd_data    = mcsr.mepc & (is_IALIGN16 ? ~32'h1 : ~32'h3);
+            csr_rd_data    = mcsr.mepc;
          end
 
          // ------------------------------ Machine Exception Cause
@@ -448,7 +474,8 @@ module csr_av_rdata
          12'h7B3: begin csr_rd_avail = Dbg_mode; csr_rd_data = mcsr.dscratch1; end     // Debug Scratch Register 1
          `endif // add_DM
 
-         // ------------------------------ Machine Cycle Counter
+
+         // ------------------------------ Machine Cycle Counter - CY
          // Lower 32 bits of mcycle
          // 12'hB00 = 12'b1011_0000_0000  mcycle_lo (read-write)
          12'hB00:
@@ -465,7 +492,7 @@ module csr_av_rdata
             csr_rd_data    = mcsr.mcycle_hi;
          end
 
-         // ------------------------------ Machine Instructions-Retired Counter
+         // ------------------------------ Machine Instructions-Retired Counter - IR
           // 12'hB02 = 12'b1011_0000_0010  minstret_lo
          12'hB02:
          begin
@@ -516,7 +543,7 @@ module csr_av_rdata
       endcase
 
       `ifdef use_MHPM
-      genvar n;  // n must be a genvar even though we cannot use generate/endgenerate due to logic being nested inside "if (NUM_MHPM)"
+       genvar n;  // n must be a genvar even though we cannot use generate/endgenerate due to logic being nested inside "if (NUM_MHPM)"
       generate
          for (n = 0; n < NUM_MHPM; n++)
          begin : MHPM_CNTR_EVENTS
@@ -535,15 +562,15 @@ module csr_av_rdata
             end
 
             // 12'hC03 - 12'hC1F
-            if (csr_rd_addr == (12'hC03+n))
+            if ((csr_rd_addr == (12'hC03+n)) & av)
             begin
-               csr_rd_avail   = av;
+               csr_rd_avail   = TRUE;
                csr_rd_data    = mcsr.mhpmcounter_lo[n];
             end
             // 12'hC83 - 12'hC9F
-            if (csr_rd_addr == (12'hC83+n))
+            if ((csr_rd_addr == (12'hC83+n)) & av)
             begin
-               csr_rd_avail   = av;
+               csr_rd_avail   = TRUE;
                csr_rd_data    = mcsr.mhpmcounter_hi[n];
             end
 
@@ -567,67 +594,54 @@ module csr_av_rdata
       // 3 M, S, U Systems running Unix-like operating systems
       //
 
-      // see p 34 riscv-privileged.pdf
-      av = FALSE;
-      if (mode == M_MODE)                             // Machine mode
-         av = TRUE;
-      else if (mode == S_MODE)                        // Supervisor mode
-         av = mcsr.mcounteren[csr_rd_addr[4:0]];
-      else if (mode == U_MODE)                        // User mode
-      `ifdef ext_S
-         av = scsr.scounteren[csr_rd_addr[4:0]];
-      `else
-         av = mcsr.mcounteren[csr_rd_addr[4:0]];
-      `endif
-
       // csr_rd_avail = CSR register exists in this design
       // ------------------------------ Counter/Timers (12'hCxx = Read Only - readable by Machine, Supervisor and User modes)
-      // ------------------------------ Cycle Counter for RDCYCLE instruction
+      // ------------------------------ Cycle Counter for RDCYCLE instruction - CY
       // 12'hC00 = 12'b1100_0000_0000  cycle          (read-only)
-      if (csr_rd_addr == 12'hC00)
+      if ((csr_rd_addr == 12'hC00) & av)
       begin
-         csr_rd_avail   = av;
-         if (csr_rd_avail) csr_rd_data = mcsr.mcycle_lo;
+         csr_rd_avail   = TRUE;
+         csr_rd_data    = mcsr.mcycle_lo;
       end
 
-      // ------------------------------ Timer Counter
+      // ------------------------------ Timer Counter - TM
       // 12'hC01 = 12'b1100_0000_0001  time           (read-only)
-      if (csr_rd_addr == 12'hC01)
+      if ((csr_rd_addr == 12'hC01) & av)
       begin
-         csr_rd_avail   = av;
-         if (csr_rd_avail) csr_rd_data = mtime[RSZ-1:0];
+         csr_rd_avail   = TRUE;
+         csr_rd_data    = mtime[RSZ-1:0];
       end
 
       // ------------------------------ Number of Instructions Retired
       // 12'hC02 = 12'b1100_0000_0010  instret        (read-only)
-      if (csr_rd_addr == 12'hC02)
+      if ((csr_rd_addr == 12'hC02) & av)
       begin
-         csr_rd_avail   = av;
-         if (csr_rd_avail) csr_rd_data = mcsr.minstret_lo;
+         csr_rd_avail   = TRUE;
+         csr_rd_data    = mcsr.minstret_lo;
       end
 
 
-      // ------------------------------ Upper 32 bits of Cycle Counter
+      // ------------------------------ Upper 32 bits of Cycle Counter - CY
       // 12'hC80 = 12'b1100_1000_0000  mcycle hi      (read-only)
-      if (csr_rd_addr == 12'hC80)
+      if ((csr_rd_addr == 12'hC80) & av)
       begin
-         csr_rd_avail   = av;
+         csr_rd_avail   = TRUE;
          csr_rd_data    = mcsr.mcycle_hi;
       end
 
-      // ------------------------------ Upper 32 bits of Timer Counter
+      // ------------------------------ Upper 32 bits of Timer Counter - TM
       // 12'hC81 = 12'b1100_1000_0001  time hi        (read-only)
-      if (csr_rd_addr == 12'hC81)
+      if ((csr_rd_addr == 12'hC81) & av)
       begin
-         csr_rd_avail   = av;
+         csr_rd_avail   = TRUE;
          csr_rd_data    = mtime[RSZ*2-1:RSZ];
       end
 
       // ------------------------------ Upper 32 bits of Instructions Retired, RV32I only.
       // 12'hC82 = 12'b1100_1000_0010  uinstret hi    (read-only)
-      if (csr_rd_addr == 12'hC82)
+      if ((csr_rd_addr == 12'hC82) & av)
       begin
-         csr_rd_avail   = av;
+         csr_rd_avail   = TRUE;
          csr_rd_data    = mcsr.minstret_hi;
       end
    end // always_comb
