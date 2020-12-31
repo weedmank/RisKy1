@@ -474,13 +474,6 @@ module execute
 
             BR_INSTR:
             begin
-               // Instruction-address-misaligned exceptions are reported on the branch or jump that would
-               // cause instruction misalignment to help debugging, and to simplify hardware design for systems
-               // with IALIGN=32, where these are the only places where misalignment can occur. riscv-spec.pdf p 16
-               // A B_xRET instruction can be executed in privilege mode x or higher, where executing a lower-privilege
-               // A B_xRET instruction will pop the relevant lower-privilege interrupt enable and privilege mode stack.
-               // In addition to manipulating the privilege stack as described in Section 3.1.6.1, B_xRET sets the pc
-               // to the value stored in the x epc register.  see riscv-privileged-20190608-1.pdf p 40
                // -------------- URET,SRET,MRET --------------
                case(op_type)
                   `ifdef ext_U
@@ -489,8 +482,8 @@ module execute
                   begin // "OK to use in all modes though maybe technically nonsensical in S or M mode"
                      if (predicted_addr != uepc)
                      begin // this instruction and newer are flushed from the pipeline
-                        rld_pc_flag       = TRUE;
-                        rld_pc_addr       = uepc;                                   // reload PC and flush pipeline
+                        rld_pc_flag    = TRUE;
+                        rld_pc_addr    = uepc;                                      // immediate reload PC and flush pipeline since next instruction is not the correct one
                      end
                   end
                   `endif // ext_N
@@ -499,26 +492,20 @@ module execute
                   `ifdef ext_S
                   B_SRET:                                                           // SRET
                   begin
-                     if (mode >= S_MODE)                                            // if not, an exception will be taken in WB stage
-                     begin
-                        if (predicted_addr != sepc)
-                        begin // this instruction and newer are flushed from the pipeline
-                           rld_pc_flag       = TRUE;
-                           rld_pc_addr       = sepc;                                // reload PC and flush pipeline
-                        end
+                     if (predicted_addr != sepc)
+                     begin // this instruction and newer are flushed from the pipeline
+                        rld_pc_flag    = TRUE;
+                        rld_pc_addr    = sepc;                                      // immediate reload PC and flush pipeline since next instruction is not the correct one
                      end
                   end
                   `endif // ext_S
 
                   B_MRET:                                                           // MRET
                   begin
-                     if (mode == M_MODE)                                            // if not, an exception will be taken in WB stage
-                     begin
-                        if (predicted_addr != mepc)
-                        begin // this instruction and newer are flushed from the pipeline
-                           rld_pc_flag       = TRUE;                                // flush pipeline and reload new fetch address
-                           rld_pc_addr       = mepc;                                // reload PC and flush pipeline
-                        end
+                     if (predicted_addr != mepc)
+                     begin // this instruction and newer are flushed from the pipeline
+                        rld_pc_flag    = TRUE;
+                        rld_pc_addr    = mepc;                                      // immediate reload PC and flush pipeline since next instruction is not the correct one
                      end
                   end
 
