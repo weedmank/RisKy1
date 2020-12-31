@@ -137,11 +137,16 @@ module csr_regs
       // 12'h105 = 12'b0001_0000_0101  stvec                (read-write)
       // Current design only allows MODE of 0 or 1 - thus bit 1 forced to retain it's reset value which is 0.
       csr_ff #(STVEC_INIT & ~32'd2,RSZ,32'h0000_0002) Stvec (clk_in,reset_in, nxt_scsr.stvec, scsr.stvec);
+   `endif
 
+      // The counter-enable register scounteren is a 32-bit register that controls the availability of the
+      // hardware performance monitoring counters to U-mode....scounteren MUST be implemented.
+      // However, any of the bits may contain a hardwired value of zero.                           see riscv-privileged p 60
       // ------------------------------ Supervisor Counter Enable.
       // 12'h106 = 12'b0001_0000_0110  scounteren           (read-write)
       csr_ff #(SCNTEN_INIT,RSZ,SCNTEN_MASK) Scounteren      (clk_in,reset_in, nxt_scsr.scounteren, scsr.scounteren);
 
+   `ifdef ext_S
       // ------------------------------ Supervisor Scratch Register
       // Scratch register for supervisor trap handlers.
       // 12'h140 = 12'b0001_0100_0000  sscratch             (read-write)
@@ -247,7 +252,7 @@ module csr_regs
 
    // ------------------------------ Machine Exception Cause
    // 12'h342 = 12'b0011_0100_0010  mcause                  (read-write)
-   csr_ff #(0,RSZ) Mcause                                   (clk_in,reset_in, nxt_mcsr.mcause, mcsr.mcause);   // mcause is currently 4 Flops wide
+   csr_ff #(MCS_INIT,RSZ) Mcause                            (clk_in,reset_in, nxt_mcsr.mcause, mcsr.mcause);
 
    // ------------------------------ Machine Exception Trap Value
    // 12'h343 = 12'b0011_0100_0011  mtval                   (read-write)
