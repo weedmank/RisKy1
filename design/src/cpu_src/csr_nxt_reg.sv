@@ -151,7 +151,7 @@ module csr_nxt_reg
             // p. 20 The xIE bits are located in the low-order bits of mstatus, allowing them to be atomically set
             //       or cleared with a single CSR instruction.
             if (exception.flag & (nxt_mode == U_MODE))
-               nxt_ucsr.ustatus.uie  = 'd0;
+               nxt_ucsr.ustatus.uie  = 1'b0;
             else if (uret)
                nxt_ucsr.ustatus.uie  = ucsr.ustatus.upie;                     // "xIE is set to xPIE;"  p. 21 riscv-privileged.pdf
             else if (csr_wr && (csr_addr[7:0] == 8'h00))                      // writable in all modes
@@ -207,7 +207,7 @@ module csr_nxt_reg
             if (exception.flag & (nxt_mode == U_MODE))                        // An exception in MEM stage has priority over a csr_wr (in EXE stage)
                nxt_ucsr.uepc     = exception.pc;                              // save exception pc - low bit is always 0 (see csr.sv)
             else if (csr_wr & (csr_addr[7:0] == 8'h41))                       // writable in all modes
-               nxt_ucsr.uepc     = csr_wr_data;                               // Software settable - low bit is always 0 (see csr.sv)
+               nxt_ucsr.uepc     = csr_wr_data & (mcsr.misa[2] ? ~32'h1 : ~32'h3);  // Software settable - low bit is always 0 (see csr.sv)
             else
                nxt_ucsr.uepc     = ucsr.uepc;                                 // keep current value
 
@@ -302,7 +302,7 @@ module csr_nxt_reg
          // p. 20 The xIE bits are located in the low-order bits of mstatus, allowing them to be atomically set
          //       or cleared with a single CSR instruction.
          if (exception.flag & (nxt_mode == S_MODE))
-            nxt_scsr.sstatus.sie = 'd0;
+            nxt_scsr.sstatus.sie = 1'b0;
          else if (sret)                                                       // "xIE is set to xPIE;"
             nxt_scsr.sstatus.sie = scsr.sstatus.spie;
          else if (csr_wr & (csr_addr[8:0] == 9'h100) & (mode >=S_MODE))       // writable in M or S mode
@@ -342,7 +342,11 @@ module csr_nxt_reg
             nxt_scsr.stvec = csr_wr_data;                                     // see csr.sv - value written may be masked going into register
          else
             nxt_scsr.stvec = scsr.stvec;
+      `endif
 
+         // The counter-enable register scounteren is a 32-bit register that controls the availability of the
+         // hardware performance monitoring counters to U-mode....scounteren MUST be implemented.
+         // However, any of the bits may contain a hardwired value of zero.                           see riscv-privileged p 60
          // ------------------------------ Supervisor Counter Enable
          // 12'h106 = 12'b0001_0000_0110  scounteren                          (read-write)
          if (csr_wr & (csr_addr[8:0] == 9'h106) & (mode >= S_MODE))           // writable in mode >= S_MODE
@@ -350,6 +354,7 @@ module csr_nxt_reg
          else
             nxt_scsr.scounteren = scsr.scounteren;                            // keep current value
 
+      `ifdef ext_S
          // ------------------------------ Supervisor Scratch register
          // Scratch register for supervisor trap handlers.
          // 12'h140 = 12'b0001_0100_0000  sscratch    (read-write)
@@ -363,7 +368,7 @@ module csr_nxt_reg
          if ((exception.flag) & (nxt_mode == S_MODE))
             nxt_scsr.sepc  = exception.pc;                                    // save exception pc - low bit is always 0 (see csr.sv)
          else if (csr_wr & (csr_addr[8:0] == 9'h141) & (mode >= S_MODE))      // writable in mode >= S_MODE
-            nxt_scsr.sepc  = csr_wr_data;                                     // Software settable  - low bit is always 0 (see csr.sv)
+            nxt_scsr.sepc  = csr_wr_data & (mcsr.misa[2] ? ~32'h1 : ~32'h3);  // Software settable  - low bit is always 0 (see csr.sv)
          else
             nxt_scsr.sepc  = scsr.sepc;                                       // keep current value
 
@@ -583,7 +588,7 @@ module csr_nxt_reg
       if ((exception.flag) & (nxt_mode == M_MODE))
          nxt_mcsr.mepc     = exception.pc;                                    // save exception pc - low bit is always 0 (see csr.sv)
       else if (csr_wr & (csr_addr == 12'h341) & (mode == M_MODE))             // writable in M_MODE
-         nxt_mcsr.mepc     = csr_wr_data;                                     // Software settable - low bit is always 0 (see csr.sv)
+         nxt_mcsr.mepc     = csr_wr_data & (mcsr.misa[2] ? ~32'h1 : ~32'h3);  // Software settable - low bit is always 0 (see csr.sv)
       else
          nxt_mcsr.mepc     = mcsr.mepc;                                       // keep current value
 
