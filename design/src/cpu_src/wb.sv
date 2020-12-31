@@ -313,20 +313,15 @@ module wb
 
             BR_INSTR:
             begin
-               // Instruction-address-misaligned exceptions are reported on the branch or jump that would
-               // cause instruction misalignment to help debugging, and to simplify hardware design for systems
-               // with IALIGN=32, where these are the only places where misalignment can occur. riscv-spec.pdf p 16
-               // A B_xRET instruction can be executed in privilege mode x or higher, where executing a lower-privilege
-               // A B_xRET instruction will pop the relevant lower-privilege interrupt enable and privilege mode stack.
-               // In addition to manipulating the privilege stack as described in Section 3.1.6.1, B_xRET sets the pc
-               // to the value stored in the x epc register.  see riscv-privileged-20190608-1.pdf p 40
                // -------------- xRET --------------
+               // An xRET instruction can be executed in privilege mode x or higher, where executing a lower-privilege
+               // xRET instruction will pop the relevant lower-privilege interrupt enable and privilege mode stack.
                case(op_type)
                   `ifdef ext_U
                   `ifdef ext_N      // see same logic in execute.sv
                   B_URET:                                                           // URET
                   begin // "OK to use in all modes though maybe technically nonsensical in S or M mode"
-                     uret  = TRUE;
+                     uret                       = TRUE;                             // URET completed correctly - "xRET sets the pc to the value stored in the x epc register." riscv-privileged. p 40
                      current_events.ret_cnt[BXX_RET] = 1'b1;                        // number of BXX instructions retiring this clock cycle
                   end
                   `endif // ext_N
@@ -337,8 +332,8 @@ module wb
                   begin
                      if (mode < S_MODE)
                      begin
-                        rld_pc_flag             = TRUE;
-                        rld_pc_addr             = trap_pc;
+                        rld_pc_flag             = TRUE;                             // flush pipeline and reload new fetch address
+                        rld_pc_addr             = trap_pc;                          // Trap Vector Base Address - from csr.sv/mode_irq.sv
 
                         exception.pc            = ipd.pc;                           // save address of current instruction
                         exception.tval          = ipd.instruction;                  // current Instruction
@@ -349,7 +344,7 @@ module wb
                         current_events.e_cause  = exception.cause;
                      end
                      else
-                        sret                    = TRUE;
+                         sret                   = TRUE;                             // SRET completed correctly - "xRET sets the pc to the value stored in the x epc register." riscv-privileged. p 40
 
                      current_events.ret_cnt[BXX_RET] = 1'b1;                        // number of BXX instructions retiring this clock cycle
                   end
@@ -371,7 +366,7 @@ module wb
                         current_events.e_cause  = exception.cause;
                      end
                      else
-                        mret                    = TRUE;
+                        mret                    = TRUE;                             // MRET completed correctly - "xRET sets the pc to the value stored in the x epc register." riscv-privileged. p 40
 
                      current_events.ret_cnt[BXX_RET] = 1'b1;                        // number of BXX instructions retiring this clock cycle
                   end
