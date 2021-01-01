@@ -78,6 +78,7 @@ import functions_pkg::*;
    parameter   MEDLG_MASK           = 32'h0000_0000;
    parameter   MIDLG_INIT           = 32'h0000_0000;
    parameter   MIDLG_MASK           = 32'h0000_0000;
+   
    parameter   SEDLG_INIT           = 32'h0000_0000;
    parameter   SEDLG_MASK           = 32'h0000_0000;
    parameter   SIDLG_INIT           = 32'h0000_0000;
@@ -95,6 +96,7 @@ import functions_pkg::*;
    parameter   MCNTEN_INIT          = 32'h0000_0000;
    parameter   MCNTEN_MASK          = 32'hFFFF_FFFF << (3+NUM_MHPM); // Mask bits that are 1 correspond to unimplemented hpm counters) and the coresspnding mcounten bits will read as 0
 
+   // NOTE: scounteren is always implemented. see p. 60 riscv-privileged.pdf
    parameter   SCNTEN_INIT          = 32'h0000_0000;
    parameter   SCNTEN_MASK          = 32'hFFFF_FFFF << (3+NUM_MHPM); // Mask bits that are 1 correspond to unimplemented hpm counters) and the coresspnding scounten bits will read as 0
 

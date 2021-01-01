@@ -526,7 +526,9 @@ import cpu_params_pkg::*;
       `endif
       MIE_SIGS                               mie;              // 12'h304
       logic                        [RSZ-1:0] mtvec;            // 12'h305
+      `ifdef ext_U // what about ext_N???
       logic                        [RSZ-1:0] mcounteren;       // 12'h306
+      `endif
       logic                        [RSZ-1:0] mcountinhibit;    // 12'h320
       `ifdef use_MHPM
       logic   [NUM_MHPM-1:0] [EV_SEL_SZ-1:0] mhpmevent;        // 12'h323 - 12'h33F, mhpmevent3 - mhpmevent31
@@ -631,7 +633,7 @@ import cpu_params_pkg::*;
       `endif // ext_N
       SIE_SIGS                               sie;              // 12'h104
       logic                        [RSZ-1:0] stvec;            // 12'h105
-      logic                        [RSZ-1:0] scounteren;       // 12'h106
+      logic                        [RSZ-1:0] scounteren;       // 12'h106 - this register MUST be implemented. see p 60 riscv-privileged.pdf
       logic                        [RSZ-1:0] sscratch;         // 12'h140
       logic                      [PC_SZ-1:0] sepc;             // 12'h141
       logic                        [RSZ-1:0] scause;           // 12'h142

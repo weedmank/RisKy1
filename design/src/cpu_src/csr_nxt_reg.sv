@@ -28,8 +28,6 @@ import cpu_structs_pkg::*;
 
 module csr_nxt_reg
 (
-   input    logic                reset_in,
-
    input    logic                ext_irq,
    input    logic                timer_irq,
    input    logic                sw_irq,           // msip_reg[] see irq.sv
@@ -342,11 +340,8 @@ module csr_nxt_reg
             nxt_scsr.stvec = csr_wr_data;                                     // see csr.sv - value written may be masked going into register
          else
             nxt_scsr.stvec = scsr.stvec;
-      `endif
 
-         // The counter-enable register scounteren is a 32-bit register that controls the availability of the
-         // hardware performance monitoring counters to U-mode....scounteren MUST be implemented.
-         // However, any of the bits may contain a hardwired value of zero.                           see riscv-privileged p 60
+         // 12/31/202 - Andrew Waterman "scounteren only exists if S Mode is implemented"
          // ------------------------------ Supervisor Counter Enable
          // 12'h106 = 12'b0001_0000_0110  scounteren                          (read-write)
          if (csr_wr & (csr_addr[8:0] == 9'h106) & (mode >= S_MODE))           // writable in mode >= S_MODE
@@ -354,7 +349,6 @@ module csr_nxt_reg
          else
             nxt_scsr.scounteren = scsr.scounteren;                            // keep current value
 
-      `ifdef ext_S
          // ------------------------------ Supervisor Scratch register
          // Scratch register for supervisor trap handlers.
          // 12'h140 = 12'b0001_0100_0000  sscratch    (read-write)
@@ -551,13 +545,16 @@ module csr_nxt_reg
       else
          nxt_mcsr.mtvec = mcsr.mtvec;                                         // keep current value
 
+      // Andrew Waterman: 12/31/2020 - "There is also a clear statement that mcounteren exists if and only if U mode is implemented"
+      `ifdef ext_U
       // ------------------------------ Machine Counter Enable
       // 12'h306 = 12'b0011_0000_0110  Mcounteren                             (read-write)
       if (csr_wr && (csr_addr == 12'h306) & (mode == M_MODE))                 // writable in M_MODE
          nxt_mcsr.mcounteren = csr_wr_data;
       else
          nxt_mcsr.mcounteren = mcsr.mcounteren;                               // keep current value
-
+      `endif
+      
       // ------------------------------ Machine Counter Setup
       // Machine Counter Inhibit  (if not implemented, set all bits to 0 => no inhibits will ocur)
       // 12'h320 = 12'b0011_0010_00000  Mcountinhibit                         (read-write)

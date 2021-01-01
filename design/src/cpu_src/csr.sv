@@ -59,9 +59,10 @@ module csr
    `endif
 
    `ifdef ext_S
-   SCSR              nxt_scsr;
+   SCSR              nxt_scsr;                     // scounteren MUST be implemented even if no ext_S. see p 60 riscv-privileged.pdf
    SCSR              scsr;                         // all of the Supervisor mode Control & Status Registers
    `endif
+
    MCSR              nxt_mcsr;
    MCSR              mcsr;                         // all of the Machine mode Control & Status Registers
 
@@ -127,14 +128,17 @@ module csr
    assign csr_exe_bus.mode             = mode;
 
    assign csr_exe_bus.mepc             = mcsr.mepc;
+
    `ifdef ext_S
    assign csr_exe_bus.sepc             = scsr.sepc;
    `endif
+
    `ifdef ext_U
    `ifdef ext_N
    assign csr_exe_bus.uepc             = ucsr.uepc;
    `endif
    `endif
+
    assign csr_exe_bus.trap_pc          = trap_pc;
    assign csr_exe_bus.irq_flag         = irq_flag;
    assign csr_exe_bus.irq_cause        = irq_cause;
@@ -143,8 +147,6 @@ module csr
    // Combo logic: The next state of all Control & Status Registers is determined and output as nxt_mcsr,nxt_scsr,nxt_ucsr (depending on type of CSR).
    // These values are then latched into the actual CSR FF's on the next rising clock edge as seen in csr_std_wr() registers used module csr_regs.sv
    csr_nxt_reg cnr (
-      .reset_in(reset_in),
-
       .ext_irq(ext_irq),
       .timer_irq(timer_irq),
       .sw_irq(sw_irq),
@@ -231,8 +233,8 @@ module csr
 
       `ifdef ext_S
       .scsr(scsr),                                          // Input:   all of the Supervisor Mode Control & Status Registers
-
       `endif
+
       .mcsr(mcsr)                                           // Input:   all of the Machine Mode Control & Status Registers
    );
 
@@ -256,6 +258,7 @@ module csr
       `ifdef ext_S
       .sret(sret),
       `endif
+
       .mret(mret),
 
       .trap_pc(trap_pc),                                    // Output:  needed in WB logic
@@ -290,9 +293,11 @@ module csr
    // Read the contents of a specific CSR and know if it's available (exists for reading)
 
    MCSR             nxt_FWD_mcsr;
+
    `ifdef ext_S
    SCSR             nxt_FWD_scsr;
    `endif
+
    `ifdef ext_U
    `ifdef ext_N
    UCSR             nxt_FWD_ucsr;
@@ -300,8 +305,6 @@ module csr
    `endif
 
    csr_nxt_reg cnr_2 (
-      .reset_in(reset_in),
-
       .ext_irq(ext_irq),
       .timer_irq(timer_irq),
       .sw_irq(sw_irq),                                      // captured value of sw_irq in EXE stage (i.e. csr_fu.sv)

@@ -45,9 +45,11 @@ module csr_av_rdata
    input var UCSR  ucsr,          // all of the User mode Control & Status Registers
    `endif
    `endif
+
    `ifdef ext_S
    input var SCSR  scsr,          // all of the Supervisor mode Control & Status Registers
    `endif
+
    input var MCSR  mcsr           // all of the Machine mode Control & Status Registers
 );
    logic             av;
@@ -65,12 +67,21 @@ module csr_av_rdata
       if (mode == M_MODE)                          // Machine mode
          av = TRUE;
 
+      `ifdef ext_S
       if (mode == S_MODE)                          // Supervisor mode
          av = mcsr.mcounteren[csr_rd_addr[4:0]];   // lower 5 bits of csr_addr determine index into mcounteren[]
+      `endif
 
-      // "scounteren must be implemented" see riscv-privileged.pdf p 60
+      `ifdef ext_U
+      `ifdef ext_N
       if (mode == U_MODE)                          // User mode
+         `ifdef ext_S
          av = scsr.scounteren[csr_rd_addr[4:0]];
+         `else
+         av = mcsr.mcounteren[csr_rd_addr[4:0]];   // NOT SURE ABOUT THIS CONDITION!!!!!!!!!!!!!!!!!!!!!!!!!
+         `endif
+      `endif
+      `endif
    end
 
    always_comb
@@ -205,11 +216,8 @@ module csr_av_rdata
             csr_rd_avail   = TRUE;
             csr_rd_data    = scsr.stvec;
          end
-      `endif
 
-         // The counter-enable register scounteren is a 32-bit register that controls the availability of the
-         // hardware performance monitoring counters to U-mode....scounteren MUST be implemented.
-         // However, any of the bits may contain a hardwired value of zero.                           see riscv-privileged p 60
+         // 12/31/202 - Andrew Waterman "scounteren only exists if S Mode is implemented"
          // ------------------------------ Supervisor Counter Enable.
          // 12'h106 = 12'b0001_0000_0110  scounteren  (read-write)
          12'h106:
@@ -218,7 +226,6 @@ module csr_av_rdata
             csr_rd_data    = scsr.scounteren;
          end      // see csr_rd_cntr_tmr.svh
 
-      `ifdef ext_S
          // ------------------------------ Supervisor Scratch Register
          // Scratch register for supervisor trap handlers.
          // 12'h140 = 12'b0001_0100_0000  sscratch    (read-write)
@@ -343,6 +350,8 @@ module csr_av_rdata
             csr_rd_data    = mcsr.mtvec;
          end
 
+         // Andrew Waterman: 12/31/2020 - "There is also a clear statement that mcounteren exists if and only if U mode is implemented"
+         `ifdef ext_U
          // ------------------------------ Machine Counter Enable.
          // 12'h306 = 12'b0011_0000_0110  mcounteren                       (read-write)
          12'h306:
@@ -350,7 +359,8 @@ module csr_av_rdata
             csr_rd_avail   = TRUE;
             csr_rd_data    = mcsr.mcounteren;
          end
-
+         `endif
+         
          // ------------------------------ Machine Counter Setup
          // Machine Counter Inhibit  (if not implemented, set all bits to 0 => no inhibits will ocur)
          // 12'h320 = 12'b0011_0010_00000  mcountinhibit                   (read-write)

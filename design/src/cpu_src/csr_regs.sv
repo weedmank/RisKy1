@@ -35,23 +35,23 @@ module csr_regs
 
    output   logic          total_retired,
    `ifdef use_MHPM
-   output   logic          emu_hpm_events[0:23],   // 24 different event counts (counts for this clock cycle) that can be used. 1 bit needed per event for this design (1 instruction max per clock cycle)
+   output   logic          emu_hpm_events[0:23],            // 24 different event counts (counts for this clock cycle) that can be used. 1 bit needed per event for this design (1 instruction max per clock cycle)
    `endif
 
    `ifdef ext_U
    `ifdef ext_N
-   input    var UCSR       nxt_ucsr,               // all of the User mode Control & Status Registers
-   output   UCSR           ucsr,                   // all of the next User mode Control & Status Registers
+   input    var UCSR       nxt_ucsr,                        // all of the User mode Control & Status Registers
+   output   UCSR           ucsr,                            // all of the next User mode Control & Status Registers
    `endif
    `endif
 
    `ifdef ext_S
-   input    var SCSR       nxt_scsr,               // all of the Supervisor mode Control & Status Registers
-   output   SCSR           scsr,                   // all of the next Supervisor mode Control & Status Registers
+   input    var SCSR       nxt_scsr,                        // all of the Supervisor mode Control & Status Registers
+   output   SCSR           scsr,                            // all of the next Supervisor mode Control & Status Registers
    `endif
 
-   input    var MCSR       nxt_mcsr,               // all of the Machine mode Control & Status Registers
-   output   MCSR           mcsr                    // all of the next Machine mode Control & Status Registers
+   input    var MCSR       nxt_mcsr,                        // all of the Machine mode Control & Status Registers
+   output   MCSR           mcsr                             // all of the next Machine mode Control & Status Registers
 );
 
    // ================================================================== User Mode CSRs =====================================================================
@@ -137,16 +137,12 @@ module csr_regs
       // 12'h105 = 12'b0001_0000_0101  stvec                (read-write)
       // Current design only allows MODE of 0 or 1 - thus bit 1 forced to retain it's reset value which is 0.
       csr_ff #(STVEC_INIT & ~32'd2,RSZ,32'h0000_0002) Stvec (clk_in,reset_in, nxt_scsr.stvec, scsr.stvec);
-   `endif
 
-      // The counter-enable register scounteren is a 32-bit register that controls the availability of the
-      // hardware performance monitoring counters to U-mode....scounteren MUST be implemented.
-      // However, any of the bits may contain a hardwired value of zero.                           see riscv-privileged p 60
+      // 12/31/202 - Andrew Waterman "scounteren only exists if S Mode is implemented"
       // ------------------------------ Supervisor Counter Enable.
       // 12'h106 = 12'b0001_0000_0110  scounteren           (read-write)
       csr_ff #(SCNTEN_INIT,RSZ,SCNTEN_MASK) Scounteren      (clk_in,reset_in, nxt_scsr.scounteren, scsr.scounteren);
 
-   `ifdef ext_S
       // ------------------------------ Supervisor Scratch Register
       // Scratch register for supervisor trap handlers.
       // 12'h140 = 12'b0001_0100_0000  sscratch             (read-write)
@@ -218,9 +214,12 @@ module csr_regs
    csr_ff #(MTVEC_INIT & ~32'd2,RSZ,32'h2) Mtvec            (clk_in,reset_in, nxt_mcsr.mtvec, mcsr.mtvec);
    // WARNING: I force bit 1 to always be 0, but it could be that if a non legal value is written the user wants the value to go specifically to 1 or 0
 
+   // Andrew Waterman: 12/31/2020 - "There is also a clear statement that mcounteren exists if and only if U mode is implemented"
+   `ifdef ext_U
    // ------------------------------ Machine Counter Enable
    // 12'h306 = 12'b0011_0000_0110  mcounteren              (read-write)
    csr_ff #(MCNTEN_INIT,RSZ,MCNTEN_MASK) Mcounteren         (clk_in,reset_in, nxt_mcsr.mcounteren, mcsr.mcounteren);
+   `endif
 
    // ------------------------------ Machine Counter Inhibit
    // If not implemented, set all bits to 0 => no inhibits will ocur
