@@ -20,7 +20,7 @@ System Verilog Packages used as imports into the CPU design files
 
 - cpu_struct_pkg.sv
 
-   Structures that are used throught the design
+   Structures that are used throughout the design
 
 - functions.sv:
 

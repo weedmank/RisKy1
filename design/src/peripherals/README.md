@@ -11,9 +11,15 @@ Organization: HDLexpress.com
 
 ----------------------------------------------------------------------------------------
 
-This folder contains encrypted Formal Verification files that can be used for assertion
-based verification.  They are encrypted because they are from a RISC-V Formal Verification
-App being developed to formally verify RISC-V based cpus. Only these files are released
-for RisKy1 use
+This folder contains peripherals that can be used for simulation purposes with RisKy1.
+They are typically used in the sim folder in testbenches to create a complete system
+that can simulate running code on RisKy1.
+
+- L1_dcache.sv    Used in simulation testbenches
+- L1_dcache_ff.sv Just experimental for now
+- L1_icache.sv    Used in simulation testbenches
+- L1_icache_ff.sv Just experimental for now
+- cache_arbiter   Simple arbiter to arbitrate between I$ and D$ to/from System Memory
+- peripheral_intf.sv Interface definitions
 
 ****************************************************************************************

@@ -11,9 +11,10 @@ Organization: HDLexpress.com
 
 ----------------------------------------------------------------------------------------
 
-This folder contains encrypted Formal Verification files that can be used for assertion
-based verification.  They are encrypted because they are from a RISC-V Formal Verification
-App being developed to formally verify RISC-V based cpus. Only these files are released
-for RisKy1 use
+This folder contains Formal Verification folders that are being used to
+develop a formal verification app.  Only portions are released for RisKy1 use
+- property checks
+
+   Contains temporal formal property assertions to verify the operation of the cpu
 
 ****************************************************************************************
