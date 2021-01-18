@@ -50,7 +50,7 @@ typedef
       _unknown_,       _ILLEGAL16_,     _ILLEGAL32_,     _ILLEGAL48_,
 
 
-      // RV32i base - _62 entries (includes future inst_ructions)
+      // RV32i base - _62 entries (includes future instructions)
       _LOAD_,          _FENCE_,         _FENCE_I_,       _ADDI_,          _ADDI_HINT_,    
        _SLLI_,          _SLLI_HINT_,     _SLTI_,          _SLTI_HINT_,    _SLTIU_,         
       _SLTIU_HINT_,    _XORI_,          _XORI_HINT_,     _SRLI_,          _SRLI_HINT_,     
