@@ -61,7 +61,7 @@ module csr_regs
       // 12'h000 = 12'b0000_0000_0000  ustatus     (read-write)  user mode
       //  31          22    21    20   19    18   17   16:15 14:13 12:11 10:9   8     7     6     5     4     3     2     1     0
       // {sd, 8'b0, 1'b0, 1'b0, 1'b0, mxr,  sum, 1'b0,   xs,   fs, 2'b0, 2'b0, 1'b0, 1'b0, 1'b0, 1'b0, upie, 1'b0, 1'b0, 1'b0, uie};
-      csr_ff #(USTAT_INIT,5,USTAT_MASK) Ustatus             (clk_in,reset_in, nxt_ucsr.ustatus, ucsr.ustatus); // only lower 5 bits implemented so far 12/21/2020
+      csr_ff #(USTAT_INIT,USTAT_SZ,USTAT_MASK) Ustatus      (clk_in,reset_in, nxt_ucsr.ustatus, ucsr.ustatus); // only lower 5 bits implemented so far 12/21/2020
 
       `ifdef ext_F
       // ------------------------------ User Floating-Point CSRs
@@ -70,7 +70,7 @@ module csr_regs
 
       // ------------------------------ User Interrupt-Enable Register
       // 12'h004 = 12'b0000_0000_0100  uie                  (read-write)  user mode
-      csr_ff #(0,9,32'hFFFF_FEEE) Uie                       (clk_in,reset_in, nxt_ucsr.uie, ucsr.uie);
+      csr_ff #(0,UI_SZ,UI_MASK) Uie                         (clk_in,reset_in, nxt_ucsr.uie, ucsr.uie);
 
       // User Trap Handler Base address.
       // 12'h005 = 12'b0000_0000_0101  utvec                (read-write)  user mode
@@ -90,7 +90,7 @@ module csr_regs
       // 12'h042 = 12'b0000_0100_0010  ucause               (read-write)
       csr_ff #(0,32) Ucause                                 (clk_in,reset_in, nxt_ucsr.ucause, ucsr.ucause); // ucause is currently 4 Flops wide
 
-      // ------------------------------ User Exception Trap Value    see riscv-privileged p. 38-39
+      // ------------------------------ User Exception Trap Value    see p. 8,115 riscv-privileged.pdf 1.12-draft 
       // 12'h043 = 12'b0000_0100_0011  utval                (read-write)
       csr_ff #(0,RSZ,32'h0) Utval                           (clk_in,reset_in, nxt_ucsr.utval, ucsr.utval);
 
@@ -98,7 +98,7 @@ module csr_regs
       // 12'h044 = 12'b0000_0100_0100  uip                  (read-write)
       //        31:10   9     8         7:6   5     4         3:2   1     0
       // uip = {22'b0, 1'b0, nxt_ueip, 2'b0, 1'b0, nxt_utip, 2'b0, 1'b0, nxt_usip};
-      csr_ff #(0,9,32'hFFFF_FEEE) Uip                       (clk_in,reset_in, nxt_ucsr.uip, ucsr.uip);
+      csr_ff #(0,UI_SZ,UI_MASK) Uip                         (clk_in,reset_in, nxt_ucsr.uip, ucsr.uip);
       `endif // ext_N
    `endif // ext_U
 
@@ -114,10 +114,10 @@ module csr_regs
       // 31 30:20 19    18  17   16:15   14:13   12:9 8   7    6   5    4    3:2  1   0
       // SD WPRI  MXR   SUM WPRI XS[1:0] FS[1:0] WPRI SPP WPRI UBE SPIE UPIE WPRI SIE UIE
       // 1  11    1     1   1    2       2       4    1   1    1   1    1    2    1   1
-      csr_ff #(SSTAT_INIT,9,32'hFFFF_FECC) Sstatus                   (clk_in,reset_in, nxt_scsr.sstatus, scsr.sstatus); // only lower 9 implemented so far 12/21/2020
+      csr_ff #(SSTAT_INIT,SSTAT_SZ,SSTAT_MASK) Sstatus      (clk_in,reset_in, nxt_scsr.sstatus, scsr.sstatus); // only lower 9 implemented so far 12/21/2020
 
       // In systems with S-mode, the  medeleg and mideleg registers must exist, whereas the sedeleg and sideleg registers should only
-      // exist if the N extension for user-mode interrupts is also implemented. p 28 riscv-privileged
+      // exist if the N extension for user-mode interrupts is also implemented. p 30 riscv-privileged.pdf 1.12-draft
       `ifdef ext_N
          // ------------------------------ Supervisor Exception Delegation Register.
          // 12'h102 = 12'b0001_0000_0010  sedeleg           (read-write)
@@ -131,7 +131,7 @@ module csr_regs
       // ------------------------------ Supervisor Interrupt Enable Register.
       // 12'h104 = 12'b0001_0000_0100  sie                  (read-write)
       // Read Only bits of 32'hFFFF_FCCC;  // Note: bits 31:10, 7:6, 3:2 are not writable and are "hardwired" to 0 (init value = 0 at reset)
-      csr_ff #(0,RSZ,32'hFFFF_FCCC) Sie                     (clk_in,reset_in, nxt_scsr.sie, scsr.sie);
+      csr_ff #(0,SI_SZ,SI_MASK) Sie                         (clk_in,reset_in, nxt_scsr.sie, scsr.sie);
 
       // ------------------------------ Supervisor Trap handler base address.
       // 12'h105 = 12'b0001_0000_0101  stvec                (read-write)
@@ -150,21 +150,21 @@ module csr_regs
 
       // ------------------------------ Supervisor Exception Program Counter
       // 12'h141 = 12'b0001_0100_0001  sepc                 (read-write)
-      csr_ff #(0,RSZ,32'h1) Sepc                            (clk_in,reset_in, nxt_scsr.sepc, scsr.sepc); // ls-bit is RO so it remains at 0 after reset
+      csr_ff #(0,RSZ,32'h1) Sepc                            (clk_in,reset_in, nxt_scsr.sepc, scsr.sepc);       // ls-bit is RO so it remains at 0 after reset
 
       // ------------------------------ Supervisor Exception Cause
       // 12'h142 = 12'b0001_0100_0010  scause               (read-write)
       csr_ff #(0,RSZ) Scause                                (clk_in,reset_in, nxt_scsr.scause, scsr.scause);   // scause is currently 4 Flops wide
 
-      // ------------------------------ Supervisor Exception Trap Value                       see riscv-privileged p. 38-39
+      // ------------------------------ Supervisor Exception Trap Value                       see p. 9,30,67 115 riscv-privileged.pdf 1.12-draft
       // 12'h143 = 12'b0001_0100_0011  stval                (read-write)
       csr_ff #(0,RSZ) Stval                                 (clk_in,reset_in, nxt_scsr.stval, scsr.stval);
 
       // ------------------------------ Supervisor Interrupt Pending bits
       // 12'h144 = 12'b0001_0100_0100  sip                  (read-write)
       //  31:12   11    10    9     8     7     6     5     4     3     2     1     0
-      // {20'b0, 1'b0, 1'b0, seip, ueip, 1'b0, 1'b0, stip, utip, 1'b0, 1'b0, ssip, usip}; // All bits besides SSIP, USIP, and UEIP in the sip register are read-only. p 59 riscv-privileged.pdf
-      csr_ff #(0,RSZ,32'hFFFF_FCCC) Sip                     (clk_in,reset_in, nxt_scsr.sip, scsr.sip);
+      // {20'b0, 1'b0, 1'b0, seip, 1'b0, 1'b0, 1'b0, stip, 1'b0, 1'b0, 1'b0, ssip, 1'b0};
+      csr_ff #(0,SI_SZ,SI_MASK) Sip                         (clk_in,reset_in, nxt_scsr.sip, scsr.sip);
 
       // ------------------------------ Supervisor Protection and Translation
       // 12'h180 = 12'b0001_1000_0000  satp                 (read-write)
@@ -206,7 +206,7 @@ module csr_regs
    //  31:12  11    10    9     8     7     6     5     4     3     2     1     0
    // {WPRI, meie, WPRI, seie, ueie, mtie, WPRI, stie, utie, msie, WPRI, ssie, usie};
    // Note: bits 31:12 are WPRI. Also bits 10,6,2 are WPRI
-   csr_ff #(MIP_INIT,RSZ,MIP_MASK)  Mie                     (clk_in,reset_in, nxt_mcsr.mie, mcsr.mie);
+   csr_ff #(MI_INIT,MI_SZ,MI_MASK) Mie                      (clk_in,reset_in, nxt_mcsr.mie, mcsr.mie);
 
    // ------------------------------ Machine Trap Handler Base Address
    // 12'h305 = 12'b0011_0000_0101  mtvec                   (read-write)
@@ -218,7 +218,7 @@ module csr_regs
    `ifdef ext_U
    // ------------------------------ Machine Counter Enable
    // 12'h306 = 12'b0011_0000_0110  mcounteren              (read-write)
-   csr_ff #(MCNTEN_INIT,RSZ,MCNTEN_MASK) Mcounteren         (clk_in,reset_in, nxt_mcsr.mcounteren, mcsr.mcounteren);
+   csr_ff #(MCNTEN_INIT,MCNTEN_SZ,MCNTEN_MASK) Mcounteren   (clk_in,reset_in, nxt_mcsr.mcounteren, mcsr.mcounteren);
    `endif
 
    // ------------------------------ Machine Counter Inhibit
@@ -261,7 +261,7 @@ module csr_regs
    // 12'h344 = 12'b0011_0100_0100  mip                     (read-write)  machine mode
    //  31:12   11    10    9     8     7     6     5     4     3     2     1     0
    // {20'b0, meip, 1'b0, seip, ueip, mtip, 1'b0, stip, utip, msip, 1'b0, ssip, usip};
-   csr_ff #(MIP_INIT,RSZ,MIP_MASK) Mip                      (clk_in,reset_in, nxt_mcsr.mip, mcsr.mip);
+   csr_ff #(MI_INIT,MI_SZ,MI_MASK) Mip                      (clk_in,reset_in, nxt_mcsr.mip, mcsr.mip);
 
 
    // ------------------------------ Machine Protection and Translation

@@ -24,21 +24,21 @@ package functions_pkg;
    // bit_size(256) = 9 bits to hold the value, bit_size(255) = 8 bits to hold the value,
    // bit_size(2) = 2 bits, bit_size(1) = 1, bit_size(0) = 1 -> be careful using this one
 
-	function integer bit_size;
-    input integer value;
-    reg [31:0] shifted;
-    integer res;
-	begin
+   function integer bit_size;
+   input integer value;
+   reg [31:0] shifted;
+   integer res;
+   begin
       if (value != 0)
       begin
-		   shifted = value;
-		   for (res=0; (shifted != 0); res=res+1)
-			   shifted = shifted >> 1;
-		   bit_size = res;
+         shifted = value;
+         for (res=0; (shifted != 0); res=res+1)
+            shifted = shifted >> 1;
+         bit_size = res;
       end
       else
          bit_size = 1; // minimum size, even for a value of 0
-	end
-	endfunction
+   end
+   endfunction
 
 endpackage

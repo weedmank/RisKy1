@@ -218,7 +218,7 @@ module csr_nxt_reg
             else
                nxt_ucsr.ucause   = ucsr.ucause;                               // keep current value
 
-            // ------------------------------ User Exception Trap Value       see riscv-privileged p. 38-39
+            // ------------------------------ User Exception Trap Value       see p 8m 115 riscv-privileged.pdf 1.12-draft
             // 12'h043 = 12'b0000_0100_0011  utval                            (read-write)
             if (exception.flag & (nxt_mode == U_MODE))                        // An exception in MEM stage has priority over a csr_wr (in EXE stage)
                nxt_ucsr.utval    = exception.tval;                            // save code for exception cause
@@ -376,7 +376,7 @@ module csr_nxt_reg
             nxt_scsr.scause   = scsr.scause;                                  // keep current value
 
 
-         // ------------------------------ Supervisor Exception Trap Value                            see riscv-privileged p. 38-39
+         // ------------------------------ Supervisor Exception Trap Value    see p 9,30,67 riscv-privileged.pdf 1.12-draft
          // 12'h143 = 12'b0001_0100_0011  stval                               (read-write)
          if (exception.flag & (nxt_mode == S_MODE))
             nxt_scsr.stval    = exception.tval;                               // save code for exception cause
@@ -389,37 +389,21 @@ module csr_nxt_reg
          // 12'h144 = 12'b0001_0100_0100  sip                                 (read-write)
          // uip = mip & MASK -> see csr.sv
 
-         // p. 29 SUPERVISOR mode: The logical-OR of the software-writeable bit and the signal from the external interrupt controller is used to generate external
-         // interrupts to the supervisor. When the SEIP bit is read with a CSRRW, CSRRS, or CSRRC instruction, the value returned in the rd destination register
-         // contains the logical-OR of the software-writable bit and the interrupt signal from the interrupt controller. However, the value used in the  read-modify-write
-         // sequence of a CSRRS or CSRRC instruction is only the software-writable SEIP bit, ignoring the interrupt value from the external interrupt controller.
-
-         // If an interrupt is delegated to privilege mode S by setting a bit in the mideleg register,
-         // it becomes visible in the Sip register and is maskable using the Sie register.
-         // Otherwise, the corresponding bits in Sip and Sie appear to be hardwired to zero. p 29
-
-         // Each lower privilege level has a separate software interrupt-pending bit (SSIP, USIP), which can
-         // be both read and written by CSR accesses from code running on the local hart at the associated or
-         // any higher privilege level. p. 30
-
-         // All bits besides SSIP, USIP, and UEIP in the sip register are read-only. p 59
-         if (csr_wr & (csr_addr[8:0] == 9'h144) & (mode >= S_MODE))           // writable in mode >= S_MODE
-            nxt_scsr.sip.ssip = csr_wr_data[1];
-         else if (sw_irq)
+         // If implemented, SEIP is read-only in sip, and is set and cleared by the
+         // execution environment, typically through a platform-specific interrupt controller. see p 63 riscv-privileged 1.12-draft
+         if (sw_irq)
             nxt_scsr.sip.ssip = TRUE;                                         // software interrupt = msip_reg[] see irq.sv
          else
             nxt_scsr.sip.ssip = scsr.sip.ssip;
 
-         // The UTIP and STIP bits may be written by M-mode software to deliver timer interrupts to lower privilege levels. p. 30 riscv-privileged.pdf
-         if (csr_wr & (csr_addr == 12'h344) & (mode == M_MODE))               // writable in mode == M_MODE. "...STIP... in mip are writable through this CSR address;" p. 29 riscv-privileged.pdf
-            nxt_scsr.sip.stip = csr_wr_data[5];
-         else if (mode == S_MODE)
+         // f implemented, STIP is read-only in sip, and is set and cleared by the execution environment. see p 63 riscv-privileged 1.12-draft
+         if (mode == S_MODE)
             nxt_scsr.sip.stip = timer_irq;                                    // timer interrupt
          else
             nxt_scsr.sip.stip = scsr.sip.stip;
 
-         // The SEIP field in mip contains a single read-write bit.
-         if (csr_wr & (csr_addr == 12'h344) & (mode == M_MODE))               // writable in mode == M_MODE. "...SEIP... in mip are writable through this CSR address;" p. 29 riscv-privileged.pdf
+         // If implemented, SSIP is writable in sip.... p. 63 riscv-privileged.pdf 1.12-draft
+         if (csr_wr & (csr_addr == 12'h344) & (mode == M_MODE))               
             nxt_scsr.sip.seip = csr_wr_data[9];
          else if (mode == S_MODE)
             nxt_scsr.sip.seip = ext_irq;                                      // external interrupt
@@ -445,14 +429,14 @@ module csr_nxt_reg
 
       // (read-write)   p. 56 riscv-privileged
       if (exception.flag & (nxt_mode == M_MODE))                              // holds the previous privilege mode
-         nxt_mcsr.mstatus.mpp  = mode;                                        // When a trap is taken from privilege mode y into privilege mode x, ... and xPP is set to y.
+         nxt_mcsr.mstatus.mpp  = mode;                                        // When a trap is taken from privilege mode y into privilege mode x, ... and xPP is set to y. p. 21 riscv-privileged.pdf 1.12-draft
       else if (mret)
       `ifdef ext_U
-         nxt_mcsr.mstatus.mpp  = U_MODE;                                      // "and xPP is set to U (or M if user-mode is not supported)." p. 21 riscv-privileged.pdf
+         nxt_mcsr.mstatus.mpp  = U_MODE;                                      // "and xPP is set to U (or M if user-mode is not supported)."
       `else
          nxt_mcsr.mstatus.mpp  = M_MODE;
       `endif
-      else if (csr_wr & (csr_addr == 12'h300) & (mode == M_MODE))             // xPP fields are WARL fields that can hold only privilege mode x and any implemented privilege mode lower than x. p 21 riscv-privileged-sail-draft.pdf
+      else if (csr_wr & (csr_addr == 12'h300) & (mode == M_MODE))             // xPP fields are WARL fields that can hold only privilege mode x and any implemented privilege mode lower than x.
          nxt_mcsr.mstatus.mpp  = csr_wr_data[12:11];                          // writable in M_MODE
       else
          nxt_mcsr.mstatus.mpp  = mcsr.mstatus.mpp;                            // xPP holds the previous privilege mode
@@ -462,12 +446,12 @@ module csr_nxt_reg
       if (exception.flag & (nxt_mode == M_MODE))
          nxt_mcsr.mstatus.mpie = mcsr.mstatus.mie;                            // When a trap is taken from privilege mode y into privilege mode x, xPIE is set to the value of xIE
       else if (mret)
-         nxt_mcsr.mstatus.mpie = 1'b1;                                        // When executing an xRET instruction, ... xPIE is set to 1;   p. 21 riscv-privilege
+         nxt_mcsr.mstatus.mpie = 1'b1;                                        // When executing an xRET instruction, ... xPIE is set to 1;
       else
          nxt_mcsr.mstatus.mpie = mcsr.mstatus.mpie;                           // x PIE holds the value of the interrupt-enable bit active prior to the trap
       nxt_mpie   = nxt_mcsr.mstatus.mpie;
 
-//    if (mret & (mpp != M_MODE))                                             // If xPP̸=M, xRET also sets MPRV=0. p 21 riscv-privileged-sail-draft.pdf
+//    if (mret & (mpp != M_MODE))                                             // If xPP̸=M, xRET also sets MPRV=0.
 //       nxt_mprv = 0;
 //    else if (sret & (spp != (M_MODE & 1)))                                  // spp is made from the lower bit of mode
 //       nxt_mprv = 0;
@@ -476,7 +460,7 @@ module csr_nxt_reg
       // p. 20 The xIE bits are in the low-order bits of mstatus, allowing them to be atomically set or cleared with a single CSR instruction
       //       or cleared with a single CSR instruction.
       if (exception.flag & (nxt_mode == M_MODE))
-         nxt_mcsr.mstatus.mie  = 1'b0;                                        // When a trap is taken from privilege mode y into privilege mode x, ... xIE is set to 0;   p. 21 riscv-privileged.pdf
+         nxt_mcsr.mstatus.mie  = 1'b0;                                        // When a trap is taken from privilege mode y into privilege mode x, ... xIE is set to 0;
       else if (mret)
          nxt_mcsr.mstatus.mie  = mcsr.mstatus.mpie;                           // When executing an xRET instruction, supposing xPP holds the value y, xIE is set to xPIE;
       else if (csr_wr & (csr_addr == 12'h300) & (mode == M_MODE))             // modes lower than Machine cannot modify mie bit
@@ -503,8 +487,9 @@ module csr_nxt_reg
 
 
       // In systems with only M-mode and U-mode, the medeleg and mideleg registers should only be implemented if the N extension for user-mode interrupts is implemented.
-      // In systems with only M-mode, or with both M-mode and U-mode but without U-mode trap support, the medeleg and mideleg registers should not exist. seee riscv-privileged.pdf p 28
-
+      // In systems with only M-mode, or with both M-mode and U-mode but without U-mode trap support, the medeleg and mideleg registers now do not exist. see p. iii riscv-privileged.pdf 1.12-draftp
+      // In systems with only M and U privilege modes, setting a bit in medeleg or mideleg delegates the corresponding trap in U-mode to the U-mode trap handler. see p 115 riscv-privileged.pdf 1.12-draft
+      
       // medeleg has a bit position allocated for every synchronous exception shown in Table 3.6 on page 37,
       // with the index of the bit position equal to the value returned in the mcause register (i.e., setting
       // bit 8 allows user-mode environment calls to be delegated to a lower-privilege trap handler).

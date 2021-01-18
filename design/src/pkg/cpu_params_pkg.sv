@@ -92,13 +92,21 @@ import functions_pkg::*;
    parameter   NUM_MHPM = 0;                                         // CSR: number of mhpmcounter's and mhpmevent's, where first one starts at mphmcounter3 if NUM_MHPM > 0
    // NOTE: Max NUM_MHPM is 29
 
-   // MCOUNTEREN, SCOUNTEREN - init values and mask values (a 1 in a bit means the corresponding reset value will always remain the same)
-   parameter   MCNTEN_INIT          = 32'h0000_0000;
-   parameter   MCNTEN_MASK          = 32'hFFFF_FFFF << (3+NUM_MHPM); // Mask bits that are 1 correspond to unimplemented hpm counters) and the coresspnding mcounten bits will read as 0
+   // User Interrupt (Pending and Enable) Registers
+   parameter   UI_MASK              = 32'hFFFF_FEEE;                 // just ueip,utip and usip bits (8,4,0)
+   
 
+   // Supervisor Interrupt (Pending & Enable) Registers
+   parameter   SI_MASK              = 32'hFFFF_FDDD;                  // jsut seip,stip,ssip (bits 9,5,1) for now. see p 63 riscv-privileged 1.12-draft
+   
    // NOTE: scounteren is always implemented. see p. 60 riscv-privileged.pdf
    parameter   SCNTEN_INIT          = 32'h0000_0000;
    parameter   SCNTEN_MASK          = 32'hFFFF_FFFF << (3+NUM_MHPM); // Mask bits that are 1 correspond to unimplemented hpm counters) and the coresspnding scounten bits will read as 0
+
+   
+   // MCOUNTEREN, SCOUNTEREN - init values and mask values (a 1 in a bit means the corresponding reset value will always remain the same)
+   parameter   MCNTEN_INIT          = 32'h0000_0000;
+   parameter   MCNTEN_MASK          = 32'hFFFF_FFFF << (3+NUM_MHPM); // Mask bits that are 1 correspond to unimplemented hpm counters) and the coresspnding mcounten bits will read as 0
 
    parameter   MCS_INIT             = 32'h0000_0000;                 // Reset: The mcause register is set to a value indicating the cause of the reset. riscv-privileged.pdf p 42
 
@@ -191,7 +199,7 @@ import functions_pkg::*;
 // `define     H_LUI
 
    //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-   //!!!      WARNING: The localparams below are not intended to be user modified      !!!!
+   //!!!      WARNING: The localparams below are not intended to be user modified     !!!!
    //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
    parameter M_MODE        = 2'b11;          // Machine Mode
    parameter S_MODE        = 2'b01;          // Supervisor Mode
@@ -207,9 +215,6 @@ import functions_pkg::*;
    parameter MPP_RO_MASK   = 13'h1800;
 
    // MSTATUS Read_only masks change based on extensions needed.  Each mask bit disables writing to the bit and the read value will be the init value
-   //         Note: look at csr_ff.sv and notice that each RO bit will become tied to a logic value instead of creating a flip flop.
-   //           31:13  12:11  10:9   8    7     6     5     4     3    2     1    0
-   //mstatus:  {       mpp,   2'b0,  spp, mpie, 1'b0, spie, upie, mie, 1'b0, sie, uie};
    `ifdef ext_U
       `ifdef ext_N
          parameter M_UIE_RO_MASK   = 13'h0000;
@@ -234,18 +239,26 @@ import functions_pkg::*;
    `endif
 
 
+   //         Note: look at csr_ff.sv and notice that each RO bit will become tied to a logic value instead of creating a flip flop.
+   //            31:13  12:11  10:9   8    7     6     5     4     3    2     1    0
+   // mstatus:  {       mpp,   2'b0,  spp, mpie, 1'b0, spie, upie, mie, 1'b0, sie, uie};
+   //    WARNING: bits 31:13 have not been implemented yet 1/17/2021
    localparam MSTAT_INIT   = {M_MODE,11'b0};   // init to M_MODE
-   localparam MSTAT_MASK   = M_SPP_RO_MASK | M_SPIE_RO_MASK | M_UPIE_RO_MASK | M_SIE_RO_MASK | M_UIE_RO_MASK | 32'hFFFF_E644;  // WARNING: bits 31:13 have not been implemented yet 12/28/2020
+   localparam MSTAT_MASK   = ~(MPP_RO_MASK | M_SPP_RO_MASK | MPIE_RO_MASK | M_SPIE_RO_MASK | M_UPIE_RO_MASK | MIE_RO_MASK | M_SIE_RO_MASK | M_UIE_RO_MASK);
 
-   // SSTATUS Read_only masks change based on extensions needed.  Each mask bit disables writing to the bit and the read value will be the init value
+   // SSTATUS  - see p. 59-60 riscv-privileged 1.12-draft
    //         Note: look at csr_ff.sv and notice that each RO bit will become tied to a logic value instead of creating a flip flop.
    // 31 30:20 19    18  17   16:15   14:13   12:9 8   7    6   5    4    3:2  1   0
-   // SD WPRI  MXR   SUM WPRI XS[1:0] FS[1:0] WPRI SPP WPRI UBE SPIE UPIE WPRI SIE UIE
+   // 0  0     0     0   0      0       0     0    SPP WPRI UBE SPIE UPIE WPRI SIE UIE
+   //    WARNING: bits 31:8, and bit UBE have not been implemented yet 1/17/2021
    localparam SSTAT_INIT   = 0;
-   localparam SSTAT_MASK   = MPP_RO_MASK | MPIE_RO_MASK | MIE_RO_MASK | 32'hFFFF_E644;  // WARNING: bits 31:13 have not been implemented yet 12/28/2020
+   localparam SSTAT_MASK   = ~(SPP_RO_MASK | SPIE_RO_MASK | UPIE_RO_MASK | SIE_RO_MASK | UIE_RO_MASK);  // just bits spp, spie, upie, sie, and uie bits (8,5,4,1,0)
 
+   // USTATUS - see p. 113-114 riscv-privileged 1.12-draft
+   // 31 30:20 19    18  17   16:15   14:13   12:9 8   7    6   5    4    3:2  1   0
+   // 0  0     0     0   0      0       0     0    0   0    0   0    UPIE 0    0   UIE
    localparam USTAT_INIT   = 0;
-   localparam USTAT_MASK   = MPP_RO_MASK | SPP_RO_MASK | MPIE_RO_MASK | SPIE_RO_MASK | MIE_RO_MASK | SIE_RO_MASK | 32'hFFFF_E644;  // WARNING: bits 31:13 have not been implemented yet 12/28/2020
+   localparam USTAT_MASK   = ~(UPIE_RO_MASK | UIE_RO_MASK);     // just upie and uie bits 4, 0
 
 
    // MIP Read_only masks change based on extensions needed.  Each mask bit disables writing to the bit and the read value will be the init value
@@ -277,10 +290,8 @@ import functions_pkg::*;
       parameter STIP_RO_MASK  = 10'h020;
       parameter SSIP_RO_MASK  = 10'h002;
    `endif
-   localparam MIP_INIT     = 0;
-   localparam MIP_MASK     = SEIP_RO_MASK | UEIP_RO_MASK | STIP_RO_MASK | UTIP_RO_MASK | SSIP_RO_MASK | USIP_RO_MASK | 32'hFFFF_F444;
-   localparam MIE_INIT     = 0;
-   localparam MIE_MASK     = 32'h0; // Note: bits 31:12 are WPRI. Also bits 10,6,2 are WPRI
+   localparam  MI_INIT     = 0;
+   localparam  MI_MASK     = SEIP_RO_MASK | UEIP_RO_MASK | STIP_RO_MASK | UTIP_RO_MASK | SSIP_RO_MASK | USIP_RO_MASK | 32'hFFFF_F444;
 
    localparam  XLEN        = 6'd32;                                  // instruction word width
    localparam  CI_SZ       = 5'd16;                                  // compressed instruction word width
@@ -312,6 +323,14 @@ import functions_pkg::*;
    localparam  MAX_IPCL    = CL_LEN/BPI;                             // 32/4 =>  up to 8 Instructions Per Cache Line (if not using compressed)
 `endif
 
+
+   localparam USTAT_SZ = bitsize(USTAT_MASK);                        // detect MSB that is used
+   localparam SSTAU_SZ = bitsize(SSTAT_MASK);
+   localparam UI_SZ = bitsize(~UI_MASK);
+   localparam SI_SZ = bitsize(~SI_MASK);
+   localparam MI_SZ = bitsize(~MI_MASK);
+   localparam MCNTEN_SZ = bitsize(~MCNTEN_MASK);
+   
    // See decode_core.sv
    // NOTE: These are the HINT and RESERVED values associated with specific HINTs that can be seen in decode_core.sv.  To use a HINT in a design, the corresponing
    //       "`define H_xxxx" must be enabled above.  For example, let's say a deisnger wants to use the code point at HINT_C_NOP.  `define H_C_NOP would neeed to be enabled
