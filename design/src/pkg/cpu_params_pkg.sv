@@ -244,7 +244,7 @@ import functions_pkg::*;
    // mstatus:  {       mpp,   2'b0,  spp, mpie, 1'b0, spie, upie, mie, 1'b0, sie, uie};
    //    WARNING: bits 31:13 have not been implemented yet 1/17/2021
    localparam MSTAT_INIT   = {M_MODE,11'b0};   // init to M_MODE
-   localparam MSTAT_MASK   = ~(MPP_RO_MASK | M_SPP_RO_MASK | MPIE_RO_MASK | M_SPIE_RO_MASK | M_UPIE_RO_MASK | MIE_RO_MASK | M_SIE_RO_MASK | M_UIE_RO_MASK);
+   localparam MSTAT_MASK   = (MPP_RO_MASK | M_SPP_RO_MASK | MPIE_RO_MASK | M_SPIE_RO_MASK | M_UPIE_RO_MASK | MIE_RO_MASK | M_SIE_RO_MASK | M_UIE_RO_MASK);
 
    // SSTATUS  - see p. 59-60 riscv-privileged 1.12-draft
    //         Note: look at csr_ff.sv and notice that each RO bit will become tied to a logic value instead of creating a flip flop.
@@ -252,13 +252,13 @@ import functions_pkg::*;
    // 0  0     0     0   0      0       0     0    SPP WPRI UBE SPIE UPIE WPRI SIE UIE
    //    WARNING: bits 31:8, and bit UBE have not been implemented yet 1/17/2021
    localparam SSTAT_INIT   = 0;
-   localparam SSTAT_MASK   = ~(SPP_RO_MASK | SPIE_RO_MASK | UPIE_RO_MASK | SIE_RO_MASK | UIE_RO_MASK);  // just bits spp, spie, upie, sie, and uie bits (8,5,4,1,0)
+   localparam SSTAT_MASK   = (SPP_RO_MASK | SPIE_RO_MASK | UPIE_RO_MASK | SIE_RO_MASK | UIE_RO_MASK);  // just bits spp, spie, upie, sie, and uie bits (8,5,4,1,0)
 
    // USTATUS - see p. 113-114 riscv-privileged 1.12-draft
    // 31 30:20 19    18  17   16:15   14:13   12:9 8   7    6   5    4    3:2  1   0
    // 0  0     0     0   0      0       0     0    0   0    0   0    UPIE 0    0   UIE
    localparam USTAT_INIT   = 0;
-   localparam USTAT_MASK   = ~(UPIE_RO_MASK | UIE_RO_MASK);     // just upie and uie bits 4, 0
+   localparam USTAT_MASK   = (UPIE_RO_MASK | UIE_RO_MASK);     // just upie and uie bits 4, 0
 
 
    // MIP Read_only masks change based on extensions needed.  Each mask bit disables writing to the bit and the read value will be the init value
@@ -325,7 +325,8 @@ import functions_pkg::*;
 
 
    localparam USTAT_SZ = bitsize(USTAT_MASK);                        // detect MSB that is used
-   localparam SSTAU_SZ = bitsize(SSTAT_MASK);
+   localparam SSTAT_SZ = bitsize(SSTAT_MASK);
+   localparam MSTAT_SZ = bitsize(MSTAT_MASK);
    localparam UI_SZ = bitsize(~UI_MASK);
    localparam SI_SZ = bitsize(~SI_MASK);
    localparam MI_SZ = bitsize(~MI_MASK);

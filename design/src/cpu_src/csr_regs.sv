@@ -182,7 +182,7 @@ module csr_regs
    // {sd, 8'b0, tsr, tw, tvm, mxr, sum, mprv, xs,   fs,   mpp,  2'b0, spp, mpie, 1'b0, spie, upie,  mie, 1'b0,  sie, uie};
 
    // register currently creates flops for bits 12:11,8,7,5,4,3,1,0
-   csr_ff #(MSTAT_INIT,13,MSTAT_MASK) Mstatus               (clk_in,reset_in, nxt_mcsr.mstatus, mcsr.mstatus); // only lower 13 bits implemented 12/21/2020
+   csr_ff #(MSTAT_INIT,MSTAT_SZ,MSTAT_MASK) Mstatus         (clk_in,reset_in, nxt_mcsr.mstatus, mcsr.mstatus); // only lower 13 bits implemented 12/21/2020
 
    // ------------------------------ Machine ISA Register
 

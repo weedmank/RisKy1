@@ -236,6 +236,16 @@ module RisKy1_core
       if (NUM_MHPM > 29)                                                      $fatal ("NUM_MHPM must be a value of 29 or less");
       if (MAX_CSR != 4096)                                                    $fatal ("MAX_CSR must be 4096");
 
+      if (USTAT_SZ > XLEN)                                                    $fatal ("USTAT_SZ > XLEN. see cpu_params_pkg.sv");
+      if (UI_SZ > XLEN)                                                       $fatal ("UI_SZ > XLEN. see cpu_params_pkg.sv");
+      if (SSTAT_SZ > XLEN)                                                    $fatal ("SSTAT_SZ > XLEN. see cpu_params_pkg.sv");
+      if (SI_SZ > XLEN)                                                       $fatal ("SI_SZ > XLEN. see cpu_params_pkg.sv");
+      if (MSTAT_SZ > XLEN)                                                    $fatal ("MSTAT_SZ > XLEN. see cpu_params_pkg.sv");
+      if (MI_SZ > XLEN)                                                       $fatal ("MI_SZ > XLEN. see cpu_params_pkg.sv");
+      if (MCNTEN_SZ > XLEN)                                                   $fatal ("MCNTEN_SZ > XLEN. see cpu_params_pkg.sv");
+      if (EV_SEL_SZ > XLEN)                                                   $fatal ("EV_SEL_SZ > XLEN. see cpu_params_pkg.sv");
+      if (DEL_SZ > XLEN)                                                      $fatal ("DEL_SZ > XLEN. see cpu_params_pkg.sv");
+      
       // Internal I/O address range check
       if (Int_IO_Addr_Hi <= Int_IO_Addr_Lo)                                   $fatal ("Int_IO_Addr_Hi must be > Int_IO_Addr_Lo");
 
