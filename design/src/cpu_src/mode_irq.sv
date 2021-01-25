@@ -201,7 +201,7 @@ module mode_irq
    //----------------------------------------------------------------------------------------------------------------------------------------
 
    // csr_mstatus info
-   logic       [1:0] mpp;           // from mcsr.mstatus[12:11]
+   logic       [1:0] mpp;                       // from mcsr.mstatus[12:11]
    assign mpp = mcsr.mstatus.mpp;
 
    `ifdef ext_S
@@ -212,7 +212,7 @@ module mode_irq
    always_ff @(posedge clk_in)
    begin
       if (reset_in)
-         mode <= M_MODE;            // nxt_mode == 3 during reset_in
+         mode <= M_MODE;                        // nxt_mode == 3 during reset_in
       else
          mode <= nxt_mode;
    end
