@@ -73,9 +73,9 @@ module br_fu
    assign sepc       = brfu_bus.sepc;
    `endif
    `ifdef ext_U
-   `ifdef ext_N
-   assign uepc       = brfu_bus.uepc;
-   `endif
+      `ifdef ext_N
+      assign uepc       = brfu_bus.uepc;
+      `endif
    `endif
 
    always_comb
