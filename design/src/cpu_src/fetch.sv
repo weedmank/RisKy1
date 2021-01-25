@@ -511,7 +511,7 @@ module fetch
                   bt[c]                = TRUE;
                end
 
-               3'b101:                                                                    // ECALL,EBREAK
+               3'b101:                                                                    // ECALL, EBREAK
                begin
                   //!!!!!!! ???  is address determined by mtvec/stvec/utvec ???? trap_pc ????
                   predicted[c].addr    = 0;                                               // see csr.sv to figure this out
