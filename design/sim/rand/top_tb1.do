@@ -35,6 +35,7 @@ vlog  -sv -hazards +define+ext_M+ext_N+ext_S+ext_U+SIM_DEBUG                    
 vlog  -sv -hazards +define+ext_M+ext_N+ext_S+ext_U+SIM_DEBUG                                                ../../src/pkg/cpu_params_pkg.sv
 vlog  -sv -hazards +define+ext_M+ext_N+ext_S+ext_U+SIM_DEBUG                                                ../../src/pkg/cpu_structs_pkg.sv
 vlog  -sv -hazards +define+ext_M+ext_N+ext_S+ext_U+SIM_DEBUG                                                ../../src/pkg/cpu_intf_pkg.sv
+vlog  -sv -hazards +define+ext_M+ext_C+ext_S+ext_U+SIM_DEBUG                                                ../../src/pkg/csr_params_pkg.sv
 
 # Assertion/Property Files
 vlog  -sv -hazards +define+ext_M+ext_N+ext_S+ext_U+SIM_DEBUG                                                ../../src/sva/csr_asserts.sv

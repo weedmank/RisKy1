@@ -38,6 +38,7 @@ vlog  -sv -hazards +define+SIM_DEBUG                                            
 vlog  -sv -hazards +define+SIM_DEBUG                                                                                 ../../src/pkg/functions_pkg.sv
 vlog  -sv -hazards +define+SIM_DEBUG                                                                                 ../../src/pkg/cpu_params_pkg.sv
 vlog  -sv -hazards +define+SIM_DEBUG                                                                                 ../../src/pkg/cpu_structs_pkg.sv
+vlog  -sv -hazards +define+SIM_DEBUG                                                                                 ../../src/pkg/csr_params_pkg.sv
                                                                                       
 # Interfaces                                                                          
 vlog  -sv -hazards +define+SIM_DEBUG                                                                                 ../../src/cpu_src/cpu_intf.sv
