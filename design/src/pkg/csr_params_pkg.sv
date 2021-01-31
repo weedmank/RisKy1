@@ -21,20 +21,21 @@ package csr_params_pkg;
 import functions_pkg::*;
 import cpu_params_pkg::*;
    // ================================================================== Machine Mode CSRs ==================================================================
+   // "The mstatush register is not required to be implemented if every field would be hardwired to zero." riscv_privileged 1.12 draft
    // ------------------------------ Machine Status Register
    // 12'h300 = 12'b0011_0000_0000  mstatus     (read-write)   p. 56 riscv-privileged
    //         Note: look at csr_ff.sv and notice that each RO bit will become tied to a logic value instead of creating a flip flop.
    //            31:13  12:11  10:9   8    7     6     5     4     3    2     1    0
    // mstatus:  {       mpp,   2'b0,  spp, mpie, 1'b0, spie, upie, mie, 1'b0, sie, uie};
    //    WARNING: bits 31:13 have not been implemented yet 1/17/2021
-   parameter UIE_RO_MASK   = 13'h0001;       // Read Only - value read will be INIT value for mstatus register in csr_regs.sv
-   parameter UPIE_RO_MASK  = 13'h0010;
-   parameter SIE_RO_MASK   = 13'h0002;       // Read Only if ext_S not defined
-   parameter SPIE_RO_MASK  = 13'h0020;
-   parameter SPP_RO_MASK   = 13'h0100;
-   parameter MIE_RO_MASK   = 13'h0008;
-   parameter MPIE_RO_MASK  = 13'h0080;
-   parameter MPP_RO_MASK   = 13'h1800;
+   parameter UIE_RO_MASK         = 13'h0001;          // Read Only - value read will be INIT value for mstatus register in csr_regs.sv
+   parameter UPIE_RO_MASK        = 13'h0010;
+   parameter SIE_RO_MASK         = 13'h0002;          // Read Only if ext_S not defined
+   parameter SPIE_RO_MASK        = 13'h0020;
+   parameter SPP_RO_MASK         = 13'h0100;
+   parameter MIE_RO_MASK         = 13'h0008;
+   parameter MPIE_RO_MASK        = 13'h0080;
+   parameter MPP_RO_MASK         = 13'h1800;
 
    // MSTATUS Read_only masks change based on extensions needed.  Each mask bit disables writing to the bit and the read value will be the init value
    `ifdef ext_U
@@ -42,27 +43,29 @@ import cpu_params_pkg::*;
          parameter M_UIE_RO_MASK   = 13'h0000;
          parameter M_UPIE_RO_MASK  = 13'h0000;
       `else
-         parameter M_UIE_RO_MASK   = UIE_RO_MASK;  // Read Only - value read will be INIT value for mstatus register in csr_regs.sv
+         parameter M_UIE_RO_MASK   = UIE_RO_MASK;     // Read Only - value read will be INIT value for mstatus register in csr_regs.sv
          parameter M_UPIE_RO_MASK  = UPIE_RO_MASK;
       `endif
    `else
-      parameter M_UIE_RO_MASK   = UIE_RO_MASK;     // Read Only - value read will be INIT value for mstatus register in csr_regs.sv
-      parameter M_UPIE_RO_MASK  = UPIE_RO_MASK;
+      parameter M_UIE_RO_MASK    = UIE_RO_MASK;       // Read Only - value read will be INIT value for mstatus register in csr_regs.sv
+      parameter M_UPIE_RO_MASK   = UPIE_RO_MASK;
    `endif
 
    `ifdef ext_S
-      parameter M_SIE_RO_MASK   = 13'h0000;
-      parameter M_SPIE_RO_MASK  = 13'h0000;
-      parameter M_SPP_RO_MASK   = 13'h0000;
+      parameter M_SIE_RO_MASK    = 13'h0000;
+      parameter M_SPIE_RO_MASK   = 13'h0000;
+      parameter M_SPP_RO_MASK    = 13'h0000;
    `else
-      parameter M_SIE_RO_MASK   = SIE_RO_MASK;     // Read Only if ext_S not defined
-      parameter M_SPIE_RO_MASK  = SPIE_RO_MASK;
-      parameter M_SPP_RO_MASK   = SPP_RO_MASK;
+      parameter M_SIE_RO_MASK    = SIE_RO_MASK;       // Read Only if ext_S not defined
+      parameter M_SPIE_RO_MASK   = SPIE_RO_MASK;
+      parameter M_SPP_RO_MASK    = SPP_RO_MASK;
    `endif
 
-   localparam  MSTAT_INIT  = {M_MODE,11'b0};   // init to M_MODE
-   localparam  MSTAT_MASK  = (MPP_RO_MASK | M_SPP_RO_MASK | MPIE_RO_MASK | M_SPIE_RO_MASK | M_UPIE_RO_MASK | MIE_RO_MASK | M_SIE_RO_MASK | M_UIE_RO_MASK);
-
+   localparam  MSTAT_INIT        = {M_MODE,11'b0};    // init to M_MODE
+   // These bits do not change based on build configuration
+   localparam  MSTAT_WPRI        = 32'h7F80_0615; // bits 30:23, 10:9. 4, 2, 0 
+   // These bits can change based on build configuration
+   localparam  MSTAT_RO          = (MPP_RO_MASK | M_SPP_RO_MASK | MPIE_RO_MASK | M_SPIE_RO_MASK | M_UPIE_RO_MASK | MIE_RO_MASK | M_SIE_RO_MASK | M_UIE_RO_MASK) | MSTAT_WPRI;
 
    // ------------------------------ Machine ISA Register
    // 12'h301 = 12'b0011_0000_0001  misa     (read-write)   p. 56 riscv-privileged
@@ -91,20 +94,28 @@ import cpu_params_pkg::*;
                   | 32'b0000_0000_0001_0000_0000_0000_0000_0000      /* U bit - User mode support */
    `endif
    ;//                         ZY XWVU TSRQ PONM LKJI HGFE DCBA
-   parameter   MISA_MASK = 32'hFFFF_FFFF; // each bit == 1 specifies Read Only. Currently, no logic is implemented to allow dynamic change of this register
+   localparam  MISA_INIT         = MISA;                    // static bits for now
+   localparam  MISA_RO           = 32'hFFFF_FFFF;           // each bit == 1 specifies Read Only. Currently, no logic is implemented to allow dynamic change of this register
+   
+   // example to have ext M be turned on or off
+//   localparam  MISA_RO_INIT     = MISA;                     // static bits for now
+//   localparam  MISA_RO          = 32'hFFFF_EFFF;            // each bit == 1 specifies Read Only. Currently, no logic is implemented to allow dynamic change of this register
+
+// PROBLEM: assume bits D and F are both set, but someone writes D=1 and F=0! If D is set, then F must also be set.
+//          SO, do we force D=0 or force F=1 and how do we do this in a buildable/configurable way?????????????
 
    // MEDELEG, SEDELEG, MIDELEG, SIDELEG - init values loaded into registers upon reset. _MASK defines read only bits
    // Some exceptions cannot occur at less privileged modes, and corresponding x edeleg bits should be
    // hardwired to zero. In particular, medeleg[11] and sedeleg[11:9] are all hardwired to zero.
    // ------------------------------ Machine Exception Delegation Register
-   // 12'h302 = 12'b0011_0000_0010  medeleg              (read-write)
+   // 12'h302 = 12'b0011_0000_0010  medeleg                 (read-write)
    parameter   MEDLG_INIT           = 32'h0000_0000;
-   parameter   MEDLG_MASK           = 32'h0000_0000;
+   parameter   MEDLG_RO             = 32'h0000_0000;
    
    // ------------------------------ Machine Interrupt Delegation Register
-   // 12'h303 = 12'b0011_0000_0011  mideleg                       (read-write)
+   // 12'h303 = 12'b0011_0000_0011  mideleg                 (read-write)
    parameter   MIDLG_INIT           = 32'h0000_0000;
-   parameter   MIDLG_MASK           = 32'h0000_0000;
+   parameter   MIDLG_RO             = 32'h0000_0000;
 
 
    // "In systems with S-mode, the medeleg and mideleg registers must exist,..." see p. 28 riscv-privileged.pdf, csr_wr_mach.svh
@@ -120,45 +131,12 @@ import cpu_params_pkg::*;
 
    // ------------------------------ Machine Interrupt Enable Register
    // 12'h304 = 12'b0011_0000_0100  mie                     (read-write)
-   //  31:12  11    10    9     8     7     6     5     4     3     2     1     0
-   // {WPRI, meie, WPRI, seie, ueie, mtie, WPRI, stie, utie, msie, WPRI, ssie, usie};
-   // Note: bits 31:12 are WPRI. Also bits 10,6,2 are WPRI
-   // MIP Read_only masks change based on extensions needed.  Each mask bit disables writing to the bit and the read value will be the init value
-   //         Note: look at csr_ff.sv and notice that each RO bit will become tied to a logic value instead of creating a flip flop.
-   //  31:12   11    10    9     8     7     6     5     4     3     2     1     0
-   // {20'b0, meip, 1'b0, seip, ueip, mtip, 1'b0, stip, utip, msip, 1'b0, ssip, usip};
-   `ifdef ext_U
-      `ifdef ext_N
-         parameter UEIP_RO_MASK  = 10'h000;
-         parameter UTIP_RO_MASK  = 10'h000;
-         parameter USIP_RO_MASK  = 10'h000;
-      `else
-         parameter UEIP_RO_MASK  = 10'h100;  // Read Only - value read will be INIT value for MIP register in csr_regs.sv
-         parameter UTIP_RO_MASK  = 10'h010;
-         parameter USIP_RO_MASK  = 10'h001;
-      `endif
-   `else
-      parameter UEIP_RO_MASK  = 10'h100;     // Read Only - value read will be INIT value for MIP register in csr_regs.sv
-      parameter UTIP_RO_MASK  = 10'h010;
-      parameter USIP_RO_MASK  = 10'h001;
-   `endif
+   // only 3 bits in the actual mcsr.mie -> meie, mtie, msie
 
-   `ifdef ext_S
-      parameter SEIP_RO_MASK  = 10'h000;
-      parameter STIP_RO_MASK  = 10'h000;
-      parameter SSIP_RO_MASK  = 10'h000;
-   `else
-      parameter SEIP_RO_MASK  = 10'h200;     // Read Only if ext_S not defined
-      parameter STIP_RO_MASK  = 10'h020;
-      parameter SSIP_RO_MASK  = 10'h002;
-   `endif
-
-   localparam  MI_INIT     = 0;
-   localparam  MI_MASK     = SEIP_RO_MASK | UEIP_RO_MASK | STIP_RO_MASK | UTIP_RO_MASK | SSIP_RO_MASK | USIP_RO_MASK | 32'hFFFF_F444;
 
    // ------------------------------ Machine Trap Handler Base Address
    // 12'h305 = 12'b0011_0000_0101  mtvec                   (read-write)
-   // Current design only allows MODE of 0 or 1 - thus bit 1 forced to retain it's reset value which is 0.
+   // Current design only allows MODE of 0 or 1 - thus bit 1 forced to retain it's reset value which is 0. see csr_regs.sv
    // MTVEC, STVEC, UTVEC  - values loaded into registers upon reset. Note: MODE >= 2 is Reserved see p 27 risv-privileged.pdf
    parameter   MTVEC_INIT  = 32'h0000_0000;
 
@@ -167,7 +145,7 @@ import cpu_params_pkg::*;
    // ------------------------------ Machine Counter Enable
    // 12'h306 = 12'b0011_0000_0110  mcounteren              (read-write)
    parameter   MCNTEN_INIT          = 32'h0000_0000;
-   parameter   MCNTEN_MASK          = 32'hFFFF_FFFF << (3+NUM_MHPM); // Mask bits that are 1 correspond to unimplemented hpm counters) and the coresspnding mcounten bits will read as 0
+   parameter   MCNTEN_RO            = 32'hFFFF_FFFF << (3+NUM_MHPM); // Mask bits that are 1 correspond to unimplemented hpm counters) and the corresponding mcounten bits will read as 0
 
    // ------------------------------ Machine Counter Inhibit
    // If not implemented, set all bits to 0 => no inhibits will ocur
@@ -203,9 +181,7 @@ import cpu_params_pkg::*;
 
    // ------------------------------ Machine Interrupt Pending bits
    // 12'h344 = 12'b0011_0100_0100  mip                     (read-write)  machine mode
-   //  31:12   11    10    9     8     7     6     5     4     3     2     1     0
-   // {20'b0, meip, 1'b0, seip, ueip, mtip, 1'b0, stip, utip, msip, 1'b0, ssip, usip};
-   // -- see Machine Interrupt Enable register 12'h304
+   // only 3 bits in the actual mcsr.mip -> meip, mtip, msip
    
    
    // ------------------------------ Machine Protection and Translation
@@ -268,25 +244,24 @@ import cpu_params_pkg::*;
    // 31 30:20 19    18  17   16:15   14:13   12:9 8   7    6   5    4    3:2  1   0
    // 0  0     0     0   0      0       0     0    SPP WPRI UBE SPIE UPIE WPRI SIE UIE
    //    WARNING: bits 31:8, and bit UBE have not been implemented yet 1/17/2021
-   localparam  SSTAT_INIT  = 0;
-   localparam  SSTAT_MASK  = (SPP_RO_MASK | SPIE_RO_MASK | UPIE_RO_MASK | SIE_RO_MASK | UIE_RO_MASK);  // just bits spp, spie, upie, sie, and uie bits (8,5,4,1,0)
+   localparam  SSTAT_INIT           = 0;
+   localparam  SSTAT_RO             = (SPP_RO_MASK | SPIE_RO_MASK | UPIE_RO_MASK | SIE_RO_MASK | UIE_RO_MASK);  // just bits spp, spie, upie, sie, and uie bits (8,5,4,1,0)
    
    // In systems with S-mode, the  medeleg and mideleg registers must exist, whereas the sedeleg and sideleg registers should only
    // exist if the N extension for user-mode interrupts is also implemented. p 30 riscv-privileged.pdf 1.12-draft
    // ------------------------------ Supervisor Exception Delegation Register.
    // 12'h102 = 12'b0001_0000_0010  sedeleg           (read-write)
    parameter   SEDLG_INIT           = 32'h0000_0000;
-   parameter   SEDLG_MASK           = 32'h0000_0000;
+   parameter   SEDLG_RO             = 32'h0000_0000;
    
    // ------------------------------ Supervisor Interrupt Delegation Register
    // 12'h103 = 12'b0001_0000_0011  sideleg           (read-write)
    parameter   SIDLG_INIT           = 32'h0000_0000;
-   parameter   SIDLG_MASK           = 32'h0000_0000;
+   parameter   SIDLG_RO             = 32'h0000_0000;
    
    // ------------------------------ Supervisor Interrupt Enable Register
    // 12'h104 = 12'b0001_0000_0100  sie                  (read-write)
-   // Read Only bits of 32'hFFFF_FCCC;  // Note: bits 31:10, 7:6, 3:2 are not writable and are "hardwired" to 0 (init value = 0 at reset)
-   parameter   SI_MASK              = 32'hFFFF_FDDD;     // just seip,stip,ssip (bits 9,5,1) for now. see p 63 riscv-privileged 1.12-draft
+   // only 3 bits in the actual scsr.sie -> seie, stie, ssie
    
    // ------------------------------ Supervisor Trap handler base address
    // 12'h105 = 12'b0001_0000_0101  stvec                (read-write)
@@ -315,9 +290,7 @@ import cpu_params_pkg::*;
    
    // ------------------------------ Supervisor Interrupt Pending bits
    // 12'h144 = 12'b0001_0100_0100  sip                  (read-write)
-   //  31:12   11    10    9     8     7     6     5     4     3     2     1     0
-   // {20'b0, 1'b0, 1'b0, seip, 1'b0, 1'b0, 1'b0, stip, 1'b0, 1'b0, 1'b0, ssip, 1'b0};
-   // see Supervisor Interrupt Enable Register
+   // only 3 bits in the actual scsr.sip -> seip, stip, ssip
    
    // ------------------------------ Supervisor Protection and Translation
    // 12'h180 = 12'b0001_1000_0000  satp                 (read-write)
@@ -328,12 +301,13 @@ import cpu_params_pkg::*;
    // 12'h000 = 12'b0000_0000_0000  ustatus     (read-write)  user mode
    // 31 30:20 19    18  17   16:15   14:13   12:9 8   7    6   5    4    3:2  1   0
    // 0  0     0     0   0      0       0     0    0   0    0   0    UPIE 0    0   UIE
-   localparam  USTAT_INIT  = 0;
-   localparam  USTAT_MASK  = (UPIE_RO_MASK | UIE_RO_MASK);     // just upie and uie bits 4, 0
+   localparam  USTAT_INIT           = 0;
+   localparam  USTAT_RO             = (UPIE_RO_MASK | UIE_RO_MASK);     // just upie and uie bits 4, 0
 
    // ------------------------------ User Interrupt-Enable Register
    // 12'h004 = 12'b0000_0000_0100  uie                  (read-write)  user mode
-   parameter   UI_MASK     = 32'hFFFF_FEEE;                 // just ueip,utip and usip bits (8,4,0)
+   // only 3 bits in the actual ucsr.uie -> ueie, utie, usie
+
 
    // User Trap Handler Base address.
    // 12'h005 = 12'b0000_0000_0101  utvec                (read-write)  user mode
@@ -359,9 +333,7 @@ import cpu_params_pkg::*;
    
    // ------------------------------ User Interrupt Pending bits
    // 12'h044 = 12'b0000_0100_0100  uip                  (read-write)
-   //        31:10   9     8         7:6   5     4         3:2   1     0
-   // uip = {22'b0, 1'b0, nxt_ueip, 2'b0, 1'b0, nxt_utip, 2'b0, 1'b0, nxt_usip};
-   // see User Interrupt-Enable Register
+   // only 3 bits in the actual ucsr.uip -> ueip, utip, usip
 
    
 

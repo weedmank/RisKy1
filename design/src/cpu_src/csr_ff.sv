@@ -23,29 +23,33 @@ import cpu_params_pkg::*;
 
 module csr_ff
   #(
-      parameter INIT_VALUE = 0,
-      parameter ROmask = 0
+      parameter INIT       = 0,
+      parameter RO_BITS    = 0,  // These are for bits that can change based on build configuration
+      parameter WPRI_BITS  = 0,  // These are for read/only (constant values) don't change depending on build
+      parameter SZ         = RSZ // default is normally 32 bits
    )
 (
    input       logic             clk_in,
    input       logic             reset_in,
 
-   input       logic   [RSZ-1:0] csr_data,
-   output      logic   [RSZ-1:0] csr_name
+   input       logic    [SZ-1:0] csr_data,
+   output      logic    [SZ-1:0] csr_name
 );
+   localparam ALL_RO = RO_BITS | WPRI_BITS;
+
    genvar m;
    generate
       for (m = 0; m < RSZ; m++)
       begin
-         if (ROmask[m])
-            assign csr_name[m] = INIT_VALUE[m];          // assign a constant value for this bit
+         if (ALL_RO[m])
+            assign csr_name[m] = INIT[m];          // assign a constant value for this bit
          else // not a read only bit
-            always_ff @(posedge clk_in)                  // create a resetable, writable, Flop for this bit
+            always_ff @(posedge clk_in)            // create a resetable, writable, Flop for this bit
             begin
                if (reset_in)
-                  csr_name[m] <= INIT_VALUE[m];
+                  csr_name[m] <= INIT[m];
                else
-                  csr_name[m] <= csr_data[m];
+                  csr_name[m] <= csr_data[m];      // WARL, WARL affects should be done to csr_data
             end
       end
    endgenerate

@@ -107,12 +107,16 @@ module csr_av_rdata
          // ------------------------------ User Floating-Point CSRs
          // 12'h001 - 12'h003
 
+
+
          // User Interrupt-Enable Register
          // 12'h004 = 12'b0000_0000_0100  uie         (read-write)  user mode
+         //  31:12  11    10    9     8     7     6     5     4     3     2     1     0
+         // { 0,    0,    0,    0,   ueie,  0,    0,    0,   utie,  0,    0,    0,   usie}; riscv-privileged draft 1.12  p. 114
          12'h004:
          begin
             csr_rd_avail   = TRUE;
-            csr_rd_data    = ucsr.uie;
+            csr_rd_data    = {ucsr.uie.ueie, 3'b0, ucsr.uie.utie, 3'b0, ucsr.uie.usie};   // see riscv-privileged p 114
          end
 
          // ------------------------------ User Trap Handler Base address
@@ -158,10 +162,12 @@ module csr_av_rdata
 
          // ------------------------------ User Interrupt Pending.
          // 12'h044 = 12'b0000_0100_0100  uip         (read-write)
+         //  31:12  11    10    9     8     7     6     5     4     3     2     1     0
+         // { 0,    0,    0,    0,   ueip,  0,    0,    0,   utip,  0,    0,    0,   usip}; riscv-privileged draft 1.12  p. 114
          12'h044:
          begin
             csr_rd_avail   = TRUE;
-            csr_rd_data    = ucsr.uip;
+            csr_rd_data    = {ucsr.uip.ueip, 3'b0, ucsr.uip.utip, 3'b0, ucsr.uip.usip};   // see riscv-privileged p 114
          end
          `endif // ext_N
       `endif // ext_U
@@ -202,10 +208,12 @@ module csr_av_rdata
 
          // ------------------------------ Supervisor Interrupt Enable Register.
          // 12'h104 = 12'b0001_0000_0100  sie         (read-write)
+         //  31:12  11    10    9     8     7     6     5     4     3     2     1     0
+         // { 0,    0,    0,   seie,  0,    0,    0,   stie,  0,    0,    0,   ssie,  0}; riscv-privileged draft 1.12
          12'h104:
          begin
             csr_rd_avail   = TRUE;
-            csr_rd_data    = scsr.sie;
+            csr_rd_data    = {scsr.sie.seie, 3'b0, scsr.sie.stie, 3'b0, scsr.sie.ssie, 1'b0};
          end
 
          // ------------------------------ Supervisor Trap handler base address.
@@ -259,20 +267,19 @@ module csr_av_rdata
             csr_rd_data    = scsr.scause;
          end
 
-         // ------------------------------ Supervisor interrupt pending.
-         // When the SEIP bit is read with a CSRRW, CSRRS, or CSRRC instruction, the value returned in the
-         // rd destination register contains the logical-OR of the softwarewritable bit and the interrupt
-         // signal from the interrupt controller. However, the value used in the read-modify-write sequence
-         // of a CSRRS or CSRRC instruction is only the software-writable SEIP bit, ignoring the interrupt
-         // value from the external interrupt controller. p. 30 riscv-privileged.pdf  see csr_fu.sv for implementation
-
+// ???????When the SEIP bit is read with a CSRRW, CSRRS, or CSRRC instruction, the value returned in the
+// rd destination register contains the logical-OR of the softwarewritable bit and the interrupt
+// signal from the interrupt controller. However, the value used in the read-modify-write sequence
+// of a CSRRS or CSRRC instruction is only the software-writable SEIP bit, ignoring the interrupt
+// value from the external interrupt controller. p. 30 riscv-privileged.pdf  see csr_fu.sv for implementation
+         // ------------------------------ Supervisor Interrupt Pending.
          // 12'h144 = 12'b0001_0100_0100  sip         (read-write)
-         //  31:10  9     8   7:6   5    4   3:2   1    0
-         // {22'b0,seip,ueip,WPRI,stip,utip,WPRI,ssip,usip};
+         //  31:12  11    10    9     8     7     6     5     4     3     2     1     0
+         // { 0,    0,    0,   seip,  0,    0,    0,   stip,  0,    0,    0,   ssip,  0}; riscv-privileged draft 1.12
          12'h144:
          begin
             csr_rd_avail   = TRUE;
-            csr_rd_data    = scsr.sip;
+            csr_rd_data    = {scsr.sip.seip, 3'b0, scsr.sip.stip, 3'b0, scsr.sip.ssip, 1'b0};
          end
 
          // ------------------------------ Supervisor Protection and Translation
@@ -335,10 +342,16 @@ module csr_av_rdata
 
          // ------------------------------ Machine Interrupt Enable Register
          // 12'h304 = 12'b0011_0000_0100  mie                                 (read-write)
+         //  31:12   11    10    9     8     7     6     5     4     3     2     1     0
+         // {20'b0, meie, 1'b0, seie, 1'b0, mtie, 1'b0, stie, 1'b0, msie, 1'b0, ssie, 1'b0}; see riscv-privileged p. 32
          12'h304:
          begin
             csr_rd_avail   = TRUE;
-            csr_rd_data    = mcsr.mie;
+            `ifdef ext_S
+            csr_rd_data    = {mcsr.mie.meie, 1'b0, scsr.sie.seie, 1'b0, mcsr.mie.mtie, 1'b0, scsr.sie.stie, 1'b0, mcsr.mie.msie, 1'b0, scsr.sie.ssie, 1'b0};
+            `else
+            csr_rd_data    = {mcsr.mie.meie, 3b0, mcsr.mie.mtie, 3'b0, mcsr.mie.msie, 3'b0};
+            `endif
          end
 
          // ------------------------------ Machine Trap-handler base address.
@@ -403,19 +416,23 @@ module csr_av_rdata
             csr_rd_data    = mcsr.mtval;
          end
 
+// ?????????????When the SEIP bit is read with a CSRRW, CSRRS, or CSRRC instruction, the value returned in the
+// rd destination register contains the logical-OR of the softwarewritable bit and the interrupt
+// signal from the interrupt controller. However, the value used in the read-modify-write sequence
+// of a CSRRS or CSRRC instruction is only the software-writable SEIP bit, ignoring the interrupt
+// value from the external interrupt controller. p. 30 riscv-privileged.pdf  see csr_fu.sv for implementation
          // ------------------------------ Machine Interrupt Pending
          // 12'h344 = 12'b0011_0100_0100  mip                              (read-write)
-         // {20'b0,meip,1'b0,seip,ueip,mtip,1'b0,stip,utip,msip,1'b0,ssip,usip};
-
-         // When the SEIP bit is read with a CSRRW, CSRRS, or CSRRC instruction, the value returned in the
-         // rd destination register contains the logical-OR of the softwarewritable bit and the interrupt
-         // signal from the interrupt controller. However, the value used in the read-modify-write sequence
-         // of a CSRRS or CSRRC instruction is only the software-writable SEIP bit, ignoring the interrupt
-         // value from the external interrupt controller. p. 30 riscv-privileged.pdf  see csr_fu.sv for implementation
+         //  31:12   11    10    9     8     7     6     5     4     3     2     1     0
+         // {20'b0, meip, 1'b0, seip, 1'b0, mtip, 1'b0, stip, 1'b0, msip, 1'b0, ssip, 1'b0}; see riscv-privileged draft 1.12 p. 32
          12'h344:
          begin
             csr_rd_avail   = TRUE;
-            csr_rd_data    = mcsr.mip;
+            `ifdef ext_S
+            csr_rd_data    = {mcsr.mip.meip, 1'b0, scsr.sip.seip, 1'b0, mcsr.mip.mtip, 1'b0, scsr.sip.stip, 1'b0, mcsr.mip.msip, 1'b0, scsr.sip.ssip, 1'b0};
+            `else
+            csr_rd_data    = {mcsr.mip.meip, 3'b0, mcsr.mip.mtip, 3'b0, mcsr.mip.msip, 3'b0};
+            `endif
          end
 
          // ------------------------------ Machine Protection and Translation

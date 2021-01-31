@@ -393,46 +393,25 @@ import cpu_params_pkg::*;
       logic                   sie;
       logic                   uie;
    } MSTATUS_SIGS;
-
-   // ------------------------------ Machine Interrupt Enable Register
+   
+   // ------------------------------ Machine Interrupt Enable Register - just the needed bits!
    // 12'h304 = 12'b0011_0000_0100  mie                        (read-write)
    //  31:12   11    10    9     8     7     6     5     4     3     2     1     0
-   // {20'b0, meie, WPRI, seie, ueie, mtie, WPRI, stie, utie, msie, WPRI, ssie, usie};
-   // Read Only bits of 32'hFFFF_F444;  // Note: bits 31:12, 10, 6, 2 are not writable and are "hardwired" to 0 (init value = 0 at reset)
+   // {20'b0, meip, 1'b0, seip, 1'b0, mtip, 1'b0, stip, 1'b0, msip, 1'b0, ssip, 1'b0}; see riscv-privileged p. 32
    typedef struct packed {
-      logic            [19:0] WPRI_20;
       logic                   meie;
-      logic                   WPRI_1;
-      logic                   seie;
-      logic                   ueie;
       logic                   mtie;
-      logic                   WPRI;
-      logic                   stie;
-      logic                   utie;
       logic                   msie;
-      logic                   WPRI1;
-      logic                   ssie;
-      logic                   usie;
    } MIE_SIGS;
 
-   // ------------------------------ Machine Interrupt Pending bits
+   // ------------------------------ Machine Interrupt Pending bits - just the needed bits!
    // 12'h344 = 12'b0011_0100_0100  mip                        (read-write)  machine mode
    //  31:12   11    10    9     8     7     6     5     4     3     2     1     0
-   // {20'b0, meip, 1'b0, seip, ueip, mtip, 1'b0, stip, utip, msip, 1'b0, ssip, usip};
+   // {20'b0, meip, 1'b0, seip, 1'b0, mtip, 1'b0, stip, 1'b0, msip, 1'b0, ssip, 1'b0}; see riscv-privileged p. 32
    typedef struct packed {
-      logic            [19:0] WPRI_20;
       logic                   meip;
-      logic                   WPRI_1;
-      logic                   seip;
-      logic                   ueip;
       logic                   mtip;
-      logic                   WPRI;
-      logic                   stip;
-      logic                   utip;
       logic                   msip;
-      logic                   WPRI1;
-      logic                   ssip;
-      logic                   usip;
    } MIP_SIGS;
 
 
@@ -450,36 +429,24 @@ import cpu_params_pkg::*;
       logic                   WPRI;
    } SSTATUS_SIGS;
 
-   // ------------------------------ Supervisor Interrupt Enable bits
+   // ------------------------------ Supervisor Interrupt Enable bits - just the needed bits!
    // 12'h104 = 12'b0001_0000_0100  sie                        (read-write)  machine mode
    //  31:12   11    10    9     8     7     6     5     4     3     2     1     0
-   // {20'b0, 1'b0, 1'b0, seie, ueie, 1'b0, 1'b0, stie, utie, 1'b0, 1'b0, ssie, usie};
+   // {20'b0, 1'b0, 1'b0, seie, 1'b0, 1'b0, 1'b0, stie, 1'b0, 1'b0, 1'b0, ssie 1'b0};
    typedef struct packed {
-      logic            [21:0] WPRI_22;
       logic                   seie;
-      logic                   ueie;
-      logic             [1:0] WPRI2;
       logic                   stie;
-      logic                   utie;
-      logic             [1:0] WPRI_2;
       logic                   ssie;
-      logic                   usie;
    } SIE_SIGS;
 
-   // ------------------------------ Supervisor Interrupt Pending bits
+   // ------------------------------ Supervisor Interrupt Pending bits - just the needed bits!
    // 12'h144 = 12'b0001_0100_0100  sip                        (read-write)  machine mode
    //  31:12   11    10    9     8     7     6     5     4     3     2     1     0
    // {20'b0, 1'b0, 1'b0, seip, ueip, 1'b0, 1'b0, stip, utip, 1'b0, 1'b0, ssip, usip};
    typedef struct packed {
-      logic            [21:0] WPRI_22;
       logic                   seip;
-      logic                   ueip;
-      logic             [1:0] WPRI2;
       logic                   stip;
-      logic                   utip;
-      logic             [1:0] WPRI_2;
       logic                   ssip;
-      logic                   usip;
    } SIP_SIGS;
 
 
@@ -493,29 +460,23 @@ import cpu_params_pkg::*;
       logic                   uie;
    } USTATUS_SIGS;
 
-   // ------------------------------ User Interrupt Enable bits
+   // ------------------------------ User Interrupt Enable bits - just the needed bits!
    // 12'h004 = 12'b0000_0000_0100  sie                        (read-write)  machine mode
    //  31:12   11    10    9     8     7     6     5     4     3     2     1     0
    // {20'b0, 1'b0, 1'b0, 1'b0, ueie, 1'b0, 1'b0, 1'b0, utie, 1'b0, 1'b0, 1'b0, usie};
    typedef struct packed {
-      logic            [22:0] WPRI_23;
       logic                   ueie;
-      logic             [2:0] WPRI3;
       logic                   utie;
-      logic             [2:0] WPRI_3;
       logic                   usie;
    } UIE_SIGS;
 
-   // ------------------------------ User Interrupt Pending bits
+   // ------------------------------ User Interrupt Pending bits - just the needed bits!
    // 12'h044 = 12'b0000_0100_0100  mip                        (read-write)  machine mode
    //  31:12   11    10    9     8     7     6     5     4     3     2     1     0
    // {20'b0, 1'b0, 1'b0, 1'b0, ueip, 1'b0, 1'b0, 1'b0, utip, 1'b0, 1'b0, 1'b0, usip};
    typedef struct packed {
-      logic            [22:0] WPRI_23;
       logic                   ueip;
-      logic             [2:0] WPRI3;
       logic                   utip;
-      logic             [2:0] WPRI_3;
       logic                   usip;
    } UIP_SIGS;
 
@@ -528,7 +489,7 @@ import cpu_params_pkg::*;
       logic                        [RSZ-1:0] medeleg;          // 12'h302
       logic                        [RSZ-1:0] mideleg;          // 12'h303
       `endif
-      MIE_SIGS                               mie;              // 12'h304
+      MIE_SIGS                               mie;              // 12'h304  - NOTE: just the used bits, not a whole 32 bit register
       logic                        [RSZ-1:0] mtvec;            // 12'h305
       `ifdef ext_U // what about ext_N???
       logic                        [RSZ-1:0] mcounteren;       // 12'h306
@@ -542,7 +503,7 @@ import cpu_params_pkg::*;
       logic                        [RSZ-1:0] mepc;             // 12'h341
       logic                        [RSZ-1:0] mcause;           // 12'h342
       logic                        [RSZ-1:0] mtval;            // 12'h343
-      MIP_SIGS                               mip;              // 12'h344
+      MIP_SIGS                               mip;              // 12'h344  - NOTE: just the used bits, not a whole 32 bit register
 
       `ifdef USE_PMPCFG
       logic                        [RSZ-1:0] pmpcfg0;          // 12'h3A0
@@ -635,14 +596,14 @@ import cpu_params_pkg::*;
       logic                        [RSZ-1:0] sedeleg;          // 12'h102
       logic                        [RSZ-1:0] sideleg;          // 12'h103
       `endif // ext_N
-      SIE_SIGS                               sie;              // 12'h104
+      SIE_SIGS                               sie;              // 12'h104  - NOTE: just the used bits, not a whole 32 bit register
       logic                        [RSZ-1:0] stvec;            // 12'h105
-      logic                        [RSZ-1:0] scounteren;       // 12'h106 - this register MUST be implemented. see p 60 riscv-privileged.pdf
+      logic                        [RSZ-1:0] scounteren;       // 12'h106  - this register MUST be implemented. see p 60 riscv-privileged.pdf
       logic                        [RSZ-1:0] sscratch;         // 12'h140
       logic                        [RSZ-1:0] sepc;             // 12'h141
       logic                        [RSZ-1:0] scause;           // 12'h142
       logic                        [RSZ-1:0] stval;            // 12'h143
-      SIP_SIGS                               sip;              // 12'h144
+      SIP_SIGS                               sip;              // 12'h144  - NOTE: just the used bits, not a whole 32 bit register
       logic                        [RSZ-1:0] satp;             // 12'h180
    } SCSR;
 
@@ -650,13 +611,13 @@ import cpu_params_pkg::*;
    // User mode Registers
    typedef struct packed {
       USTATUS_SIGS                           ustatus;          // 12'h000
-      UIE_SIGS                               uie;              // 12'h004
+      UIE_SIGS                               uie;              // 12'h004  - NOTE: just the used bits, not a whole 32 bit register
       logic                        [RSZ-1:0] utvec;            // 12'h005
       logic                        [RSZ-1:0] uscratch;         // 12'h040
       logic                        [RSZ-1:0] uepc;             // 12'h041
       logic                        [RSZ-1:0] ucause;           // 12'h042
       logic                        [RSZ-1:0] utval;            // 12'h043
-      UIP_SIGS                               uip;              // 12'h044
+      UIP_SIGS                               uip;              // 12'h044  - NOTE: just the used bits, not a whole 32 bit register
    } UCSR;
 
 /*
