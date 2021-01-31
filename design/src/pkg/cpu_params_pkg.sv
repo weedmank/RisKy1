@@ -19,23 +19,6 @@
 
 package cpu_params_pkg;
 import functions_pkg::*;
-   // "In systems with S-mode, the medeleg and mideleg registers must exist,..." see p. 28 riscv-privileged.pdf, csr_wr_mach.svh
-
-   // In systems with only M-mode and U-mode, the medeleg and mideleg registers should only be implemented if the N extension for user-mode interrupts is implemented.
-   // In systems with only M-mode, or with both M-mode and U-mode but without U-mode trap support, the medeleg and mideleg registers should not exist. see riscv-privileged.pdf p 28
-   `ifdef ext_S
-      `define MDLG
-   `elsif ext_U
-      `ifdef ext_N // U-mode trap supprt
-         `define MDLG
-      `endif
-   `endif
-
-   // The following M_xxxx are used in csr_wr_mach.svh and should be set by the user to a 32 bit value
-   parameter   M_VENDOR_ID = "KIRK";
-   parameter   M_ARCH_ID   = "RKY1";
-   parameter   M_IMP_ID    = 1;
-   parameter   M_HART_ID   = 0;
 
    parameter   PC_SZ       = 32;                                     // Program Counter address size
    parameter   MAX_RAS     = 8;                                      // Size of the Return Address Stack (RAS) - number does not have to be a power of 2 - see fetch.sv
@@ -71,92 +54,16 @@ import functions_pkg::*;
    // Power-up Reset Vector
    parameter   RESET_VECTOR_ADDR    = Phys_Addr_Lo;                  // Can be any address. Doesn't have to be Phys_Addr_Lo.  However, RESET_VECTOR_ADDR must be inside the Phys_Addr_xx range. See fetch.sv
 
-   // MEDELEG, SEDELEG, MIDELEG, SIDELEG - init values loaded into registers upon reset. _MASK defines read only bits
-   // Some exceptions cannot occur at less privileged modes, and corresponding x edeleg bits should be
-   // hardwired to zero. In particular, medeleg[11] and sedeleg[11:9] are all hardwired to zero.
-   parameter   MEDLG_INIT           = 32'h0000_0000;
-   parameter   MEDLG_MASK           = 32'h0000_0000;
-   parameter   MIDLG_INIT           = 32'h0000_0000;
-   parameter   MIDLG_MASK           = 32'h0000_0000;
-   
-   parameter   SEDLG_INIT           = 32'h0000_0000;
-   parameter   SEDLG_MASK           = 32'h0000_0000;
-   parameter   SIDLG_INIT           = 32'h0000_0000;
-   parameter   SIDLG_MASK           = 32'h0000_0000;
-
-   // MTVEC, STVEC, UTVEC  - values loaded into registers upon reset. Note: MODE >= 2 is Reserved see p 27 risv-privileged.pdf
-   parameter   MTVEC_INIT           = 32'h0000_0000;
-   parameter   STVEC_INIT           = 32'h0000_0000;
-   parameter   UTVEC_INIT           = 32'h0000_0000;
-
    parameter   NUM_MHPM = 0;                                         // CSR: number of mhpmcounter's and mhpmevent's, where first one starts at mphmcounter3 if NUM_MHPM > 0
    // NOTE: Max NUM_MHPM is 29
 
-   // User Interrupt (Pending and Enable) Registers
-   parameter   UI_MASK              = 32'hFFFF_FEEE;                 // just ueip,utip and usip bits (8,4,0)
-   
-
-   // Supervisor Interrupt (Pending & Enable) Registers
-   parameter   SI_MASK              = 32'hFFFF_FDDD;                  // jsut seip,stip,ssip (bits 9,5,1) for now. see p 63 riscv-privileged 1.12-draft
-   
-   // NOTE: scounteren is always implemented. see p. 60 riscv-privileged.pdf
-   parameter   SCNTEN_INIT          = 32'h0000_0000;
-   parameter   SCNTEN_MASK          = 32'hFFFF_FFFF << (3+NUM_MHPM); // Mask bits that are 1 correspond to unimplemented hpm counters) and the coresspnding scounten bits will read as 0
-
-   
-   // MCOUNTEREN, SCOUNTEREN - init values and mask values (a 1 in a bit means the corresponding reset value will always remain the same)
-   parameter   MCNTEN_INIT          = 32'h0000_0000;
-   parameter   MCNTEN_MASK          = 32'hFFFF_FFFF << (3+NUM_MHPM); // Mask bits that are 1 correspond to unimplemented hpm counters) and the coresspnding mcounten bits will read as 0
-
-   parameter   MCS_INIT             = 32'h0000_0000;                 // Reset: The mcause register is set to a value indicating the cause of the reset. riscv-privileged.pdf p 42
-
-
 //   parameter   WFI_IS_NOP           = TRUE;
 
-   parameter   NUM_EVENTS = 24;                                      // Number of event selectors to use. See EV_SEL_SZ below, then csr_mhpmevent[], and events[] in csr_wr_mach.sv
-
-   parameter   SET_MCOUNTINHIBIT = 0;                                // CSR: setting this to 1 will cause mcountinhibit to be a constant (Read Only) with bits defined by SET_MCOUNTINHIBIT_BITS
-   parameter   SET_MCOUNTINHIBIT_BITS = 32'h0000_0000;
-
-   localparam  MINHIBIT_INIT = (SET_MCOUNTINHIBIT == 1) ? SET_MCOUNTINHIBIT_BITS : 0;
-
-   // NOTE: The following PMP related logic is NOT IMPLEMENTED YET !!!!
-// `define     USE_PMPCFG                                            // CSR: comment this line out if you don't want logic for pmpcfg0-3 registers. see csr_wr_mach.sv and csr_rd_mach.svh
-// `define     PMP_ADDR0                                             //      tell code to generate pmpaddr0, pmpaddr9 and pmpaddr15 registers
-// `define     PMP_ADDR9
-// `define     PMP_ADDR15
 
 // `define     MM_MSIP                                               // create a memory mapped register for the MSIP bit of CSR MIP register
 
    // parameters related to Memory, L1 D$ and L1 I$
    parameter   CL_LEN   = 32; // cache line length in bytes
-
-                  //   MXL     ZY XWVU TSRQ PONM LKJI HGFE DCBA
-   parameter MISA = 32'b0100_0000_0000_0000_0000_0001_0000_0000      /* MXLEN bits = 2'b01 = RV32, and I bit -----> RV32I */
-   `ifdef ext_A
-                  | 32'b0000_0000_0000_0000_0000_0000_0000_0001      /* A bit - Atomic Instruction support */
-   `endif
-   `ifdef ext_C
-                  | 32'b0000_0000_0000_0000_0000_0000_0000_0100      /* C bit - Compressed Instruction support */
-   `endif
-   `ifdef ext_F
-                  | 32'b0000_0000_0000_0000_0000_0000_0010_0000      /* F bit - Single Precision Floating Point support */
-   `endif
-   `ifdef ext_M
-                  | 32'b0000_0000_0000_0000_0001_0000_0000_0000      /* M bit - integer Multiply, Divide, Remainder support */
-   `endif
-   `ifdef ext_N
-                  | 32'b0000_0000_0000_0000_0010_0000_0000_0000      /* N bit - Interrupt support */
-   `endif
-   `ifdef ext_S
-                  | 32'b0000_0000_0000_0100_0000_0000_0000_0000      /* S bit - Supervisor mode support */
-   `endif
-   `ifdef ext_U
-                  | 32'b0000_0000_0001_0000_0000_0000_0000_0000      /* U bit - User mode support */
-   `endif
-   ;//                         ZY XWVU TSRQ PONM LKJI HGFE DCBA
-
-   parameter   MISA_MASK = 32'hFFFF_FFFF; // each bit == 1 specifies Read Only. Currently, no logic is implemented to allow dynamic change of this register
 
 // Options to add user enabled HINTs and RESERVEs.  See decode_core.sv
 // Logic related to each specific hint will need to be decoded and added to file execute.sv
@@ -201,97 +108,9 @@ import functions_pkg::*;
    //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
    //!!!      WARNING: The localparams below are not intended to be user modified     !!!!
    //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-   parameter M_MODE        = 2'b11;          // Machine Mode
-   parameter S_MODE        = 2'b01;          // Supervisor Mode
-   parameter U_MODE        = 2'b00;          // User Mode
-
-   parameter UIE_RO_MASK   = 13'h0001;       // Read Only - value read will be INIT value for mstatus register in csr_regs.sv
-   parameter UPIE_RO_MASK  = 13'h0010;
-   parameter SIE_RO_MASK   = 13'h0002;       // Read Only if ext_S not defined
-   parameter SPIE_RO_MASK  = 13'h0020;
-   parameter SPP_RO_MASK   = 13'h0100;
-   parameter MIE_RO_MASK   = 13'h0008;
-   parameter MPIE_RO_MASK  = 13'h0080;
-   parameter MPP_RO_MASK   = 13'h1800;
-
-   // MSTATUS Read_only masks change based on extensions needed.  Each mask bit disables writing to the bit and the read value will be the init value
-   `ifdef ext_U
-      `ifdef ext_N
-         parameter M_UIE_RO_MASK   = 13'h0000;
-         parameter M_UPIE_RO_MASK  = 13'h0000;
-      `else
-         parameter M_UIE_RO_MASK   = UIE_RO_MASK;  // Read Only - value read will be INIT value for mstatus register in csr_regs.sv
-         parameter M_UPIE_RO_MASK  = UPIE_RO_MASK;
-      `endif
-   `else
-      parameter M_UIE_RO_MASK   = UIE_RO_MASK;     // Read Only - value read will be INIT value for mstatus register in csr_regs.sv
-      parameter M_UPIE_RO_MASK  = UPIE_RO_MASK;
-   `endif
-
-   `ifdef ext_S
-      parameter M_SIE_RO_MASK   = 13'h0000;
-      parameter M_SPIE_RO_MASK  = 13'h0000;
-      parameter M_SPP_RO_MASK   = 13'h0000;
-   `else
-      parameter M_SIE_RO_MASK   = SIE_RO_MASK;     // Read Only if ext_S not defined
-      parameter M_SPIE_RO_MASK  = SPIE_RO_MASK;
-      parameter M_SPP_RO_MASK   = SPP_RO_MASK;
-   `endif
-
-
-   //         Note: look at csr_ff.sv and notice that each RO bit will become tied to a logic value instead of creating a flip flop.
-   //            31:13  12:11  10:9   8    7     6     5     4     3    2     1    0
-   // mstatus:  {       mpp,   2'b0,  spp, mpie, 1'b0, spie, upie, mie, 1'b0, sie, uie};
-   //    WARNING: bits 31:13 have not been implemented yet 1/17/2021
-   localparam MSTAT_INIT   = {M_MODE,11'b0};   // init to M_MODE
-   localparam MSTAT_MASK   = (MPP_RO_MASK | M_SPP_RO_MASK | MPIE_RO_MASK | M_SPIE_RO_MASK | M_UPIE_RO_MASK | MIE_RO_MASK | M_SIE_RO_MASK | M_UIE_RO_MASK);
-
-   // SSTATUS  - see p. 59-60 riscv-privileged 1.12-draft
-   //         Note: look at csr_ff.sv and notice that each RO bit will become tied to a logic value instead of creating a flip flop.
-   // 31 30:20 19    18  17   16:15   14:13   12:9 8   7    6   5    4    3:2  1   0
-   // 0  0     0     0   0      0       0     0    SPP WPRI UBE SPIE UPIE WPRI SIE UIE
-   //    WARNING: bits 31:8, and bit UBE have not been implemented yet 1/17/2021
-   localparam SSTAT_INIT   = 0;
-   localparam SSTAT_MASK   = (SPP_RO_MASK | SPIE_RO_MASK | UPIE_RO_MASK | SIE_RO_MASK | UIE_RO_MASK);  // just bits spp, spie, upie, sie, and uie bits (8,5,4,1,0)
-
-   // USTATUS - see p. 113-114 riscv-privileged 1.12-draft
-   // 31 30:20 19    18  17   16:15   14:13   12:9 8   7    6   5    4    3:2  1   0
-   // 0  0     0     0   0      0       0     0    0   0    0   0    UPIE 0    0   UIE
-   localparam USTAT_INIT   = 0;
-   localparam USTAT_MASK   = (UPIE_RO_MASK | UIE_RO_MASK);     // just upie and uie bits 4, 0
-
-
-   // MIP Read_only masks change based on extensions needed.  Each mask bit disables writing to the bit and the read value will be the init value
-   //         Note: look at csr_ff.sv and notice that each RO bit will become tied to a logic value instead of creating a flip flop.
-   //  31:12   11    10    9     8     7     6     5     4     3     2     1     0
-   // {20'b0, meip, 1'b0, seip, ueip, mtip, 1'b0, stip, utip, msip, 1'b0, ssip, usip};
-   `ifdef ext_U
-      `ifdef ext_N
-         parameter UEIP_RO_MASK  = 10'h000;
-         parameter UTIP_RO_MASK  = 10'h000;
-         parameter USIP_RO_MASK  = 10'h000;
-      `else
-         parameter UEIP_RO_MASK  = 10'h100;  // Read Only - value read will be INIT value for MIP register in csr_regs.sv
-         parameter UTIP_RO_MASK  = 10'h010;
-         parameter USIP_RO_MASK  = 10'h001;
-      `endif
-   `else
-      parameter UEIP_RO_MASK  = 10'h100;     // Read Only - value read will be INIT value for MIP register in csr_regs.sv
-      parameter UTIP_RO_MASK  = 10'h010;
-      parameter USIP_RO_MASK  = 10'h001;
-   `endif
-
-   `ifdef ext_S
-      parameter SEIP_RO_MASK  = 10'h000;
-      parameter STIP_RO_MASK  = 10'h000;
-      parameter SSIP_RO_MASK  = 10'h000;
-   `else
-      parameter SEIP_RO_MASK  = 10'h200;     // Read Only if ext_S not defined
-      parameter STIP_RO_MASK  = 10'h020;
-      parameter SSIP_RO_MASK  = 10'h002;
-   `endif
-   localparam  MI_INIT     = 0;
-   localparam  MI_MASK     = SEIP_RO_MASK | UEIP_RO_MASK | STIP_RO_MASK | UTIP_RO_MASK | SSIP_RO_MASK | USIP_RO_MASK | 32'hFFFF_F444;
+   parameter   M_MODE      = 2'b11;          // Machine Mode
+   parameter   S_MODE      = 2'b01;          // Supervisor Mode
+   parameter   U_MODE      = 2'b00;          // User Mode
 
    localparam  XLEN        = 6'd32;                                  // instruction word width
    localparam  CI_SZ       = 5'd16;                                  // compressed instruction word width
@@ -303,9 +122,6 @@ import functions_pkg::*;
    localparam  FLEN        = 32;
    localparam  MAX_FPR     = 32;                                     // maximum number of CPU Single Precision Floating Point Registers
 
-   localparam  EV_SEL_SZ   = bit_size(NUM_EVENTS-1);                 // Number of bits to hold values from 0 through NUM_EVENTS-1
-   localparam  EV_SEL_MASK = {EV_SEL_SZ{1'b1}};                      // EV_SEL_SZ is always >= 1
-
    localparam  GPR_ASZ     = bit_size(MAX_GPR-1);
    localparam  FPR_ASZ     = bit_size(MAX_FPR-1);
    localparam  CSR_ASZ     = bit_size(MAX_CSR-1);
@@ -313,8 +129,8 @@ import functions_pkg::*;
    localparam  BPI         = XLEN/8;                                 // 32/8 =>  4 : Bytes Per RV32  Instruction
    localparam  CBPI        = CI_SZ/8;                                // 16/8 =>  2 : Bytes Per RV32C Instruction
 
-   localparam ASSEMBLY     = 1'b0;                                   // see disasm_B64.sv
-   localparam SEMANTICS    = 1'b1;
+   localparam  ASSEMBLY    = 1'b0;                                   // see disasm_B64.sv
+   localparam  SEMANTICS   = 1'b1;
 
    localparam  CL_SZ       = bit_size(CL_LEN-1);
 `ifdef ext_C
@@ -324,14 +140,6 @@ import functions_pkg::*;
 `endif
 
 
-   localparam USTAT_SZ = bitsize(USTAT_MASK);                        // detect MSB that is used
-   localparam SSTAT_SZ = bitsize(SSTAT_MASK);
-   localparam MSTAT_SZ = bitsize(MSTAT_MASK);
-   localparam UI_SZ = bitsize(~UI_MASK);
-   localparam SI_SZ = bitsize(~SI_MASK);
-   localparam MI_SZ = bitsize(~MI_MASK);
-   localparam MCNTEN_SZ = bitsize(~MCNTEN_MASK);
-   
    // See decode_core.sv
    // NOTE: These are the HINT and RESERVED values associated with specific HINTs that can be seen in decode_core.sv.  To use a HINT in a design, the corresponing
    //       "`define H_xxxx" must be enabled above.  For example, let's say a deisnger wants to use the code point at HINT_C_NOP.  `define H_C_NOP would neeed to be enabled

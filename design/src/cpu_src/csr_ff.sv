@@ -24,19 +24,18 @@ import cpu_params_pkg::*;
 module csr_ff
   #(
       parameter INIT_VALUE = 0,
-      parameter SZ = RSZ,
       parameter ROmask = 0
    )
 (
    input       logic             clk_in,
    input       logic             reset_in,
 
-   input       logic    [SZ-1:0] csr_data,
-   output      logic    [SZ-1:0] csr_name
+   input       logic   [RSZ-1:0] csr_data,
+   output      logic   [RSZ-1:0] csr_name
 );
    genvar m;
    generate
-      for (m = 0; m < SZ; m++)
+      for (m = 0; m < RSZ; m++)
       begin
          if (ROmask[m])
             assign csr_name[m] = INIT_VALUE[m];          // assign a constant value for this bit

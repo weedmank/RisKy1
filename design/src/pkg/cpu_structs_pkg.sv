@@ -371,16 +371,16 @@ import cpu_params_pkg::*;
    //  31        22   21  20   19   18   17   16:15 14:13 12:11  10:9    8    7     6     5     4      3     2     1    0
    // {sd, 8'b0, tsr, tw, tvm, mxr, sum, mprv,   xs,   fs,  mpp, 2'b0,  spp, mpie, 1'b0, spie, upie,  mie, 1'b0,  sie, uie};
    typedef struct packed {
-//      logic                   sd;          // To Be Added: upper mstatus bits are not yet implemented
-//      logic             [7:0] WPRI_8;
-//      logic                   tsr;
-//      logic                   tw;
-//      logic                   tvm;
-//      logic                   mxr;
-//      logic                   sum;
-//      logic                   mprv;
-//      logic             [1:0] xs;
-//      logic             [1:0] fs;
+      logic                   sd;          // To Be Added: upper mstatus bits are not yet implemented
+      logic             [7:0] WPRI_8;
+      logic                   tsr;
+      logic                   tw;
+      logic                   tvm;
+      logic                   mxr;
+      logic                   sum;
+      logic                   mprv;
+      logic             [1:0] xs;
+      logic             [1:0] fs;
       logic             [1:0] mpp;
       logic             [1:0] WPRI_2;
       logic                   spp;
@@ -441,6 +441,7 @@ import cpu_params_pkg::*;
    //  31        22   21  20   19   18   17   16:15 14:13 12:11  10:9    8    7     6     5     4     3     2     1    0
    // {sd, 8'b0, tsr, tw, tvm, mxr, sum, mprv, xs,   fs,  2'b0,  2'b0,  spp, 1'b0, 1'b0, spie, 1'b0, 1'b0, 1'b0,  sie, 1'b0};
    typedef struct packed {
+      logic            [22:0] WPRI_23;
       logic                   spp;
       logic             [1:0] WPRI_2;
       logic                   spie;
@@ -486,6 +487,7 @@ import cpu_params_pkg::*;
    //  31        22   21  20   19   18   17    16:15 14:13 12:11  10:9   8     7     6     5     4     3     2     1     0
    // {sd, 8'b0, tsr, tw, tvm, mxr, sum, mprv,  xs,   fs,  2'b0,  2'b0, 1'b0, 1'b0, 1'b0, 1'b0, upie, 1'b0, 1'b0, 1'b0, uie};
    typedef struct packed {
+      logic            [26:0] WPRI_27;
       logic                   upie;
       logic             [2:0] WPRI_3;
       logic                   uie;
@@ -496,6 +498,7 @@ import cpu_params_pkg::*;
    //  31:12   11    10    9     8     7     6     5     4     3     2     1     0
    // {20'b0, 1'b0, 1'b0, 1'b0, ueie, 1'b0, 1'b0, 1'b0, utie, 1'b0, 1'b0, 1'b0, usie};
    typedef struct packed {
+      logic            [22:0] WPRI_23;
       logic                   ueie;
       logic             [2:0] WPRI3;
       logic                   utie;
@@ -508,6 +511,7 @@ import cpu_params_pkg::*;
    //  31:12   11    10    9     8     7     6     5     4     3     2     1     0
    // {20'b0, 1'b0, 1'b0, 1'b0, ueip, 1'b0, 1'b0, 1'b0, utip, 1'b0, 1'b0, 1'b0, usip};
    typedef struct packed {
+      logic            [22:0] WPRI_23;
       logic                   ueip;
       logic             [2:0] WPRI3;
       logic                   utip;
@@ -535,7 +539,7 @@ import cpu_params_pkg::*;
       `endif
 
       logic                        [RSZ-1:0] mscratch;         // 12'h340
-      logic                      [PC_SZ-1:0] mepc;             // 12'h341
+      logic                        [RSZ-1:0] mepc;             // 12'h341
       logic                        [RSZ-1:0] mcause;           // 12'h342
       logic                        [RSZ-1:0] mtval;            // 12'h343
       MIP_SIGS                               mip;              // 12'h344
@@ -635,7 +639,7 @@ import cpu_params_pkg::*;
       logic                        [RSZ-1:0] stvec;            // 12'h105
       logic                        [RSZ-1:0] scounteren;       // 12'h106 - this register MUST be implemented. see p 60 riscv-privileged.pdf
       logic                        [RSZ-1:0] sscratch;         // 12'h140
-      logic                      [PC_SZ-1:0] sepc;             // 12'h141
+      logic                        [RSZ-1:0] sepc;             // 12'h141
       logic                        [RSZ-1:0] scause;           // 12'h142
       logic                        [RSZ-1:0] stval;            // 12'h143
       SIP_SIGS                               sip;              // 12'h144
@@ -649,7 +653,7 @@ import cpu_params_pkg::*;
       UIE_SIGS                               uie;              // 12'h004
       logic                        [RSZ-1:0] utvec;            // 12'h005
       logic                        [RSZ-1:0] uscratch;         // 12'h040
-      logic                      [PC_SZ-1:0] uepc;             // 12'h041
+      logic                        [RSZ-1:0] uepc;             // 12'h041
       logic                        [RSZ-1:0] ucause;           // 12'h042
       logic                        [RSZ-1:0] utval;            // 12'h043
       UIP_SIGS                               uip;              // 12'h044

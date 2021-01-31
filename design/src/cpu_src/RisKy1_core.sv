@@ -22,44 +22,45 @@ import functions_pkg::*;
 import logic_params_pkg::*;
 import cpu_params_pkg::*;
 import cpu_structs_pkg::*;
+import csr_params_pkg::*;
 //
 //                                          ............................................................................
 //                                          :  RisKy1_core                                                             :
 //                                          :                                                                          :
-//                                          :                                                                          :
 //                                          :           +--------------+                                               :
 //                                          :           |    FETCH     |                                               :
+//                                          :           |              |                                               :
 //    L1 Instruction Cache Interface -------:---------->|              |                                               :
-//                                          :           |              |                                               :
-//                                          :           +------+-------+                                               :
-//                                          :                  |                                                       :
-//                                          :                  v                                                       :
-//                                          :           +------+-------+                                               :
-//                                          :           |              |                                               :
-//                                          :           |    DECODE    |                                               :
-//                                          :           |              |                                               :
-//                                          :           +------+-------+                                               :
-//                                          :                  |                                                       :
-//                                          :                  v                          +-----------+                :
-//                                          :           +------+-------+                  |   IRQ     |                :
-//                                          :           |              |   timer_irq      |           |<---------------:------ External Interrupts (optional)
-//                                          :       +-->|    EXECUTE   |<-----------------|           |                :
-//                                          :       |   |              |   sw_irq         +-----+-----+                :
-//                                          :       |   +------+-------+                        ^                      :
-//                                          :       |          |                                |                      :
-//                                          :       |          v                                v                      :
-//                                          :       |   +------+-------+                  +-----+-----+                :
-//                                          :       |   |              |                  |   MEM_IO  |<---------------:-----> External I/O interface
-//                                          :       |   |     MEM      |<---------------->|           |                :
-//                                          :       |   |              |                  |           |<----------+    :
-//                                          :       |   +------+-------+                  +-----------+           |    :
-//                                          :       |          |                                                  |    :
-//                                          :       |          v                          +------------------+    |    :
-//                                          :       |   +------+-------+                  |   Architectural  |    |    :
-//                                          :       |   |              |----------------->|   Registers      |    |    :
-//                                          :       |   |      WB      |                  |   (gpr, fpr)     |    |    :
-//                                          :       |   |              |                  +----------+-------+    |    :
-//                                          :       |   +--------------+                             |            |    :
+//                                          :           +------+-------+                  +-----------+                :
+//                                          :                  |               +--------->|           |                :
+//                                          :                  v               |          |           |                :
+//                                          :           +------+-------+       |  +------>|    CSR    |                :
+//                                          :           |              |       |  |       |           |<---------------:------ External Interrupts (optional)
+//                                          :           |    DECODE    |       |  |   +-->|           |                :
+//                                          :           |              |       |  |   |   +-----------+                :
+//                                          :           +------+-------+       |  |   |                                :
+//                                          :                  |               |  |   | timer_irq                      :
+//                                          :                  v               |  |   |   +-----------+                :
+//                                          :           +------+-------+       |  |   |   |    MMR    |                : (MMR = Memory Managed Registers)
+//                                          :           |              |<------+  |   +---|     &     |                :
+//                                          :           |    EXECUTE   |          |       |  SW IRQ   |                :
+//                                          :       +-->|              |<---------|-------|           |                :
+//                                          :       |   +------+-------+ sw_irq   |       +-----+-----+                :
+//                                          :       |          |                  |             ^                      :
+//                                          :       |          v                  |             |                      :
+//                                          :       |   +------+-------+          |             v                      :
+//                                          :       |   |              |          |       +-----+-----+                :
+//                                          :       |   |     MEM      |          |       |   MEM_IO  |<---------------:-----> External I/O interface
+//                                          :       |   |              |<---------|------>|           |                :
+//                                          :       |   +------+-------+          |       |           |<----------+    :
+//                                          :       |          |                  |       +-----------+           |    :
+//                                          :       |          v                  |                               |    :
+//                                          :       |   +------+-------+          |       +------------------+    |    :
+//                                          :       |   |              |----------+       |   Architectural  |    |    :
+//                                          :       |   |      WB      |                  |   Registers      |    |    :
+//                                          :       |   |              |----------------->|   (gpr, fpr)     |    |    :
+//                                          :       |   +--------------+                  +----------+-------+    |    :
+//                                          :       |                                                |            |    :
 //                                          :       |                                                |            |    :
 //                                          :       |                                                |            |    :
 //                                          :       |                                                |            |    :
@@ -195,7 +196,7 @@ module RisKy1_core
       `endif
    `endif
 
-   `ifndef VIVADO // Vivado 2019.2 is not IEEE1800-2009 compliant and thus can't handle the following compile time checks to make sure design is within bounds
+   `ifndef VIVADO // Unfortunately Vivado 2019.2 is not IEEE1800-2009 compliant and thus can't handle the following compile time checks to make sure the design is within bounds
    generate
       `ifdef use_MHPM_CNTRS
       if (NUM_MHPM == 0)                                                      $error ("use_MHPM_CNTRS is defined but NUM_MHPM is still 0. Change NUM_MHPM value in cpu_params.svh");
@@ -236,13 +237,6 @@ module RisKy1_core
       if (NUM_MHPM > 29)                                                      $fatal ("NUM_MHPM must be a value of 29 or less");
       if (MAX_CSR != 4096)                                                    $fatal ("MAX_CSR must be 4096");
 
-      if (USTAT_SZ > XLEN)                                                    $fatal ("USTAT_SZ > XLEN. see cpu_params_pkg.sv");
-      if (UI_SZ > XLEN)                                                       $fatal ("UI_SZ > XLEN. see cpu_params_pkg.sv");
-      if (SSTAT_SZ > XLEN)                                                    $fatal ("SSTAT_SZ > XLEN. see cpu_params_pkg.sv");
-      if (SI_SZ > XLEN)                                                       $fatal ("SI_SZ > XLEN. see cpu_params_pkg.sv");
-      if (MSTAT_SZ > XLEN)                                                    $fatal ("MSTAT_SZ > XLEN. see cpu_params_pkg.sv");
-      if (MI_SZ > XLEN)                                                       $fatal ("MI_SZ > XLEN. see cpu_params_pkg.sv");
-      if (MCNTEN_SZ > XLEN)                                                   $fatal ("MCNTEN_SZ > XLEN. see cpu_params_pkg.sv");
       if (EV_SEL_SZ > XLEN)                                                   $fatal ("EV_SEL_SZ > XLEN. see cpu_params_pkg.sv");
       if (DEL_SZ > XLEN)                                                      $fatal ("DEL_SZ > XLEN. see cpu_params_pkg.sv");
       
@@ -289,6 +283,32 @@ module RisKy1_core
       if (RESET_VECTOR_ADDR[1:0])                                             $fatal ("RESET_VECTOR_ADDR must be 4 byte aligned. i.e. lower 2 bits = 2'b00");
       `endif
       if (!(RESET_VECTOR_ADDR inside {[Phys_Addr_Lo:Phys_Addr_Hi]}))          $fatal ("RESET_VECTOR_ADDR must be inside Phys_Addr_Lo address range");
+      
+      if (MISA[0])                                                            $fatal ("MISA[0] set! This CPU does not yet support Atominc Instructions");
+      if (MISA[1])                                                            $fatal ("MISA[1] set! This CPU does not yet support Bit Manipulation Instructions");
+      if (MISA[3])                                                            $fatal ("MISA[3] set! This CPU does not yet support Double Precision Instructions");
+      if (MISA[4])                                                            $fatal ("MISA[4] set! This CPU does not yet support RV32E base ISA");
+      if (MISA[5])                                                            $fatal ("MISA[5] set! This CPU does not yet support Single Precision Floating-Point");
+      if (MISA[6])                                                            $fatal ("MISA[6] set! This is a reserved bit");
+      if (MISA[7])                                                            $fatal ("MISA[7] set! This CPU does not yet support Hypervisor extension");
+      if (!MISA[8])                                                           $fatal ("MISA[8] cleared! This CPU is RV32i and this bit MUST be set");
+      if (MISA[9])                                                            $fatal ("MISA[9] set! This CPU does not yet support Dynamically Translated Language extension");
+      if (MISA[10])                                                           $fatal ("MISA[10] set! This is a reserved bit");
+      if (MISA[11])                                                           $fatal ("MISA[11] set! This CPU does not yet support Decimal FLoating-Point extension");
+      if (MISA[14])                                                           $fatal ("MISA[14] set! This is a reserved bit");
+      if (MISA[15])                                                           $fatal ("MISA[15] set! This CPU does not yet support Packed-SIMD extension");
+      if (MISA[16])                                                           $fatal ("MISA[16] set! This CPU does not yet support Quad-Precision Floating Point extension");
+      if (MISA[17])                                                           $fatal ("MISA[17] set! This is a reserved bit");
+      if (MISA[19])                                                           $fatal ("MISA[19] set! This CPU does not yet support Transactional Memory extension");
+      if (MISA[21])                                                           $fatal ("MISA[19] set! This CPU does not yet support Vector extension");
+      if (MISA[22])                                                           $fatal ("MISA[22] set! This is a reserved bit");
+      if (MISA[23])                                                           $fatal ("MISA[23] set! This CPU does not yet support Non-Standard extension");
+      if (MISA[24])                                                           $fatal ("MISA[24] set! This is a reserved bit");
+      if (MISA[25])                                                           $fatal ("MISA[25] set! This is a reserved bit");
+      if (MISA[29:26])                                                        $fatal ("MISA[29:26] These bits should remain at 0");
+      if (MISA[31:30] != 1)                                                   $fatal ("MXL = %0d. This CPU only allows MXL of 1 (i.e. 32 bit design)", MISA[31:30]);
+      if (MISA[8] & MISA[4])                                                  $fatal ("Both MISA[4] and MISA[8] bits set.  Can ony be RV32E or RV32I, but not both");
+      if (MISA[3] & !MISA[5])                                                 $fatal ("MISA[3] set and MISA[5] cleared.  If D is set, then F must also be set");
    endgenerate
    `endif
 

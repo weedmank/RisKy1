@@ -25,6 +25,7 @@ import functions_pkg::*;
 import logic_params_pkg::*;
 import cpu_params_pkg::*;
 import cpu_structs_pkg::*;
+import csr_params_pkg::*;
 
 module csr_nxt_reg
 (
@@ -185,7 +186,7 @@ module csr_nxt_reg
             else
                nxt_ucsr.uie = ucsr.uie;                                       // keep current value
 
-            // ------------------------------ User Trap Handler Base address.
+            // ------------------------------ User Trap Handler Base address
             // 12'h005 = 12'b0000_0000_0101  utvec                            (read-write)  user mode
             if (csr_wr & (csr_addr[7:0] == 8'h05))                            // writable in all modes
                nxt_ucsr.utvec = csr_wr_data;                                  // see csr.sv - value written may be masked going into register
