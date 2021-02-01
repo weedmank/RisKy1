@@ -24,24 +24,20 @@ import cpu_params_pkg::*;
    // "The mstatush register is not required to be implemented if every field would be hardwired to zero." riscv_privileged 1.12 draft
    // ------------------------------ Machine Status Register
    // 12'h300 = 12'b0011_0000_0000  mstatus     (read-write)   p. 56 riscv-privileged
-   //         Note: look at csr_ff.sv and notice that each RO bit will become tied to a logic value instead of creating a flip flop.
-   //            31:13  12:11  10:9   8    7     6     5     4     3    2     1    0
-   // mstatus:  {       mpp,   2'b0,  spp, mpie, 1'b0, spie, upie, mie, 1'b0, sie, uie};
+   //  31        22   21  20   19   18   17    16:15 14:13 12:11 10:9  8    7     6     5     4      3     2     1    0
+   // {sd, 8'b0, tsr, tw, tvm, mxr, sum, mprv, xs,   fs,   mpp,  2'b0, spp, mpie, 1'b0, spie, upie,  mie, 1'b0,  sie, uie};
    //    WARNING: bits 31:13 have not been implemented yet 1/17/2021
    parameter UIE_RO_MASK         = 13'h0001;          // Read Only - value read will be INIT value for mstatus register in csr_regs.sv
    parameter UPIE_RO_MASK        = 13'h0010;
    parameter SIE_RO_MASK         = 13'h0002;          // Read Only if ext_S not defined
    parameter SPIE_RO_MASK        = 13'h0020;
    parameter SPP_RO_MASK         = 13'h0100;
-   parameter MIE_RO_MASK         = 13'h0008;
-   parameter MPIE_RO_MASK        = 13'h0080;
-   parameter MPP_RO_MASK         = 13'h1800;
 
    // MSTATUS Read_only masks change based on extensions needed.  Each mask bit disables writing to the bit and the read value will be the init value
    `ifdef ext_U
       `ifdef ext_N
-         parameter M_UIE_RO_MASK   = 13'h0000;
-         parameter M_UPIE_RO_MASK  = 13'h0000;
+         parameter M_UIE_RO_MASK   = 32'h0000;
+         parameter M_UPIE_RO_MASK  = 32'h0000;
       `else
          parameter M_UIE_RO_MASK   = UIE_RO_MASK;     // Read Only - value read will be INIT value for mstatus register in csr_regs.sv
          parameter M_UPIE_RO_MASK  = UPIE_RO_MASK;
@@ -52,9 +48,9 @@ import cpu_params_pkg::*;
    `endif
 
    `ifdef ext_S
-      parameter M_SIE_RO_MASK    = 13'h0000;
-      parameter M_SPIE_RO_MASK   = 13'h0000;
-      parameter M_SPP_RO_MASK    = 13'h0000;
+      parameter M_SIE_RO_MASK    = 32'h0000;
+      parameter M_SPIE_RO_MASK   = 32'h0000;
+      parameter M_SPP_RO_MASK    = 32'h0000;
    `else
       parameter M_SIE_RO_MASK    = SIE_RO_MASK;       // Read Only if ext_S not defined
       parameter M_SPIE_RO_MASK   = SPIE_RO_MASK;
@@ -63,9 +59,11 @@ import cpu_params_pkg::*;
 
    localparam  MSTAT_INIT        = {M_MODE,11'b0};    // init to M_MODE
    // These bits do not change based on build configuration
-   localparam  MSTAT_WPRI        = 32'h7F80_0615; // bits 30:23, 10:9. 4, 2, 0 
-   // These bits can change based on build configuration
-   localparam  MSTAT_RO          = (MPP_RO_MASK | M_SPP_RO_MASK | MPIE_RO_MASK | M_SPIE_RO_MASK | M_UPIE_RO_MASK | MIE_RO_MASK | M_SIE_RO_MASK | M_UIE_RO_MASK) | MSTAT_WPRI;
+   // Each register bit that corresponds to MSTAT_WPTRI=1 will not change and will always output the corresponding MSTAT_INIT bits
+   // Each register bit that corresponds to MSTAT_WPTRI=0 will be a FF that will be reset to corresponding MSTAT_INIT bits
+   localparam  MSTAT_WPRI        = 32'h7F80_0644; // these correspond to all the bits that = 0
+   // These bits can change based on build configuration (i.e. ext_S, ext_U)
+   localparam  MSTAT_RO          = (M_SPP_RO_MASK | M_SPIE_RO_MASK | M_UPIE_RO_MASK | M_SIE_RO_MASK | M_UIE_RO_MASK);
 
    // ------------------------------ Machine ISA Register
    // 12'h301 = 12'b0011_0000_0001  misa     (read-write)   p. 56 riscv-privileged
