@@ -66,19 +66,6 @@ module csr_nxt_reg
    output   MCSR                 nxt_mcsr          // all of the next Machine mode Control & Status Registers
 );
 
-//   //!!!!!!!!!!!!!!!!!!!! Mstatus Bits To Be Updated As Needed - be sure to change RO mask in csr.sv!!!!!!!!!!!!!!!!!!!!
-//   logic sd, tsr, tw, tvm, mxr, sum, mprv;
-//   logic [1:0] xs, fs, mpp;
-//   assign sd      = 1'b0;
-//   assign tsr     = 1'b0;
-//   assign tw      = 1'b0;
-//   assign tvm     = 1'b0;
-//   assign mxr     = 1'b0;
-//   assign sum     = 1'b0;
-//   assign mprv    = 1'b0;
-//   assign xs      = 2'b0;
-//   assign fs      = 2'b0;
-
    `ifdef use_MHPM
    logic         [NUM_MHPM-1:0] [RSZ-1:0] mhpmcounter_lo;   // 12'hB03 - 12'B1F
    logic         [NUM_MHPM-1:0] [RSZ-1:0] mhpmcounter_hi;   // 12'hB83 - 12'B9F
@@ -90,7 +77,9 @@ module csr_nxt_reg
    logic       nxt_mpie, nxt_mie;
    logic       nxt_spp,  nxt_spie, nxt_sie;
    logic       nxt_upie, nxt_uie;
-
+   logic       nxt_sd, nxt_tsr, nxt_tw, nxt_tvm, nxt_mxr, nxt_sum, nxt_mprv;
+   logic [1:0] nxt_xs, nxt_fs;
+   
    always_comb
    begin
       nxt_spp     = 1'b0;
@@ -100,7 +89,16 @@ module csr_nxt_reg
       nxt_upie    = '0;
       nxt_uie     = FALSE;
 
-
+      nxt_sd      = FALSE;
+      nxt_tsr     = FALSE;
+      nxt_tw      = FALSE;
+      nxt_tvm     = FALSE;
+      nxt_mxr     = FALSE;
+      nxt_sum     = FALSE;
+      nxt_mprv    = FALSE;
+      nxt_xs      = 2'b00;
+      nxt_fs      = 2'b00;
+      
       // ==================================================================== Machine Mode Registers =================================================================
 
       // ------------------------------ Machine Status Register
@@ -121,7 +119,6 @@ module csr_nxt_reg
          nxt_mcsr.mstatus.mpp  = mcsr.mstatus.mpp;                            // xPP holds the previous privilege mode
       nxt_mpp    = nxt_mcsr.mstatus.mpp;
 
-
       if (exception.flag & (nxt_mode == M_MODE))
          nxt_mcsr.mstatus.mpie = mcsr.mstatus.mie;                            // When a trap is taken from privilege mode y into privilege mode x, xPIE is set to the value of xIE
       else if (mret)
@@ -130,11 +127,11 @@ module csr_nxt_reg
          nxt_mcsr.mstatus.mpie = mcsr.mstatus.mpie;                           // x PIE holds the value of the interrupt-enable bit active prior to the trap
       nxt_mpie   = nxt_mcsr.mstatus.mpie;
 
-//????    if (mret & (mpp != M_MODE))                                             // If xPP̸=M, xRET also sets MPRV=0.
-//       nxt_mprv = 0;
-//    else if (sret & (spp != (M_MODE & 1)))                                  // spp is made from the lower bit of mode
-//       nxt_mprv = 0;
-
+      nxt_mprv = mcsr.mstatus.mprv;
+      if ((nxt_mcsr.mstatus.mpp != M_MODE) & mret)                            // If xPP̸=M, xRET also sets MPRV=0.
+         nxt_mprv = 0;
+      else if ((nxt_scsr.sstatus.spp != (M_MODE[0])) & sret)                  // spp is made from the lower bit of mode
+         nxt_mprv = 0;
 
       // p. 20 The xIE bits are in the low-order bits of mstatus, allowing them to be atomically set or cleared with a single CSR instruction
       //       or cleared with a single CSR instruction.
@@ -148,8 +145,18 @@ module csr_nxt_reg
          nxt_mcsr.mstatus.mie  = mcsr.mstatus.mie;                            // keep current value
       nxt_mie    = nxt_mcsr.mstatus.mie;
 
-      //                   31:13  12:11    10:9   8        7         6     5         4         3        2     1        0
-      nxt_mcsr.mstatus  = {       nxt_mpp, 2'b0,  nxt_spp, nxt_mpie, 1'b0, nxt_spie, nxt_upie, nxt_mie, 1'b0, nxt_sie, nxt_uie};
+      // SUM is hardwired to 0 if S-mode is not supported. p. 23 riscv-priileged draft-1.12
+      // nxt_fs = ????
+      // nxt_xs = ????
+      // nxt_sum = ????
+      // nxt_mxr = ?????
+      // nxt_tvm = ??????
+      // nxt_tw = ???
+      nxt_sd      = ((nxt_fs == 2'b11) || (nxt_xs == 2'b11));
+      
+      //                           WPRI                                                                                 WPRI                     ube             WPRI           WPRI           WPRI
+      //                   31      30:23 22        21      20       19       18       17       16:15   14:13   12:11    10:9   8        7         6     5         4     3        2     1        0
+      nxt_mcsr.mstatus  = {nxt_sd, 8'b0, nxt_tsr, nxt_tw, nxt_tvm, nxt_mxr, nxt_sum, nxt_mprv, nxt_xs, nxt_fs, nxt_mpp, 2'b0, nxt_spp, nxt_mpie, 1'b0, nxt_spie, 1'b0, nxt_mie, 1'b0, nxt_sie, 1'b0};
 
 
       // ------------------------------ Machine ISA Register
@@ -706,11 +713,11 @@ module csr_nxt_reg
       // ==================================================================== User Mode Registers ====================================================================
          `ifdef ext_N
             nxt_ucsr    = '{default: '0};
-      
+            
             // ------------------------------ User Status Register
             // 12'h000 = 12'b0000_0000_0000  ustatus     (read-write)  user mode
-            //                   31    30:23 22    21    20     19    18    17     16:15 14:13 12:11    10:9   8     7     6     5     4         3     2     1     0
-            nxt_ucsr.ustatus  = {                                                                              1'b0, 1'b0, 1'b0, 1'b0, nxt_upie, 1'b0, 1'b0, 1'b0, nxt_uie}; // see csr.sv
+            //                   31:5  4         3     2     1     0
+            nxt_ucsr.ustatus  = {      nxt_upie, 1'b0, 1'b0, 1'b0, nxt_uie}; // see csr.sv
       
             // p. 21. To support nested traps, each privilege mode x has a two-level stack of interrupt-enable
             //        bits and privilege modes. xPIE holds the value of the interrupt-enable bit active
@@ -741,7 +748,7 @@ module csr_nxt_reg
                nxt_ucsr.ustatus.uie  = csr_wr_data[0];
             else
                nxt_ucsr.ustatus.uie  = ucsr.ustatus.uie;                      // hold last value
-            nxt_uie    = nxt_ucsr.ustatus.uie;
+            nxt_uie    = nxt_ucsr.ustatus.uie;   // need by mstatus
       
       
             `ifdef ext_F

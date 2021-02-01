@@ -451,8 +451,8 @@ import cpu_params_pkg::*;
 
 
    // 12'h000 = 12'b0000_0000_0000  ustatus                    (read-write)  user mode
-   //  31        22   21  20   19   18   17    16:15 14:13 12:11  10:9   8     7     6     5     4     3     2     1     0
-   // {sd, 8'b0, tsr, tw, tvm, mxr, sum, mprv,  xs,   fs,  2'b0,  2'b0, 1'b0, 1'b0, 1'b0, 1'b0, upie, 1'b0, 1'b0, 1'b0, uie};
+   //  31        22   21  20  19  18  17  16:15 14:13 12:11  10:9   8     7     6     5     4     3     2     1     0
+   // {0,  8'b0, 0,   0,  0,  0,  0,  0,  2'b0, 2'b0, 2'b0,  2'b0, 1'b0, 1'b0, 1'b0, 1'b0, upie, 1'b0, 1'b0, 1'b0, uie};
    typedef struct packed {
       logic            [26:0] WPRI_27;
       logic                   upie;

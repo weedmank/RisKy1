@@ -57,13 +57,25 @@ import cpu_params_pkg::*;
       parameter M_SPP_RO_MASK    = SPP_RO_MASK;
    `endif
 
+   // In systems that do not implement S-mode and do not have a floating-point unit, the FS field is hardwired to zero. p. 26 tiscv-privileged draft-1.12
+   `ifndef ext_S
+      `ifndef ext_F
+         parameter M_FS_RO = 32'b110_0000_0000_0000; // fs will be hardwaired to 0 (i.e. bits 14:13 of MSTAT_INIT)
+      `else
+         parameter M_FS_RO = 32'h0;
+      `endif
+   `else
+      parameter M_FS_RO = 32'h0;
+   `endif
+
+
    localparam  MSTAT_INIT        = {M_MODE,11'b0};    // init to M_MODE
    // These bits do not change based on build configuration
    // Each register bit that corresponds to MSTAT_WPTRI=1 will not change and will always output the corresponding MSTAT_INIT bits
    // Each register bit that corresponds to MSTAT_WPTRI=0 will be a FF that will be reset to corresponding MSTAT_INIT bits
    localparam  MSTAT_WPRI        = 32'h7F80_0644; // these correspond to all the bits that = 0
    // These bits can change based on build configuration (i.e. ext_S, ext_U)
-   localparam  MSTAT_RO          = (M_SPP_RO_MASK | M_SPIE_RO_MASK | M_UPIE_RO_MASK | M_SIE_RO_MASK | M_UIE_RO_MASK);
+   localparam  MSTAT_RO          = (M_FS_RO | M_SPP_RO_MASK | M_SPIE_RO_MASK | M_UPIE_RO_MASK | M_SIE_RO_MASK | M_UIE_RO_MASK);
 
    // ------------------------------ Machine ISA Register
    // 12'h301 = 12'b0011_0000_0001  misa     (read-write)   p. 56 riscv-privileged
