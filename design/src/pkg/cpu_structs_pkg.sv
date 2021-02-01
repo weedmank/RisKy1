@@ -369,10 +369,10 @@ import cpu_params_pkg::*;
    // ------------------------------ Machine Status Register
    // 12'h300 = 12'b0011_0000_0000  mstatus                    (read-write)  user mode
    //  31        22   21  20   19   18   17   16:15 14:13 12:11  10:9    8    7     6     5     4      3     2     1    0
-   // {sd, 8'b0, tsr, tw, tvm, mxr, sum, mprv,   xs,   fs,  mpp, 2'b0,  spp, mpie, 1'b0, spie, upie,  mie, 1'b0,  sie, uie};
+   // {sd, 8'b0, tsr, tw, tvm, mxr, sum, mprv,   xs,   fs,  mpp, 2'b0,  spp, mpie, 1'b0, spie, 1'b0,  mie, 1'b0,  sie, 1'b0};
    typedef struct packed {
       logic                   sd;          // To Be Added: upper mstatus bits are not yet implemented
-      logic             [7:0] WPRI_8;
+      logic             [7:0] Z8;
       logic                   tsr;
       logic                   tw;
       logic                   tvm;
@@ -382,16 +382,16 @@ import cpu_params_pkg::*;
       logic             [1:0] xs;
       logic             [1:0] fs;
       logic             [1:0] mpp;
-      logic             [1:0] WPRI_2;
+      logic             [1:0] ZZa;
       logic                   spp;
       logic                   mpie;
-      logic                   WPRI_1;
+      logic                   Zd;
       logic                   spie;
-      logic                   upie;
+      logic                   Zc;
       logic                   mie;
-      logic                   WPRI;
+      logic                   Zb;
       logic                   sie;
-      logic                   uie;
+      logic                   Za;
    } MSTATUS_SIGS;
    
    // ------------------------------ Machine Interrupt Enable Register - just the needed bits!

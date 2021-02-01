@@ -69,7 +69,7 @@ import cpu_params_pkg::*;
    `endif
 
 
-   localparam  MSTAT_INIT        = {M_MODE,11'b0};    // init to M_MODE
+   localparam  MSTAT_INIT        = {29'd0,M_MODE,11'b0};    // init to M_MODE
    // These bits do not change based on build configuration
    // Each register bit that corresponds to MSTAT_WPTRI=1 will not change and will always output the corresponding MSTAT_INIT bits
    // Each register bit that corresponds to MSTAT_WPTRI=0 will be a FF that will be reset to corresponding MSTAT_INIT bits

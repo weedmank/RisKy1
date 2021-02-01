@@ -32,11 +32,11 @@ module csr_regs
    input    logic          reset_in,
 
    input    logic          ext_irq,
-   input    EVENTS         current_events,
+   input    var EVENTS     current_events,
 
    output   logic          total_retired,
    `ifdef use_MHPM
-   output   logic          emu_hpm_events[0:23],            // 24 different event counts (counts for this clock cycle) that can be used. 1 bit needed per event for this design (1 instruction max per clock cycle)
+   output   logic          hpm_events[0:23],                // 24 different event counts (counts for this clock cycle) that can be used. 1 bit needed per event for this design (1 instruction max per clock cycle)
    `endif
 
    `ifdef ext_U
@@ -62,7 +62,7 @@ module csr_regs
    // mpie,spie,upie - pending interrupt enables
    // mpp, spp       - previous privileged mode stacks
    //  31        22   21  20   19   18   17    16:15 14:13 12:11 10:9  8    7     6     5     4      3     2     1    0
-   // {sd, 8'b0, tsr, tw, tvm, mxr, sum, mprv, xs,   fs,   mpp,  2'b0, spp, mpie, 1'b0, spie, upie,  mie, 1'b0,  sie, uie};
+   // {sd, 8'b0, tsr, tw, tvm, mxr, sum, mprv, xs,   fs,   mpp,  2'b0, spp, mpie, 1'b0, spie, 1'b0,  mie, 1'b0,  sie, 1'b0};
 
    // register currently creates flops for bits 12:11,8,7,5,4,3,1,0
    csr_ff #(MSTAT_INIT,MSTAT_RO,MSTAT_WPRI) Mstatus         (clk_in,reset_in, nxt_mcsr.mstatus, mcsr.mstatus); // only lower 13 bits implemented 12/21/2020
@@ -119,7 +119,7 @@ module csr_regs
       for (m = 0; m < NUM_MHPM; m++)
       begin
          // Note: width of mhpmevent[] is define as 5 bits - up to 32 different event selections
-         csr_ff #(0,EV_SEL_SZ) Mhpmevent                    (clk_in,reset_in, nxt_mcsr.mhpmevent[m], mcsr.mhpmevent[m]);
+         csr_ff #(0,32'h0,32'h0,EV_SEL_SZ) Mhpmevent        (clk_in,reset_in, nxt_mcsr.mhpmevent[m], mcsr.mhpmevent[m]);
       end
    endgenerate
    `endif
@@ -296,7 +296,7 @@ module csr_regs
    assign hpm_events[21]   = current_events.e_flag ? (current_events.e_cause == 6) : 0; // e_cause = 6 = Store Address Misaligned
    assign hpm_events[22]   = current_events.e_flag ? (current_events.e_cause == 8) : 0; // e_cause = 8 = User ECALL
    assign hpm_events[23]   = current_events.ext_irq;                 // this will always be a 0 or 1 count as only 1 per clock cycle can ever occur
-   `endif // uxt_F
+   `endif // ext_F
    `endif
 
    // Note: currently there are NUM_EVENTS hpm_events as specified at the beginning of this generate block. The number can be changed if more or less event types are needed

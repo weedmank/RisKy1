@@ -244,7 +244,7 @@ module csr_av_rdata
             `ifdef ext_S
             csr_rd_data    = {mcsr.mie.meie, 1'b0, scsr.sie.seie, 1'b0, mcsr.mie.mtie, 1'b0, scsr.sie.stie, 1'b0, mcsr.mie.msie, 1'b0, scsr.sie.ssie, 1'b0};
             `else
-            csr_rd_data    = {mcsr.mie.meie, 3b0, mcsr.mie.mtie, 3'b0, mcsr.mie.msie, 3'b0};
+            csr_rd_data    = {mcsr.mie.meie, 3'b0, mcsr.mie.mtie, 3'b0, mcsr.mie.msie, 3'b0};
             `endif
          end
       

@@ -73,12 +73,12 @@ module csr_nxt_reg
    `endif
 
    // Machine Status signals
-   logic [1:0] nxt_mpp;
    logic       nxt_mpie, nxt_mie;
    logic       nxt_spp,  nxt_spie, nxt_sie;
    logic       nxt_upie, nxt_uie;
    logic       nxt_sd, nxt_tsr, nxt_tw, nxt_tvm, nxt_mxr, nxt_sum, nxt_mprv;
    logic [1:0] nxt_xs, nxt_fs;
+   logic [1:0] nxt_mpp;
    
    always_comb
    begin
@@ -88,16 +88,6 @@ module csr_nxt_reg
 
       nxt_upie    = '0;
       nxt_uie     = FALSE;
-
-      nxt_sd      = FALSE;
-      nxt_tsr     = FALSE;
-      nxt_tw      = FALSE;
-      nxt_tvm     = FALSE;
-      nxt_mxr     = FALSE;
-      nxt_sum     = FALSE;
-      nxt_mprv    = FALSE;
-      nxt_xs      = 2'b00;
-      nxt_fs      = 2'b00;
       
       // ==================================================================== Machine Mode Registers =================================================================
 
@@ -130,9 +120,11 @@ module csr_nxt_reg
       nxt_mprv = mcsr.mstatus.mprv;
       if ((nxt_mcsr.mstatus.mpp != M_MODE) & mret)                            // If xPP̸=M, xRET also sets MPRV=0.
          nxt_mprv = 0;
+      `ifdef ext_S
       else if ((nxt_scsr.sstatus.spp != (M_MODE[0])) & sret)                  // spp is made from the lower bit of mode
          nxt_mprv = 0;
-
+      `endif
+      
       // p. 20 The xIE bits are in the low-order bits of mstatus, allowing them to be atomically set or cleared with a single CSR instruction
       //       or cleared with a single CSR instruction.
       if (exception.flag & (nxt_mode == M_MODE))
@@ -145,14 +137,33 @@ module csr_nxt_reg
          nxt_mcsr.mstatus.mie  = mcsr.mstatus.mie;                            // keep current value
       nxt_mie    = nxt_mcsr.mstatus.mie;
 
-      // SUM is hardwired to 0 if S-mode is not supported. p. 23 riscv-priileged draft-1.12
-      // nxt_fs = ????
-      // nxt_xs = ????
-      // nxt_sum = ????
-      // nxt_mxr = ?????
-      // nxt_tvm = ??????
-      // nxt_tw = ???
-      nxt_sd      = ((nxt_fs == 2'b11) || (nxt_xs == 2'b11));
+      
+      //nxt_mcsr.mstatus.tsr = ?????;
+      nxt_tsr     = nxt_mcsr.mstatus.tsr;
+      
+      //nxt_mcsr.mstatus.tw = ???;
+      nxt_tw      = nxt_mcsr.mstatus.tw;
+      
+      //nxt_mcsr.mstatus.tvm = ???;
+      nxt_tvm     = nxt_mcsr.mstatus.tvm;
+      
+      //nxt_mcsr.mstatus.mxr = ????;
+      nxt_mxr     = nxt_mcsr.mstatus.mxr;
+      
+      //nxt_mcsr.mstatus.sum = ???
+      nxt_sum     = nxt_mcsr.mstatus.sum;
+      
+      //nxt_mcsr.mstatus.mprv = ???;
+      nxt_mprv    = nxt_mcsr.mstatus.mprv;
+      
+      // nxt_mcsr.mstatus.xs = ???;
+      nxt_xs      = nxt_mcsr.mstatus.xs;
+      
+      //nxt_mcsr.mstatus.fs = ???;
+      nxt_fs      = nxt_mcsr.mstatus.fs;
+      
+      nxt_mcsr.mstatus.sd = ((nxt_fs == 2'b11) || (nxt_xs == 2'b11));
+      nxt_sd   = nxt_mcsr.mstatus.sd;
       
       //                           WPRI                                                                                 WPRI                     ube             WPRI           WPRI           WPRI
       //                   31      30:23 22        21      20       19       18       17       16:15   14:13   12:11    10:9   8        7         6     5         4     3        2     1        0

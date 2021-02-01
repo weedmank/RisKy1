@@ -39,7 +39,7 @@ module csr_ff
 
    genvar m;
    generate
-      for (m = 0; m < RSZ; m++)
+      for (m = 0; m < SZ; m++)
       begin
          if (ALL_RO[m])
             assign csr_name[m] = INIT[m];          // assign a constant value for this bit
