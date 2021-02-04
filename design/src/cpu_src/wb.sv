@@ -222,6 +222,23 @@ module wb
    // 48-63            Reserved for custom use
    // >=64             Reserved for future standard use
 
+   // p. 39 riscv-privileged draft 1.12
+   // Priority    Exception Code    Description
+   // Highest     3                 Instruction address breakpoint
+   //             12                Instruction page fault
+   //             1                 Instruction access fault
+   //             2                 Illegal instruction
+   //             0                 Instruction address misaligned
+   //             8, 9, 11          Environment call
+   //             3                 Environment break
+   //             3                 Load/Store/AMO address breakpoint
+   // Optionally, these may have    6 Store/AMO address misaligned
+   // lowest priority instead.      4 Load address misaligned
+   //             15                Store/AMO page fault
+   //             13                Load page fault
+   //             7                 Store/AMO access fault
+   //             5                 Load access fault
+   
    // ****** Exception handling also occurs here for all instructions - see data from EXE stage *****
    // Completed Load Instructions pass data on to WB stage. All exceptions occur in this MEM stage.  When an exception occurs,
    // all instructions in all stages of the pipeline are flushed.  See pipe_flush signal and how it affects pipe()
@@ -569,7 +586,7 @@ module wb
 
             LD_INSTR:
             begin
-               // Load exceptions are done once Load finishes in MEM stage
+               // Load exceptions are done once Load finishes in MEM stage. see priority table p. 39 riscv_privileged draft 1.12
                if (instr_err)                                                       // misaligned? see execute.sv
                begin
                   rld_pc_flag             = TRUE;
@@ -607,7 +624,7 @@ module wb
 
             ST_INSTR:
             begin
-               // Store exceptions arer done once Store finishes in this MEM stage
+               // Store exceptions arer done once Store finishes in this MEM stage. see priority table p. 39 riscv_privileged draft 1.12
                if (instr_err)
                begin
                   rld_pc_flag             = TRUE;

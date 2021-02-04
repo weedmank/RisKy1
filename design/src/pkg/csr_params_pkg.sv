@@ -108,8 +108,8 @@ import cpu_params_pkg::*;
    localparam  MISA_RO           = 32'hFFFF_FFFF;           // each bit == 1 specifies Read Only. Currently, no logic is implemented to allow dynamic change of this register
    
    // example to have ext M be turned on or off
-//   localparam  MISA_RO_INIT     = MISA;                     // static bits for now
-//   localparam  MISA_RO          = 32'hFFFF_EFFF;            // each bit == 1 specifies Read Only. Currently, no logic is implemented to allow dynamic change of this register
+//   localparam  MISA_INIT         = MISA;                    // static bits for now
+//   localparam  MISA_RO           = 32'hFFFF_EFFF;           // each bit == 1 specifies Read Only. Currently, no logic is implemented to allow dynamic change of this register
 
 // PROBLEM: assume bits D and F are both set, but someone writes D=1 and F=0! If D is set, then F must also be set.
 //          SO, do we force D=0 or force F=1 and how do we do this in a buildable/configurable way?????????????
@@ -148,7 +148,7 @@ import cpu_params_pkg::*;
    // 12'h305 = 12'b0011_0000_0101  mtvec                   (read-write)
    // Current design only allows MODE of 0 or 1 - thus bit 1 forced to retain it's reset value which is 0. see csr_regs.sv
    // MTVEC, STVEC, UTVEC  - values loaded into registers upon reset. Note: MODE >= 2 is Reserved see p 27 risv-privileged.pdf
-   parameter   MTVEC_INIT  = 32'h0000_0000;
+   parameter   MTVEC_INIT           = 32'h0000_0000;
 
    // Andrew Waterman: 12/31/2020 - "There is also a clear statement that mcounteren exists if and only if U mode is implemented"
    // MCOUNTEREN, SCOUNTEREN - init values and mask values (a 1 in a bit means the corresponding reset value will always remain the same)
@@ -161,9 +161,9 @@ import cpu_params_pkg::*;
    // If not implemented, set all bits to 0 => no inhibits will ocur
    // 12'h320 = 12'b0011_0010_00000  mcountinhibit          (read-write)
    // NOTE: bit 1 always "hardwired" to 0
-   parameter   SET_MCOUNTINHIBIT = 0;                                // CSR: setting this to 1 will cause mcountinhibit to be a constant (Read Only) with bits defined by SET_MCOUNTINHIBIT_BITS
+   parameter   SET_MCOUNTINHIBIT    = 0;                             // CSR: setting this to 1 will cause mcountinhibit to be a constant (Read Only) with bits defined by SET_MCOUNTINHIBIT_BITS
    parameter   SET_MCOUNTINHIBIT_BITS = 32'h0000_0000;
-   localparam  MINHIBIT_INIT = (SET_MCOUNTINHIBIT == 1) ? SET_MCOUNTINHIBIT_BITS : 0;
+   localparam  MINHIBIT_INIT        = (SET_MCOUNTINHIBIT == 1) ? SET_MCOUNTINHIBIT_BITS : 0;
 
    // ------------------------------ Machine Hardware Performance-Monitoring Event selectors
    // 12'h323 - 12'h33F  mhpmevent3 - mhpmevent31           (read-write)
@@ -182,7 +182,7 @@ import cpu_params_pkg::*;
 
    // ------------------------------ Machine Exception Cause
    // 12'h342 = 12'b0011_0100_0010  mcause                  (read-write)
-   parameter   MCS_INIT             = 32'h0000_0000;                 // Reset: The mcause register is set to a value indicating the cause of the reset. riscv-privileged.pdf p 42
+   parameter   MCS_INIT             = 32'h0000_0000;                 // When a trap is taken into M-mode, mcause is written with a code indicating the event that caused the trap.p 37 riscv-privileged draft1.12
 
 
    // ------------------------------ Machine Exception Trap Value
