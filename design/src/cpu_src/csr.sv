@@ -290,7 +290,6 @@ module csr
    //
    // Note: Forwarding of Architectural Registers is easy because what you write to them will be the same as what you later read from them. Not so
    //       with some CSRs
-   // Read the contents of a specific CSR and know if it's available (exists for reading)
 
    MCSR             nxt_FWD_mcsr;
 

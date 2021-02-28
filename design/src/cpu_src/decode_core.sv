@@ -151,7 +151,7 @@ module decode_core
       begin
          // RV32C instruction decode. See riscv-spec.pdf p 95 - 112
          // NOTE: Even though ext_C may not be defined, we have to handle what happens
-         // if a compressed instruction is encounterd (i.e. deafult to illegal instruction)
+         // if a compressed instruction is encounterd (i.e. default to illegal instruction)
 
          // number of bits                     1      1      1     1      1      1      4           2       2       4       1     32
          //                                    Fs1_rd Fs2_rd Fd_wr Rs1_rd Rs2_rd Rd_wr  ig_type     sel_x   sel_y   op      ci    imm

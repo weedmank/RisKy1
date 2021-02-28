@@ -359,6 +359,9 @@ module csr_nxt_reg
 
       // 12'h3B0 - 12'h3BF
       // 12'h3B0 = 12'b0011_1010_0000  pmpaddr0 (read-write)
+      
+      // NOTE: These PMP registers currently NOT fully implemented!!!!!!!!!!!
+      
       `ifdef PMP_ADDR0
          if (csr_wr & (csr_addr == 12'h3B0) & (mode == M_MODE))
             nxt_mcsr.pmpaddr0 = csr_wr_data;
@@ -457,7 +460,9 @@ module csr_nxt_reg
       `endif
 
       `ifdef add_DM
-      // Debug Write registers - INCOMPLETE!!!!!!!!!!!
+      // Debug Write registers
+      // NOTE: These PMP registers currently NOT fully implemented!!!!!!!!!!!
+      
       // ------------------------------ Debug/Trace Registers - shared with Debug Mode (tselect,tdata1,tdata2,tdata3)
          if (csr_wr & (csr_addr == 12'h7A0) & (mode >= M_MODE))               // writable in M_MODE
             nxt_mcsr.tselect     = csr_wr_data;                               // change Trigger Select Register
