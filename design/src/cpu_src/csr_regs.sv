@@ -102,9 +102,9 @@ module csr_regs
 
    // ------------------------------ Machine StatusH - additional status register
    // 12'h310 = 12'b0011_0001_0000  mstatush                (read-write)
-   
-   
-   
+
+
+
    // ------------------------------ Machine Counter Inhibit
    // If not implemented, set all bits to 0 => no inhibits will ocur
    // 12'h320 = 12'b0011_0010_00000  mcountinhibit          (read-write)
@@ -370,48 +370,48 @@ module csr_regs
 
    // ================================================================== User Mode CSRs =====================================================================
    `ifdef ext_U
-      `ifdef ext_N
-      // ------------------------------ User Status Register
-      // 12'h000 = 12'b0000_0000_0000  ustatus     (read-write)  user mode
-      //  31          22    21    20   19    18   17   16:15 14:13 12:11 10:9   8     7     6     5     4     3     2     1     0
-      // {sd, 8'b0, 1'b0, 1'b0, 1'b0, mxr,  sum, 1'b0,   xs,   fs, 2'b0, 2'b0, 1'b0, 1'b0, 1'b0, 1'b0, upie, 1'b0, 1'b0, 1'b0, uie};
-      csr_ff #(USTAT_INIT,USTAT_RO) Ustatus                 (clk_in,reset_in, nxt_ucsr.ustatus, ucsr.ustatus); // only lower 5 bits implemented so far 12/21/2020
-
       `ifdef ext_F
-      // ------------------------------ User Floating-Point CSRs
-      // 12'h001 - 12'h003
-      // TBD
+         // ------------------------------ User Floating-Point CSRs
+         // 12'h001 - 12'h003
+         // TBD
       `endif   // ext_F
 
-      // ------------------------------ User Interrupt-Enable Register
-      // 12'h004 = 12'b0000_0000_0100  uie                  (read-write)  user mode
-      csr_ff #(0,0,0,3) Uie                                 (clk_in,reset_in, nxt_ucsr.uie, ucsr.uie);
+      `ifdef ext_N
+         // ------------------------------ User Status Register
+         // 12'h000 = 12'b0000_0000_0000  ustatus     (read-write)  user mode
+         //  31          22    21    20   19    18   17   16:15 14:13 12:11 10:9   8     7     6     5     4     3     2     1     0
+         // {sd, 8'b0, 1'b0, 1'b0, 1'b0, mxr,  sum, 1'b0,   xs,   fs, 2'b0, 2'b0, 1'b0, 1'b0, 1'b0, 1'b0, upie, 1'b0, 1'b0, 1'b0, uie};
+         csr_ff #(USTAT_INIT,USTAT_RO) Ustatus                 (clk_in,reset_in, nxt_ucsr.ustatus, ucsr.ustatus); // only lower 5 bits implemented so far 12/21/2020
 
-      // User Trap Handler Base address.
-      // 12'h005 = 12'b0000_0000_0101  utvec                (read-write)  user mode
-      // Current design only allows MODE of 0 or 1 - thus bit 1 forced to retain it's reset value which is 0.
-      csr_ff #(UTVEC_INIT,32'h0000_0002) Utvec              (clk_in,reset_in, nxt_ucsr.utvec, ucsr.utvec);
+         // ------------------------------ User Interrupt-Enable Register
+         // 12'h004 = 12'b0000_0000_0100  uie                  (read-write)  user mode
+         csr_ff #(0,0,0,3) Uie                                 (clk_in,reset_in, nxt_ucsr.uie, ucsr.uie);
 
-      // ------------------------------ User Trap Handling
-      // Scratch register for user trap handlers.
-      // 12'h040 = 12'b0000_0100_0000  uscratch             (read-write)
-      csr_ff #(0,32'h0) Uscratch                            (clk_in,reset_in, nxt_ucsr.uscratch, ucsr.uscratch);
+         // User Trap Handler Base address.
+         // 12'h005 = 12'b0000_0000_0101  utvec                (read-write)  user mode
+         // Current design only allows MODE of 0 or 1 - thus bit 1 forced to retain it's reset value which is 0.
+         csr_ff #(UTVEC_INIT,32'h0000_0002) Utvec              (clk_in,reset_in, nxt_ucsr.utvec, ucsr.utvec);
 
-      // ------------------------------ User Exception Program Counter
-      // 12'h041 = 12'b0000_0100_0001  uepc                 (read-write)
-      csr_ff #(0,32'h1) Uepc                                (clk_in,reset_in, nxt_ucsr.uepc, ucsr.uepc); // ls-bit is RO so it remains at 0 after reset
+         // ------------------------------ User Trap Handling
+         // Scratch register for user trap handlers.
+         // 12'h040 = 12'b0000_0100_0000  uscratch             (read-write)
+         csr_ff #(0,32'h0) Uscratch                            (clk_in,reset_in, nxt_ucsr.uscratch, ucsr.uscratch);
 
-      // ------------------------------ User Exception Cause
-      // 12'h042 = 12'b0000_0100_0010  ucause               (read-write)
-      csr_ff #(0,32'h0) Ucause                              (clk_in,reset_in, nxt_ucsr.ucause, ucsr.ucause); // ucause is currently 4 Flops wide
+         // ------------------------------ User Exception Program Counter
+         // 12'h041 = 12'b0000_0100_0001  uepc                 (read-write)
+         csr_ff #(0,32'h1) Uepc                                (clk_in,reset_in, nxt_ucsr.uepc, ucsr.uepc); // ls-bit is RO so it remains at 0 after reset
 
-      // ------------------------------ User Exception Trap Value    see p. 8,115 riscv-privileged.pdf 1.12-draft 
-      // 12'h043 = 12'b0000_0100_0011  utval                (read-write)
-      csr_ff #(0,32'h0) Utval                               (clk_in,reset_in, nxt_ucsr.utval, ucsr.utval);
+         // ------------------------------ User Exception Cause
+         // 12'h042 = 12'b0000_0100_0010  ucause               (read-write)
+         csr_ff #(0,32'h0) Ucause                              (clk_in,reset_in, nxt_ucsr.ucause, ucsr.ucause); // ucause is currently 4 Flops wide
 
-      // ------------------------------ User Interrupt Pending bits
-      // 12'h044 = 12'b0000_0100_0100  uip                  (read-write)
-      csr_ff #(0,0,0,3) Uip                                 (clk_in,reset_in, nxt_ucsr.uip, ucsr.uip);
+         // ------------------------------ User Exception Trap Value    see p. 8,115 riscv-privileged.pdf 1.12-draft
+         // 12'h043 = 12'b0000_0100_0011  utval                (read-write)
+         csr_ff #(0,32'h0) Utval                               (clk_in,reset_in, nxt_ucsr.utval, ucsr.utval);
+
+         // ------------------------------ User Interrupt Pending bits
+         // 12'h044 = 12'b0000_0100_0100  uip                  (read-write)
+         csr_ff #(0,0,0,3) Uip                                 (clk_in,reset_in, nxt_ucsr.uip, ucsr.uip);
       `endif // ext_N
    `endif // ext_U
 
