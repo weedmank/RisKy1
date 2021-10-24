@@ -11,7 +11,7 @@
 // ----------------------------------------------------------------------------------------------------
 // Project       :  RisKy1 - new 5 stage pipelined RISC-V ISA based CPU tailored to the RISC-V RV32IM
 // Editor        :  Notepad++
-// File          :  alu_fu.svh
+// File          :  alu_fu.sv
 // Description   :  Calculates the Right Hand side of an equation (i.e R2 = R3 + R4)
 //               :  This unit decodes at the same time other functional units decode a specific
 //               :  instruction. However the EXE stage will only pick the FU output results depending
