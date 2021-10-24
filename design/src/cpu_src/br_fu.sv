@@ -11,7 +11,7 @@
 // ----------------------------------------------------------------------------------------------------
 // Project       :  RisKy1 - new 5 stage pipelined RISC-V ISA based CPU tailored to the RISC-V RV32IM
 // Editor        :  Notepad++
-// File          :  br_fu.svh
+// File          :  br_fu.sv
 // Description   :  Determines if the branch is Taken/Not Taken and what the next PC will be.
 //               :  Also determines if instruction is mis-aligned
 //               :  This unit decodes at the same time other functional units decode a specific
