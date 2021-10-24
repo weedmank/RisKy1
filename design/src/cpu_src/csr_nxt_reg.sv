@@ -360,8 +360,7 @@ module csr_nxt_reg
       // 12'h3B0 - 12'h3BF
       // 12'h3B0 = 12'b0011_1010_0000  pmpaddr0 (read-write)
 
-      // NOTE: These PMP registers currently NOT fully implemented!!!!!!!!!!!
-
+      // NOTE: PMP register logic is NOT currently implemented!!!!!!!!!!!
       `ifdef PMP_ADDR0
          if (csr_wr & (csr_addr == 12'h3B0) & (mode == M_MODE))
             nxt_mcsr.pmpaddr0 = csr_wr_data;
@@ -460,9 +459,8 @@ module csr_nxt_reg
       `endif
 
       `ifdef add_DM
-      // Debug Write registers
-      // NOTE: These PMP registers currently NOT fully implemented!!!!!!!!!!!
 
+      // NOTE: Debug register logic is NOT fully implemented!!!!!!!!!!!
       // ------------------------------ Debug/Trace Registers - shared with Debug Mode (tselect,tdata1,tdata2,tdata3)
          if (csr_wr & (csr_addr == 12'h7A0) & (mode >= M_MODE))               // writable in M_MODE
             nxt_mcsr.tselect     = csr_wr_data;                               // change Trigger Select Register
@@ -523,9 +521,9 @@ module csr_nxt_reg
       else if (csr_wr && (csr_addr == 12'hB80))
          {nxt_mcsr.mcycle_hi,nxt_mcsr.mcycle_lo}   = {csr_wr_data,mcsr.mcycle_lo};
       else if (!mcsr.mcountinhibit[0])
-         {nxt_mcsr.mcycle_hi,nxt_mcsr.mcycle_lo}   = 2*RSZ ' ({mcsr.mcycle_hi,mcsr.mcycle_lo} + 'd1);  // increment counter/timer - cast result to 2*RSZ bits before assigning
+         {nxt_mcsr.mcycle_hi,nxt_mcsr.mcycle_lo}   = 2*RSZ ' ({mcsr.mcycle_hi,mcsr.mcycle_lo} + 'd1); // increment counter/timer - cast result to 2*RSZ bits before assigning
       else
-         {nxt_mcsr.mcycle_hi,nxt_mcsr.mcycle_lo}   = {mcsr.mcycle_hi,mcsr.mcycle_lo};        // keep current value
+         {nxt_mcsr.mcycle_hi,nxt_mcsr.mcycle_lo}   = {mcsr.mcycle_hi,mcsr.mcycle_lo};                 // keep current value
 
       // ------------------------------ Machine Instructions-Retired Counter
       // The time CSR is a read-only shadow of the memory-mapped mtime register.                                                                               p 34 riscv-priviliged.pdf
@@ -734,17 +732,18 @@ module csr_nxt_reg
                nxt_ucsr.???? = ???
             else
                nxt_ucsr.???? = ucsr.????
-      
+
             if (csr_wr & (csr_addr == 12'h002))
                nxt_ucsr.???? = ???
             else
                nxt_ucsr.???? = ucsr.????
-      
+
             if (csr_wr & (csr_addr == 12'h003))
                nxt_ucsr.???? = ???
             else
                nxt_ucsr.???? = ucsr.????
-            `endif   // ext_F
+         `endif   // ext_F
+
          `ifdef ext_N
             nxt_ucsr    = '{default: '0};
 
