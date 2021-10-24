@@ -1,0 +1,23 @@
+Disassembly of section .text:
+
+00000000 <.text>:
+   0:   fff00093                li      ra,-1
+   4:   00000013                nop
+   8:   00000013                nop
+   c:   00000013                nop
+  10:   00000013                nop
+  14:   340092f3                csrrw   t0,mscratch,ra
+  18:   00000013                nop
+  1c:   00000013                nop
+  20:   00000013                nop
+  24:   00000013                nop
+  28:   fff00093                li      ra,-1
+  2c:   00409093                slli    ra,ra,0x4
+  30:   0000a023                sw      zero,0(ra)
+  34:   00000013                nop
+  38:   00000013                nop
+  3c:   00000013                nop
+  40:   00000013                nop
+  44:   00000013                nop
+  48:   00000013                nop
+  4c:   00000013                nop
