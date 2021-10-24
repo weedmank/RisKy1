@@ -179,7 +179,7 @@ module RisKy1_core
    output   logic                      dc_flush,
 
    // External I/O accesses
-   EIO_intf.master                     EIO_bus              // External I/O bus
+   EIO_intf.master                     EIO_bus                                // External I/O bus
 );
 `endif // VIVADO
 
@@ -465,7 +465,7 @@ module RisKy1_core
       .csr_nxt_bus(csr_nxt_bus)                                               // returns the value of CSR registers after a CSR write would occur, but does not change ANY registers
    );
 
-   // General Purpose Registers
+   // General Purpose Registers - 32 x 32 bits for RV32i
    gpr GPR
    (
       .clk_in(clk_in), .reset_in(reset_in),                                   // Inputs:  system clock and reset
@@ -475,7 +475,7 @@ module RisKy1_core
       .gpr_bus(gpr_bus)
    );
 
-   // NOTE: The following will not currently connect to anything - ext_F is not yet completed as of 6/14/2020
+   // NOTE: The following will not currently connect to anything - ext_F is not yet completed
    `ifdef ext_F
    // Single Precision Floating Point Registers
    fpr FPR
