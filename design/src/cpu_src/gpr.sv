@@ -31,7 +31,7 @@ module gpr
    RBUS_intf.slave                           gpr_bus
 );
 
-   // For RISC-V ISA, R0 is Read Only
+   // For RISC-V ISA, X0 is Read Only
    assign gpr[0] = 0;
 
    // For RISC-V ISA RV32IM, X1 - X15 are 32-bit R/W registers
