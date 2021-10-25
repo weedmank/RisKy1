@@ -39,7 +39,7 @@ module im_fu
 
    logic      [RSZ-1:0] m1Data;
    logic      [RSZ-1:0] m2Data;
-   logic    [2*RSZ-1:0] neg_mulx, mulx;
+   logic    [2*RSZ-1:0] mulx;
 
    // pull out the signals
    assign Rs1_data   = imfu_bus.Rs1_data;
@@ -86,14 +86,13 @@ module im_fu
    end
 
    vedic_mult32x32 ved1 (.a(m1Data),.b(m2Data),.c(mulx));
-   assign neg_mulx = -mulx;
 
    always_comb
    begin
       unique case(op)
          MUL:     imfu_bus.Rd_data = mulx[31:0];
-         MULH:    imfu_bus.Rd_data = (Rs1_data[31] ^ Rs2_data[31]) ? neg_mulx[63:32] : mulx[63:32];
-         MULHSU:  imfu_bus.Rd_data = Rs1_data[31] ? neg_mulx[63:32] : mulx[63:32];
+         MULH:    imfu_bus.Rd_data = (Rs1_data[31] ^ Rs2_data[31]) ? -mulx[63:32] : mulx[63:32];
+         MULHSU:  imfu_bus.Rd_data = Rs1_data[31] ? -mulx[63:32] : mulx[63:32];
          MULHU:   imfu_bus.Rd_data = mulx[63:32];
       endcase
    end
