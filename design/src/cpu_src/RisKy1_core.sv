@@ -186,8 +186,8 @@ module RisKy1_core
    // check for design parameter ERRORs at compile time - see cpu_params.svh
 
    `ifndef VIVADO // Unfortunately Vivado 2019.2 is not IEEE1800-2009 compliant and thus can't handle the following compile time checks to make sure the design is within bounds
-      `include "csr_checks.svh";
-      `include "cpu_checks.svh";
+      `include "../includes/csr_checks.svh";
+      `include "../includes/cpu_checks.svh";
    `endif
 
    // misprediction signals that affect Fetch, Decode, Execute stages
