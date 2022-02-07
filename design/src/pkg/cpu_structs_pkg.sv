@@ -198,11 +198,12 @@ import cpu_params_pkg::*;
       `endif
       IG_TYPE                 ig_type;
       logic       [OP_SZ-1:0] op_type;
-      logic             [1:0] mode;                            // mode can change on any clock cycle, but we want to pass value associated with current instruction
+      logic             [1:0] instr_mode;                      // mode can change on any clock cycle, but we want to pass value associated with current instruction
       logic                   sw_irq;
-      logic                   interrupt_flag;                  // 1 = take an interrupt trap
-      logic         [RSZ-1:0] interrupt_cause;                 // value specifying what type of interrupt
+
       logic       [PC_SZ-1:2] trap_pc;                         // Output:  trap vector handler address. 4 byte alignmen
+      logic                   irq_flag;                        // 1 = take an interrupt trap
+      logic         [RSZ-1:0] irq_cause;                       // value specifying what type of interrupt
 
       // GPR/FPR information (gets pased to MEM stage which passes it to WB stage)
       `ifdef ext_F
@@ -232,10 +233,10 @@ import cpu_params_pkg::*;
       IG_TYPE                 ig_type;
       logic       [OP_SZ-1:0] op_type;
       logic                   mio_ack_fault;
-      logic             [1:0] mode;
+      logic             [1:0] instr_mode;
       logic                   sw_irq;
-      logic                   interrupt_flag;                  // 1 = take an interrupt trap
-      logic         [RSZ-1:0] interrupt_cause;                 // value specifying what type of interrupt
+      logic                   irq_flag;                        // 1 = take an interrupt trap
+      logic         [RSZ-1:0] irq_cause;                       // value specifying what type of interrupt
       logic       [PC_SZ-1:2] trap_pc;                         // Output:  trap vector handler address. 4 byte alignment
 
       // GPR/FPR information
@@ -328,7 +329,7 @@ import cpu_params_pkg::*;
    } LSQ_Data;
 `endif
 
-   // ------------------------------ PMP Config 
+   // ------------------------------ PMP Config
    // structure related to pmpcfg
    typedef struct packed {
       logic                   r0;                              // WARL
@@ -339,16 +340,16 @@ import cpu_params_pkg::*;
       logic                   lo;                              // WARL
       logic            [23:0] res;                             // unimplemented
    } PMP_CFG;
-   
-   // ------------------------------ SATP 
+
+   // ------------------------------ SATP
    // structure related to pmpcfg
    typedef struct packed {
       logic                   mode;                            // WARL
       logic             [8:0] asid;                            // WARL
       logic            [21:0] ppn;                             // WARL
    } SATP;
-   
-   // ------------------------------ FCSR 
+
+   // ------------------------------ FCSR
    // structure related to pmpcfg
    typedef union packed {
       struct packed {
@@ -365,14 +366,14 @@ import cpu_params_pkg::*;
          logic                nx;                              // invalid operation
       } bits;
    } FCSR;
-   
+
    // ------------------------------ Machine Status Register
    // 12'h300 = 12'b0011_0000_0000  mstatus                    (read-write)  user mode
    //  31        22   21  20   19   18   17   16:15 14:13 12:11  10:9    8    7     6     5     4      3     2     1    0
    // {sd, 8'b0, tsr, tw, tvm, mxr, sum, mprv,   xs,   fs,  mpp, 2'b0,  spp, mpie, 1'b0, spie, 1'b0,  mie, 1'b0,  sie, 1'b0};
    typedef struct packed {
       logic                   sd;          // To Be Added: upper mstatus bits are not yet implemented
-      logic             [7:0] Z8;
+      logic           [30:23] unused1;
       logic                   tsr;
       logic                   tw;
       logic                   tvm;
@@ -382,26 +383,36 @@ import cpu_params_pkg::*;
       logic             [1:0] xs;
       logic             [1:0] fs;
       logic             [1:0] mpp;
-      logic             [1:0] ZZa;
+      logic            [10:9] unused2;
       logic                   spp;
       logic                   mpie;
-      logic                   Zd;
+      logic                   unused3;
       logic                   spie;
-      logic                   Zc;
+      logic                   unused4;
       logic                   mie;
-      logic                   Zb;
+      logic                   unused5;
       logic                   sie;
-      logic                   Za;
+      logic                   unused6;
    } MSTATUS_SIGS;
-   
+
    // ------------------------------ Machine Interrupt Enable Register - just the needed bits!
-   // 12'h304 = 12'b0011_0000_0100  mie                        (read-write)
+   // 12'h304 = 12'b0011_0000_0100  mie                     (read-write)
    //  31:12   11    10    9     8     7     6     5     4     3     2     1     0
-   // {20'b0, meip, 1'b0, seip, 1'b0, mtip, 1'b0, stip, 1'b0, msip, 1'b0, ssip, 1'b0}; see riscv-privileged p. 32
+   // {20'b0, meie, 1'b0, seie, 1'b0, mtie, 1'b0, stie, 1'b0, msie, 1'b0, ssie, 1'b0};
    typedef struct packed {
+      logic           [31:12] unused1;
       logic                   meie;
+      logic                   unused2;
+      logic                   seie;
+      logic                   unused3;
       logic                   mtie;
+      logic                   unused4;
+      logic                   stie;
+      logic                   unused5;
       logic                   msie;
+      logic                   unused6;
+      logic                   ssie;
+      logic                   unused7;
    } MIE_SIGS;
 
    // ------------------------------ Machine Interrupt Pending bits - just the needed bits!
@@ -409,9 +420,19 @@ import cpu_params_pkg::*;
    //  31:12   11    10    9     8     7     6     5     4     3     2     1     0
    // {20'b0, meip, 1'b0, seip, 1'b0, mtip, 1'b0, stip, 1'b0, msip, 1'b0, ssip, 1'b0}; see riscv-privileged p. 32
    typedef struct packed {
+      logic           [31:12] unused1;
       logic                   meip;
+      logic                   unused2;
+      logic                   seip;
+      logic                   unused3;
       logic                   mtip;
+      logic                   unused4;
+      logic                   stip;
+      logic                   unused5;
       logic                   msip;
+      logic                   unused6;
+      logic                   ssip;
+      logic                   unused7;
    } MIP_SIGS;
 
 
@@ -420,13 +441,13 @@ import cpu_params_pkg::*;
    //  31        22   21  20   19   18   17   16:15 14:13 12:11  10:9    8    7     6     5     4     3     2     1    0
    // {sd, 8'b0, tsr, tw, tvm, mxr, sum, mprv, xs,   fs,  2'b0,  2'b0,  spp, 1'b0, 1'b0, spie, 1'b0, 1'b0, 1'b0,  sie, 1'b0};
    typedef struct packed {
-      logic            [22:0] WPRI_23;
+      logic            [22:0] unused1;
       logic                   spp;
-      logic             [1:0] WPRI_2;
+      logic             [7:6] unused2;
       logic                   spie;
-      logic             [2:0] WPRI_3;
+      logic             [4:2] unused3;
       logic                   sie;
-      logic                   WPRI;
+      logic                   unused4;                         // WPRI
    } SSTATUS_SIGS;
 
    // ------------------------------ Supervisor Interrupt Enable bits - just the needed bits!
@@ -434,9 +455,13 @@ import cpu_params_pkg::*;
    //  31:12   11    10    9     8     7     6     5     4     3     2     1     0
    // {20'b0, 1'b0, 1'b0, seie, 1'b0, 1'b0, 1'b0, stie, 1'b0, 1'b0, 1'b0, ssie 1'b0};
    typedef struct packed {
+      logic           [31:10] unused1;
       logic                   seie;
+      logic             [8:6] unused2;
       logic                   stie;
+      logic             [4:2] unused3;
       logic                   ssie;
+      logic                   unused4;
    } SIE_SIGS;
 
    // ------------------------------ Supervisor Interrupt Pending bits - just the needed bits!
@@ -444,9 +469,15 @@ import cpu_params_pkg::*;
    //  31:12   11    10    9     8     7     6     5     4     3     2     1     0
    // {20'b0, 1'b0, 1'b0, seip, ueip, 1'b0, 1'b0, stip, utip, 1'b0, 1'b0, ssip, usip};
    typedef struct packed {
+      logic           [31:10] unused1;
       logic                   seip;
+      logic                   ueip;
+      logic             [7:6] unused2;
       logic                   stip;
+      logic                   utip;
+      logic             [3:2] unused3;
       logic                   ssip;
+      logic                   usip;
    } SIP_SIGS;
 
 
@@ -454,9 +485,9 @@ import cpu_params_pkg::*;
    //  31        22   21  20  19  18  17  16:15 14:13 12:11  10:9   8     7     6     5     4     3     2     1     0
    // {0,  8'b0, 0,   0,  0,  0,  0,  0,  2'b0, 2'b0, 2'b0,  2'b0, 1'b0, 1'b0, 1'b0, 1'b0, upie, 1'b0, 1'b0, 1'b0, uie};
    typedef struct packed {
-      logic            [26:0] WPRI_27;
+      logic            [31:5] unused1;                         // WPRI
       logic                   upie;
-      logic             [2:0] WPRI_3;
+      logic             [3:1] unused2;                         // WPRI
       logic                   uie;
    } USTATUS_SIGS;
 
@@ -465,8 +496,11 @@ import cpu_params_pkg::*;
    //  31:12   11    10    9     8     7     6     5     4     3     2     1     0
    // {20'b0, 1'b0, 1'b0, 1'b0, ueie, 1'b0, 1'b0, 1'b0, utie, 1'b0, 1'b0, 1'b0, usie};
    typedef struct packed {
+      logic            [31:9] unused1;
       logic                   ueie;
+      logic             [7:5] unused2;
       logic                   utie;
+      logic             [3:1] unused3;
       logic                   usie;
    } UIE_SIGS;
 
@@ -475,8 +509,11 @@ import cpu_params_pkg::*;
    //  31:12   11    10    9     8     7     6     5     4     3     2     1     0
    // {20'b0, 1'b0, 1'b0, 1'b0, ueip, 1'b0, 1'b0, 1'b0, utip, 1'b0, 1'b0, 1'b0, usip};
    typedef struct packed {
+      logic            [31:9] unused1;
       logic                   ueip;
+      logic             [7:5] unused2;
       logic                   utip;
+      logic             [3:1] unused3;
       logic                   usip;
    } UIP_SIGS;
 
