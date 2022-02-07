@@ -67,7 +67,7 @@ module im_fu
 
    always_comb
    begin
-      unique case(op)
+      case(op)
          MUL:     m1Data = Rs1_data;
          MULH:    m1Data = Rs1_data[31] ? -Rs1_data : Rs1_data;
          MULHSU:  m1Data = Rs1_data[31] ? -Rs1_data : Rs1_data;
@@ -77,7 +77,7 @@ module im_fu
 
    always_comb
    begin
-      unique case(op)
+      case(op)
          MUL:     m2Data = Rs2_data;
          MULH:    m2Data = Rs2_data[31] ? -Rs2_data : Rs2_data;
          MULHSU:  m2Data = Rs2_data;
@@ -89,7 +89,7 @@ module im_fu
 
    always_comb
    begin
-      unique case(op)
+      case(op)
          MUL:     imfu_bus.Rd_data = mulx[31:0];
          MULH:    imfu_bus.Rd_data = (Rs1_data[31] ^ Rs2_data[31]) ? -mulx[63:32] : mulx[63:32];
          MULHSU:  imfu_bus.Rd_data = Rs1_data[31] ? -mulx[63:32] : mulx[63:32];

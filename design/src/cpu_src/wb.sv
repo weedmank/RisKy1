@@ -48,16 +48,14 @@ module wb
    output   FWD_FPR                       fwd_wb_fpr,
 
    // interface to FP Registers
-   FBUS_intf.master                       fpr_bus,
+   FPR_WR_intf.master                     fpr_wr_bus,
    `endif
 
 
    // interface to GPR
-   RBUS_intf.master                       gpr_bus,
+   GPR_WR_intf.master                     gpr_wr_bus,                               // master:  outputs:  Rd_wr, Rd_addr, Rd_data
 
-   WB_2_CSR_wr_intf.master                csr_wr_bus,
-
-   WB_CSR_intf.master                     WB_CSR_bus                                // Events and Exception information (see csr_fu.sv inside execute.sv)
+   CSR_WR_intf.master                     csr_wr_bus                                // master -> output: csr_wr, csr_wr_addr, csr_wr_data, sw_irq, exception, current_events, instr_mode, uret, sret, mret
 );
 
    // signals from MEM stage
@@ -89,10 +87,11 @@ module wb
    // misc
    logic                   xfer_in;
 
-   logic             [1:0] mode;                                                    // CPU mode when this instruction was in EXE stage
+   logic             [1:0] instr_mode;                                              // CPU mode when this instruction was in EXE stage
+
    logic       [PC_SZ-1:0] trap_pc;                                                 // Output:  trap vector handler address.
-   logic                   interrupt_flag;                                          // 1 = take an interrupt trap
-   logic         [RSZ-1:0] interrupt_cause;                                         // value specifying what type of interrupt
+   logic                   irq_flag;                                                // 1 = take an interrupt trap
+   logic         [RSZ-1:0] irq_cause;                                               // value specifying what type of interrupt
 
 
    // --------------------------------- signals from MEM stage that are used in WB stage
@@ -107,11 +106,11 @@ module wb
    assign ig_type             = M2W_bus.data.ig_type;                               // override default values
    assign op_type             = M2W_bus.data.op_type;
    assign mio_ack_fault       = M2W_bus.data.mio_ack_fault;
-   assign mode                = M2W_bus.data.mode;
-   assign trap_pc             = {M2W_bus.data.trap_pc, 2'b00};
-   assign interrupt_flag      = M2W_bus.data.interrupt_flag;
-   assign interrupt_cause     = M2W_bus.data.interrupt_cause;
-
+   assign instr_mode          = M2W_bus.data.instr_mode;
+   
+   assign trap_pc             = {M2W_bus.data.trap_pc, 2'b00};                      // lower 2 bits (always 0) reattached. see mode_irq() module where they got removed
+   assign irq_flag            = M2W_bus.data.irq_flag;
+   assign irq_cause           = M2W_bus.data.irq_cause;
 
    // --------------------------------- asserted when this stage is ready to finish it's processing
    assign M2W_bus.rdy         = !reset_in & !cpu_halt;                              // always ready to process results
@@ -124,9 +123,9 @@ module wb
    assign fwd_wb_gpr.Rd_addr  = wb_Rd_addr;
    assign fwd_wb_gpr.Rd_data  = wb_Rd_data;
 
-   assign gpr_bus.Rd_wr       = xfer_in & wb_Rd_wr;                                 // when to write
-   assign gpr_bus.Rd_addr     = wb_Rd_addr;                                         // Which destination register
-   assign gpr_bus.Rd_data     = wb_Rd_data;                                         // data for destination register
+   assign gpr_wr_bus.Rd_wr    = xfer_in & wb_Rd_wr;                                 // when to write
+   assign gpr_wr_bus.Rd_addr  = wb_Rd_addr;                                         // Which destination register
+   assign gpr_wr_bus.Rd_data  = wb_Rd_data;                                         // data for destination register
 
    `ifdef ext_F
    // Forwarding of FPR info
@@ -135,9 +134,9 @@ module wb
    assign fwd_wb_fpr.Fd_addr  = wb_Rd_addr;                                         // Rd_aadr and Rd_data can be shared from execute.sv as only Fd_wr and Rd_wr are mutually exclusive
    assign fwd_wb_fpr.Fd_data  = wb_Rd_data;
 
-   assign fpr_bus.Fd_wr       = xfer_in & wb_Fd_wr;                                 // when to write
-   assign fpr_bus.Fd_addr     = wb_Rd_addr;                                         // Which destination register
-   assign fpr_bus.Fd_data     = wb_Rd_data;                                         // data for destination register
+   assign fpr_wr_bus.Fd_wr       = xfer_in & wb_Fd_wr;                              // when to write
+   assign fpr_wr_bus.Fd_addr     = wb_Rd_addr;                                      // Which destination register
+   assign fpr_wr_bus.Fd_data     = wb_Rd_data;                                      // data for destination register
    `endif
 
    // Forwarding of CSR info
@@ -146,10 +145,27 @@ module wb
    assign fwd_wb_csr.csr_addr    = wb_csr_addr;
    assign fwd_wb_csr.csr_data    = wb_csr_fwd_data;
 
-   assign csr_wr_bus.csr_wr      = xfer_in & wb_csr_wr;                             // when to write
-   assign csr_wr_bus.csr_wr_addr = wb_csr_addr;                                     // Which destination register
-   assign csr_wr_bus.csr_wr_data = wb_csr_wr_data;                                  // data for destination register
+   //-------------------- csr_wr_bus --------------------
+   // master (output: csr_wr, csr_wr_addr, csr_wr_data, sw_irq, exception, current_events, instr_mode, uret, sret, mret);
+   logic   mret;
+   assign csr_wr_bus.mret  = mret;
 
+   `ifdef ext_S
+   logic   sret;
+   assign csr_wr_bus.sret  = sret;
+   `endif
+
+   `ifdef ext_U
+   `ifdef ext_N
+   logic   uret;
+   assign csr_wr_bus.uret  = uret;
+   `endif
+   `endif
+
+   assign csr_wr_bus.instr_mode     = instr_mode;
+   assign csr_wr_bus.csr_wr         = xfer_in & wb_csr_wr;                          // when to write
+   assign csr_wr_bus.csr_wr_addr    = wb_csr_addr;                                  // Which destination register
+   assign csr_wr_bus.csr_wr_data    = wb_csr_wr_data;                               // data for destination register
    //------------------------------- Debugging: disassemble instruction in this stage ------------------------------------
    `ifdef SIM_DEBUG
    string   i_str;
@@ -159,28 +175,9 @@ module wb
    `endif
    //---------------------------------------------------------------------------------------------------------------------
 
-   EXCEPTION               exception;
-   EVENTS                  current_events;                                          // number of retired instructions for current clock cycle
-
-   //-------------------- WB_CSR_bus --------------------
-   logic   mret;
-   assign WB_CSR_bus.mret  = mret;
-
-   `ifdef ext_S
-   logic   sret;
-   assign WB_CSR_bus.sret  = sret;
-   `endif
-
-   `ifdef ext_U
-   `ifdef ext_N
-   logic   uret;
-   assign WB_CSR_bus.uret  = uret;
-   `endif
-   `endif
-
-   assign WB_CSR_bus.exception         = exception;
-   assign WB_CSR_bus.current_events    = current_events;                            // number of retired instructions for current clock cycle
-
+   EXCEPTION   exception;
+   EVENTS      current_events;                                                   // number of retired instructions for current clock cycle
+   logic       sw_irq;
 
    //-----------------------------------------------------
    // Interrupt Code   Description - riscv_privileged.pdf p 37
@@ -238,7 +235,7 @@ module wb
    //             13                Load page fault
    //             7                 Store/AMO access fault
    //             5                 Load access fault
-   
+
    // ****** Exception handling also occurs here for all instructions - see data from EXE stage *****
    // Completed Load Instructions pass data on to WB stage. All exceptions occur in this MEM stage.  When an exception occurs,
    // all instructions in all stages of the pipeline are flushed.  See pipe_flush signal and how it affects pipe()
@@ -246,38 +243,38 @@ module wb
    begin
       // signals to update Rd/Fd in WB stage
       `ifdef ext_F
-      wb_Fd_wr          = FALSE;
+      wb_Fd_wr             = FALSE;
       `endif
-      wb_Rd_wr          = FALSE;
-      wb_Rd_addr        = '0;
-      wb_Rd_data        = '0;
+      wb_Rd_wr             = FALSE;
+      wb_Rd_addr           = '0;
+      wb_Rd_data           = '0;
 
-      wb_csr_wr         = FALSE;                                                    // Writeback stage needs to know whether to write to destination register Rd
-      wb_csr_addr       = '0;
-      wb_csr_wr_data    = '0;
-      wb_csr_fwd_data   = '0;
+      wb_csr_wr            = FALSE;                                                 // Writeback stage needs to know whether to write to destination register Rd
+      wb_csr_addr          = '0;
+      wb_csr_wr_data       = '0;
+      wb_csr_fwd_data      = '0;
 
-      WB_CSR_bus.sw_irq = '0;                                                       // msip_reg[3] = Software Interrupt Pending - from EXE stage
+      sw_irq               = 0;                                                     // msip_reg[3] = Software Interrupt Pending - from EXE stage
 
-      rld_pc_flag       = FALSE;
-      rld_ic_flag       = FALSE;
-      rld_pc_addr       = '0;
+      rld_pc_flag          = FALSE;
+      rld_ic_flag          = FALSE;
+      rld_pc_addr          = '0;
 
-      exception         = '0;          // default values
+      exception            = '0;          // default values
 
-      current_events    = '0;
+      current_events       = '0;
 
-      trigger_wfi       = FALSE;
+      trigger_wfi          = FALSE;
 
-      mret              = FALSE;
+      mret                 = FALSE;
 
       `ifdef ext_S
-      sret              = FALSE;
+      sret                 = FALSE;
       `endif
 
       `ifdef ext_U
       `ifdef ext_N
-      uret              = FALSE;
+      uret                 = FALSE;
       `endif
       `endif
 
@@ -287,19 +284,17 @@ module wb
          //////////////////////////////////////////////////////////
          // Exceptions, current events, and flush pipeline logic //
          //////////////////////////////////////////////////////////
-         // signals to update Rd/Fd in WB stage
-
-         if (interrupt_flag)                                                        // overrides the current instruction - current instruction will be re-executed after interrupt
+         if (irq_flag)                                                              // overrides the current instruction - current instruction will be re-executed after interrupt
          begin
-            rld_pc_flag                = TRUE;                                      // if interrupt_flag is set then an exception.flag CANNOT get set this cycle
+            rld_pc_flag                = TRUE;                                      // if irq_flag is set then an exception.flag CANNOT get set this cycle
             rld_pc_addr                = trap_pc;                                   // Trap Vector Base Address - from csr.sv
 
             exception.pc               = ipd.pc;                                    // save address of current instruction
             exception.tval             = ipd.instruction;                           // current Instruction
-            exception.cause            = interrupt_cause;                           // Machine, Supervisor, or User external interrupt. see riscv-privileged.pdf p 91
+            exception.cause            = irq_cause;                                 // Machine, Supervisor, or User external interrupt. see riscv-privileged.pdf p 91
             exception.flag             = TRUE;                                      // control signal to save exception.pc, exception.tval and exception.cause in csr.sv
 
-            current_events.ext_irq     = TRUE;                                      // can't be covered by e_flag...becuase interrupt_cause is a 32 bit value that would interfere with e_cause numbers, so just set a single bit flag (ext_irq)
+            current_events.ext_irq     = TRUE;                                      // can't be covered by e_flag...becuase irq_cause is a 32 bit value that would interfere with e_cause numbers, so just set a single bit flag (ext_irq)
          end
          else
             case(ig_type)                                                           // select which functional unit output data is the appropriate one to process
@@ -347,7 +342,7 @@ module wb
                   `ifdef ext_S
                   B_SRET:                                                           // SRET
                   begin
-                     if (mode < S_MODE)
+                     if (instr_mode < S_MODE)
                      begin
                         rld_pc_flag             = TRUE;                             // flush pipeline and reload new fetch address
                         rld_pc_addr             = trap_pc;                          // Trap Vector Base Address - from csr.sv/mode_irq.sv
@@ -369,7 +364,7 @@ module wb
 
                   B_MRET:                                                           // MRET
                   begin
-                     if (mode < M_MODE)                                             // Illegal to use in Supervisor or User modes
+                     if (instr_mode < M_MODE)                                       // Illegal to use in Supervisor or User modes
                      begin
                         rld_pc_flag             = TRUE;                             // flush pipeline and reload new fetch address
                         rld_pc_addr             = trap_pc;                          // Trap Vector Base Address - from csr.sv/mode_irq.sv
@@ -516,7 +511,7 @@ module wb
 
                      exception.pc               = ipd.pc;                           // address of current instruction to be saved in mepc, sepc, or uepc register
                      exception.tval             = ipd.instruction;                  // current Instruction (can't find anything about this for this exception! maybe it shouldn't be tested???)
-                     exception.cause            = {2'b10,mode};                     // ECALL generates a different exception for each originating privilege mode so that environment call exceptions can be selectively delegated.
+                     exception.cause            = {2'b10,instr_mode};               // ECALL generates a different exception for each originating privilege mode so that environment call exceptions can be selectively delegated.
                      exception.flag             = TRUE;                             // control signal to save exception.pc, exception.tval and exception.cause in csr.sv
 
                      current_events.e_flag      = TRUE;
@@ -542,7 +537,7 @@ module wb
                   WFI:                                                              // NOTE: "...a legal implementation is to simply implement WFI as a NOP"
                   begin
 // !!!!!!!!!!!!!! NEEDS TO BE COMPLETED !!!!!!!!!!!!!!
-//                     if (mstatus.twi || (D2E_bus.data.funct3 > mode))               // see riscv_privileged-20190608.pdf  p.41
+//                     if (mstatus.twi || (D2E_bus.data.funct3 > instr_mode))         // see riscv_privileged-20190608.pdf  p.41
 //                     begin
                      trigger_wfi = TRUE;
 //                     end
@@ -578,7 +573,7 @@ module wb
                   wb_csr_wr_data          = M2W_bus.data.csr_wr_data;
                   wb_csr_fwd_data         = M2W_bus.data.csr_fwd_data;
 
-                  WB_CSR_bus.sw_irq       = M2W_bus.data.sw_irq;                    // from EXE stage - now needed in csr_fu.sv to complete instruction
+                  sw_irq                  = M2W_bus.data.sw_irq;                    // from EXE stage - now needed in csr_fu.sv to complete instruction
                end
 
                current_events.ret_cnt[CSR_RET] = 1'b1;                              // number of CSR instructions retiring this clock cycle
@@ -672,5 +667,8 @@ module wb
       end // M2W_bus.valid
    end // always_comb
 
-
+   assign csr_wr_bus.exception      = exception;
+   assign csr_wr_bus.sw_irq         = sw_irq;                                       // msip_reg[3] = Software Interrupt Pending - from EXE stage
+   assign csr_wr_bus.current_events = current_events;                               // number of retired instructions for current clock cycle
+ 
 endmodule

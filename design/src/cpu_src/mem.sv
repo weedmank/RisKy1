@@ -91,7 +91,7 @@ module mem
    logic                   is_ls;                                                   // this is a Load or Store instruction
    logic                   MIO_req, MIO_ack, MIO_ack_fault;
    logic         [RSZ-1:0] MIO_ack_data;
-   logic             [1:0] mode;
+   logic             [1:0] instr_mode;
 
    // signals used in MEM stage
    assign ls_addr                      = E2M_bus.data.ls_addr;
@@ -101,7 +101,7 @@ module mem
    assign inv_flag                     = E2M_bus.data.inv_flag;
    assign is_ld                        = E2M_bus.data.is_ld;
    assign is_st                        = E2M_bus.data.is_st;
-   assign mode                         = E2M_bus.data.mode;
+   assign instr_mode                   = E2M_bus.data.instr_mode;
    assign sw_irq                       = E2M_bus.data.sw_irq;                       // msip_reg[3]. see irq.sv
 
    assign is_ls                        = (is_ld | is_st);
@@ -155,11 +155,12 @@ module mem
    assign mem_dout.ig_type             = E2M_bus.data.ig_type;
    assign mem_dout.op_type             = E2M_bus.data.op_type;
    //     mem_dout.mio_ack_fault       is created in always block below
-   assign mem_dout.mode                = E2M_bus.data.mode;
-   assign mem_dout.trap_pc             = E2M_bus.data.trap_pc;                      // trap_pc, interrupt_flag, interrupt_cause not used in this stage,but needed in WB stage
+   assign mem_dout.instr_mode          = E2M_bus.data.instr_mode;
    assign mem_dout.sw_irq              = E2M_bus.data.sw_irq;                       // just passes on to wb stage
-   assign mem_dout.interrupt_flag      = E2M_bus.data.interrupt_flag;
-   assign mem_dout.interrupt_cause     = E2M_bus.data.interrupt_cause;
+
+   assign mem_dout.trap_pc             = E2M_bus.data.trap_pc;                      // trap_pc, irq_flag, irq_cause not used in this stage,but needed in WB stage
+   assign mem_dout.irq_flag            = E2M_bus.data.irq_flag;
+   assign mem_dout.irq_cause           = E2M_bus.data.irq_cause;
 
    `ifdef ext_F
    assign mem_dout.Fd_wr               = E2M_bus.data.Fd_wr;
@@ -193,7 +194,7 @@ module mem
 
             ST_INSTR:
             begin
-               // Store exceptions arer done once Store finishes in this MEM stage
+               // Store exceptions are done once Store finishes in this MEM stage
                mem_dout.mio_ack_fault  = MIO_ack_fault;                             // WB stage exception handling will need to know this.
             end
 
@@ -226,11 +227,11 @@ module mem
    assign L1DC_bus.req_data.inv_flag   = inv_flag;          // invalidate flag
    assign L1DC_bus.req                 = is_phy_mem;
 
-   assign mtime_lo_wr      = is_int_io & (mode == M_MODE) & (ls_addr ==  MTIME_Base_Addr)       & is_st;
-   assign mtime_hi_wr      = is_int_io & (mode == M_MODE) & (ls_addr == (MTIME_Base_Addr+4))    & is_st;
-   assign mtimecmp_lo_wr   = is_int_io & (mode == M_MODE) & (ls_addr == MTIMECMP_Base_Addr)     & is_st;
-   assign mtimecmp_hi_wr   = is_int_io & (mode == M_MODE) & (ls_addr == (MTIMECMP_Base_Addr+4)) & is_st;
-   assign msip_wr          = is_int_io & (mode == M_MODE) & (ls_addr == MSIP_Base_Addr)         & is_st;
+   assign mtime_lo_wr      = is_int_io & (instr_mode == M_MODE) & (ls_addr ==  MTIME_Base_Addr)       & is_st;
+   assign mtime_hi_wr      = is_int_io & (instr_mode == M_MODE) & (ls_addr == (MTIME_Base_Addr+4))    & is_st;
+   assign mtimecmp_lo_wr   = is_int_io & (instr_mode == M_MODE) & (ls_addr == MTIMECMP_Base_Addr)     & is_st;
+   assign mtimecmp_hi_wr   = is_int_io & (instr_mode == M_MODE) & (ls_addr == (MTIMECMP_Base_Addr+4)) & is_st;
+   assign msip_wr          = is_int_io & (instr_mode == M_MODE) & (ls_addr == MSIP_Base_Addr)         & is_st;
 
    assign mmr_wr_data      = st_data;
 
@@ -286,7 +287,7 @@ module mem
       // ************************** Internal I/O accesses **************************
       else if (is_int_io)                                                  // Internal I/O address space
       begin
-         if (mode == M_MODE)                                               // These CPU internal I/O accesses can only be done in machine mode.
+         if (instr_mode == M_MODE)                                         // These CPU internal I/O accesses can only be done in machine mode.
          begin
             if (ls_addr == MTIME_Base_Addr)
             begin

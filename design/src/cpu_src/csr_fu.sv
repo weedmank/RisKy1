@@ -27,10 +27,9 @@ import cpu_structs_pkg::*;
 
 module csr_fu
 (
-   CSRFU_intf.slave     csrfu_bus,
-   CSR_NXT_intf.master  csr_nxt_bus
+   CSRFU_intf.slave  csrfu_bus
 );
-   logic                   csr_valid;                             // 1 = Read & Write from/to csr[csr_addr] will occur this clock cylce
+   logic                   is_csr_inst;                           // 1 = A CSR instruction is occuring during this clock cylce
    logic            [11:0] csr_addr;                              // R/W address
    logic     [GPR_ASZ-1:0] Rd_addr;                               // Rd address
    logic     [GPR_ASZ-1:0] Rs1_addr;                              // Rs1 address
@@ -38,43 +37,35 @@ module csr_fu
    logic             [2:0] funct3;
    logic             [1:0] mode;                                  // CPU mode: Machine, Supervisor, or User
    logic                   sw_irq;                                // Software Interrupt Pending
+   logic         [RSZ-1:0] csr_rd_data;                           // current read data from CSR[csr_addr] with any mods due to which R/W mode - {CSRRW,CSRRS,CSRRC,CSRRWI,CSRRSI,CSRRCI}
 
+   // signals that will get passed to Mem Stage related to current contents of CSR[csr_addr]
    logic                   csr_wr;                                //
    logic                   csr_rd;                                //
-   logic                   csr_avail;                             //
-   logic         [RSZ-1:0] csr_rd_data;                           //
-   logic         [RSZ-1:0] Rd_data;                               // based on current CSR[csr_addr] and function to perform. This is the value to write into Destination Register Rd in WB stage
-   logic         [RSZ-1:0] csr_wr_data;                           // write data to csr[csr_addr]
-   logic         [RSZ-1:0] nxt_csr_rd_data;                       // data that will be in CSR[csr_addr] after write - may be different that data being written but it can be determined
+   logic         [RSZ-1:0] csr_rw_data;                           // read data after it is written into CSR[csr_addr] - can be very different that what gets written
+   logic         [RSZ-1:0] csr_wr_data;                           // write data to CSR[csr_addr]
    logic                   ill_csr_access;                        // 1 = illegal csr access
    logic            [11:0] ill_csr_addr;
+   logic                   csr_rd_avail;                          // Is the CSR[csr_addr] available for use?
 
-   logic         [RSZ-1:0] imm_data;                              // immediate data
+   logic         [RSZ-1:0] imm_data;                              // immediate data used in calculation of next CSR[csr_addr]
 
-   // ----------------------------------- csr_nxt_bus interface
-   assign csr_nxt_bus.nxt_csr_wr       = csr_wr;
-   assign csr_nxt_bus.nxt_csr_wr_addr  = csr_addr;
-   assign csr_nxt_bus.nxt_csr_wr_data  = csr_wr_data;
-
-   assign nxt_csr_rd_data = csr_nxt_bus.nxt_csr_rd_data;          // data from csr_nxt_bus.nxt_csr_wr_addr is returned
-
-   // ----------------------------------- csrfu_bus.slave interface
-   assign csr_valid                    = csrfu_bus.csr_valid;     // Input:   valid == 1 - a CSR rad & write happens this clock cycle
+   // ---------------------------------- csrfu_bus.slave interface I/O
+   assign is_csr_inst                  = csrfu_bus.is_csr_inst;   // Input:   1 = A CSR instruction is occuring during this clock cylce
    assign csr_addr                     = csrfu_bus.csr_addr;      // Input:   CSR address to access
-   assign csr_avail                    = csrfu_bus.csr_avail;     // Input:   1 = CSR[csr_addr] is available for use
-   assign csr_rd_data                  = csrfu_bus.csr_rd_data;   // Input:   Current read data read from CSR[csr_addr]
    assign Rd_addr                      = csrfu_bus.Rd_addr;       // Input:   rd
    assign Rs1_addr                     = csrfu_bus.Rs1_addr;      // Input:   rs1
    assign Rs1_data                     = csrfu_bus.Rs1_data;      // Input:   R[rs1]
    assign funct3                       = csrfu_bus.funct3;        // Input:   type of CSR R/W
    assign mode                         = csrfu_bus.mode;          // Input:   current CPU mode
    assign sw_irq                       = csrfu_bus.sw_irq;        // Input:   Software Interrupt Pending
+   assign csr_rd_data                  = csrfu_bus.csr_rd_data;   // Input:   csr read data directly from csr logic
+   assign csr_rd_avail                 = csrfu_bus.csr_rd_avail;  // Input:   csr register is available for use
 
-   assign csrfu_bus.csr_wr             = csr_wr;                  // Output:   1 = write csr_wr_data to CSR[csr_addr]
-   assign csrfu_bus.csr_rd             = csr_rd;                  // Output:   1 = read csr_rd_data from CSR[csr_addr]
-   assign csrfu_bus.Rd_data            = Rd_data;                 // Output:  data, based on current CSR[csr_addr] and operation to perform, that will be written to Destination Register Rd in WB stage
+   assign csrfu_bus.csr_rd             = csr_rd;                  // Output:  1 = read from CSR[csr_addr]
+   assign csrfu_bus.csr_wr             = csr_wr;                  // Output:  1 = write csr_wr_data to CSR[csr_addr]
+   assign csrfu_bus.csr_rw_data        = csr_rw_data;             // Output:  csr_rd_data plus any software interrupt modifications (depends on csr_addr)
    assign csrfu_bus.csr_wr_data        = csr_wr_data;             // Output:  data that will be written to CSR[csr_addr] in WB stage
-   assign csrfu_bus.nxt_csr_rd_data    = nxt_csr_rd_data;         // Output:  next csr read data by be different than what is written. This calculated value will be forwarded as the csr read data in EXE and later stages
    assign csrfu_bus.ill_csr_access     = ill_csr_access;          // Output:  used by EXE stage to pass on to WB stage
    assign csrfu_bus.ill_csr_addr       = ill_csr_addr;            // Output:  used by EXE stage to pass on to WB stage
 
@@ -100,22 +91,22 @@ module csr_fu
    //    12'hC00 = 12'b1100_0000_0000  cycle       (read-only)   user mode
    //    12'hB00 = 12'b1011_0000_0000  mcycle      (read-write)  machine mode
 
-
+   // determine if there's a write to a CSR, the write data, whether this is an illegeal access, the read data from a CSR, etc..
    always_comb
    begin
       csr_wr_data    = '0;
-      Rd_data        = '0;    // Desitnation Register data. Gets witten to R[Rd] in WB stage
 
       csr_wr         = FALSE;
       csr_rd         = FALSE;
       ill_csr_access = FALSE;
       ill_csr_addr   = 0;
+      csr_rw_data    = 0;
 
-      writable    = (csr_addr[11:10] != 2'b11);          // read/write (00, 01, or 10) or read-only (11)
-      lowest_priv = csr_addr[9:8];
+      writable       = (csr_addr[11:10] != 2'b11);       // read/write (00, 01, or 10) or read-only (11)
+      lowest_priv    = csr_addr[9:8];
 
       // see riscv-spec.pdf p 54
-      if (csr_valid)
+      if (is_csr_inst)
       begin
          // When the SEIP bit is read with a CSRRW, CSRRS, or CSRRC instruction, the value returned in the
          // rd destination register contains the logical-OR of the software writable bit and the interrupt
@@ -123,7 +114,7 @@ module csr_fu
          // of a CSRRS or CSRRC instruction is only the software-writable SEIP bit, ignoring the interrupt
          // value from the external interrupt controller. p. 30 riscv-privileged.pdf  see csr_fu.sv for implementation
 
-         if (((mode < lowest_priv) || !csr_avail || !writable))
+         if (((mode < lowest_priv) || !csr_rd_avail || !writable))
          begin
             ill_csr_access = TRUE;
             ill_csr_addr   = csr_addr;
@@ -131,59 +122,59 @@ module csr_fu
          else // not an illegal CSR access
          begin
             case(funct3)   // {CSRRW,CSRRS,CSRRC,CSRRWI,CSRRSI,CSRRCI}
-               CSRRW: // 1
-               begin      // If rd=x0, then the instruction shall not read the CSR and shall not cause any of the side effects that might occur on a CSR read. riscv-spec p 53-54
+               CSRRW:      // 1
+               begin       // If rd=x0, then the instruction shall not read the CSR and shall not cause any of the side effects that might occur on a CSR read. riscv-spec p 53-54
                   csr_wr_data = Rs1_data;                // R[Rd] = CSR; CSR = R[rs1];          Atomic Read/Write CSR  p. 22
                   csr_wr = TRUE;
-                  csr_rd = (Rd_addr != 0); // if Rd = X0, don't allow any "side affects" due to read
+                  csr_rd = (Rd_addr != 0);               // if Rd = X0, don't allow any "side affects" due to read
                   if (csr_rd)
                   begin
-                     Rd_data = csr_rd_data;
-                     if (csr_addr[8:0] == 9'h144)  // Machine Interrupt Pending register - Mip and Supervisor Interrupt Pending register
-                        Rd_data |= (sw_irq << 9);  // the value returned in the rd destination register contains the logical-OR of the softwarewritable bit and the interrupt signal from the interrupt controller. p 30 riscv-privileged.pdf
+                     csr_rw_data = csr_rd_data;          // from the current CSR[csr_addr]
+                     if (csr_addr[8:0] == 9'h144)        // Machine Interrupt Pending register - Mip and Supervisor Interrupt Pending register
+                        csr_rw_data |= (sw_irq << 9);    // the value returned in the rd destination register contains the logical-OR of the software writable bit and the interrupt signal from the interrupt controller. p 30 riscv-privileged.pdf
                   end
                end
                // For both CSRRS and CSRRC, if rs1=x0, then the instruction will not write to the CSR at all, and
                // so shall not cause any of the side effects that might otherwise occur on a CSR write, such as raising
                // illegal instruction exceptions on accesses to read-only CSRs
-               CSRRS: // 2
-               begin   // Other bits in the CSR are unaffected (though CSRs might have side effects when written). risv-spec p. 54
-                  csr_wr_data = csr_rd_data |  Rs1_data;   // R[Rd] = CSR; CSR = CSR | R[rs1];    Atomic Read and Set Bits in CSR  p. 22
+               CSRRS:   // 2
+               begin    // Other bits in the CSR are unaffected (though CSRs might have side effects when written). risv-spec p. 54
+                  csr_wr_data = csr_rd_data | Rs1_data;    // R[Rd] = CSR; CSR = CSR | R[rs1];    Atomic Read and Set Bits in CSR  p. 22
                   csr_wr = (Rs1_addr != 0);
                   csr_rd = TRUE;
-                  Rd_data = csr_rd_data;
-                  if (csr_addr[8:0] == 9'h144)  // Machine Interrupt Pending register - Mip and Supervisor Interrupt Pending register
-                     Rd_data |= (sw_irq << 9);  // the value returned in the rd destination register contains the logical-OR of the softwarewritable bit and the interrupt signal from the interrupt controller. p 30 riscv-privileged.pdf
+                  csr_rw_data = csr_rd_data;
+                  if (csr_addr[8:0] == 9'h144)           // Machine Interrupt Pending register - Mip and Supervisor Interrupt Pending register
+                     csr_rw_data |= (sw_irq << 9);       // the value returned in the rd destination register contains the logical-OR of the software writable bit and the interrupt signal from the interrupt controller. p 30 riscv-privileged.pdf
                end
-               CSRRC: // 3
+               CSRRC:   // 3
                begin
-                  csr_wr_data = csr_rd_data & ~Rs1_data;   // R[Rd] = CSR; CSR = CSR & ~R[rs1];   Atomic Read and Clear Bits in CSR  p. 22
+                  csr_wr_data = csr_rd_data & ~Rs1_data; // R[Rd] = CSR; CSR = CSR & ~R[rs1];   Atomic Read and Clear Bits in CSR  p. 22
                   csr_wr = (Rs1_addr != 0);
                   csr_rd = TRUE;
-                  Rd_data = csr_rd_data;
-                  if (csr_addr[8:0] == 9'h144)  // Machine Interrupt Pending register - Mip and Supervisor Interrupt Pending register
-                     Rd_data |= (sw_irq << 9);  // the value returned in the rd destination register contains the logical-OR of the softwarewritable bit and the interrupt signal from the interrupt controller. p 30 riscv-privileged.pdf
+                  csr_rw_data = csr_rd_data;
+                  if (csr_addr[8:0] == 9'h144)           // Machine Interrupt Pending register - Mip and Supervisor Interrupt Pending register
+                     csr_rw_data |= (sw_irq << 9);       // the value returned in the rd destination register contains the logical-OR of the software writable bit and the interrupt signal from the interrupt controller. p 30 riscv-privileged.pdf
                end
-               CSRRWI: // 5
+               CSRRWI:  // 5
                begin
                   csr_wr_data = imm_data;                // R[Rd] = CSR; CSR = imm;             p. 22-23
                   csr_wr = TRUE;
-                  csr_rd = (Rd_addr != 0); // if Rd = X0, don't allow any "side affects" due to read
-                  if (csr_rd) Rd_data = csr_rd_data;
+                  csr_rd = (Rd_addr != 0);               // if Rd = X0, don't allow any "side affects" due to read
+                  if (csr_rd) csr_rw_data = csr_rd_data;
                end
-               CSRRSI: // 6
+               CSRRSI:  // 6
                begin
-                  csr_wr_data = csr_rd_data |  imm_data;   // R[Rd] = CSR; CSR = CSR | imm;       Atomic Read and Set Bits in CSR  p. 22-23
+                  csr_wr_data = csr_rd_data | imm_data;  // R[Rd] = CSR; CSR = CSR | imm;       Atomic Read and Set Bits in CSR  p. 22-23
                   csr_wr = (imm_data != 0);
                   csr_rd = TRUE;
-                  Rd_data = csr_rd_data;
+                  csr_rw_data = csr_rd_data;
                end
-               CSRRCI: // 7
+               CSRRCI:  // 7
                begin
-                  csr_wr_data = csr_rd_data & ~imm_data;   // R[Rd] = CSR; CSR = CSR & ~imm;      Atomic Read and Clear Bits in CSR  p. 22-23
+                  csr_wr_data = csr_rd_data & ~imm_data; // R[Rd] = CSR; CSR = CSR & ~imm;      Atomic Read and Clear Bits in CSR  p. 22-23
                   csr_wr = (imm_data != 0);
                   csr_rd = TRUE;
-                  Rd_data = csr_rd_data;
+                  csr_rw_data = csr_rd_data;
                end
             endcase
          end // illegal CSR access

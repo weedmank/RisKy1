@@ -23,13 +23,14 @@ import cpu_params_pkg::*;
 
 module gpr
 (
-   input    logic                            clk_in,
-   input    logic                            reset_in,
+   input    logic       clk_in,
+   input    logic       reset_in,
 
-   output   logic    [MAX_GPR-1:0] [RSZ-1:0] gpr,              // MAX_GPR General Purpose registers
-
-   RBUS_intf.slave                           gpr_bus
+   GPR_RD_intf.slave    gpr_rd_bus,                   // slave:   inputs:  RS1_addr, RS2_addr, outputs: Rs1_data, Rs2_data
+   GPR_WR_intf.slave    gpr_wr_bus                    // slave:   inputs:  Rd_wr, Rd_addr, Rd_data
 );
+
+   logic    [MAX_GPR-1:0] [RSZ-1:0] gpr;              // MAX_GPR General Purpose registers
 
    // For RISC-V ISA, X0 is Read Only
    assign gpr[0] = 0;
@@ -43,10 +44,13 @@ module gpr
       begin
          if (reset_in)
             gpr[k] <= 1'd0;
-         else if (gpr_bus.Rd_wr & (gpr_bus.Rd_addr == k))      // register Rd must match loop count to know which one to write to
-            gpr[k] <= gpr_bus.Rd_data;
+         else if (gpr_wr_bus.Rd_wr & (gpr_wr_bus.Rd_addr == k))      // register Rd must match loop count to know which one to write to
+            gpr[k] <= gpr_wr_bus.Rd_data;
       end
    end
    endgenerate
+
+   assign gpr_rd_bus.Rs1_data = gpr[gpr_rd_bus.Rs1_addr];
+   assign gpr_rd_bus.Rs2_data = gpr[gpr_rd_bus.Rs2_addr];
 
 endmodule

@@ -30,42 +30,52 @@ module mode_irq
    input    logic                reset_in,
    input    logic                clk_in,
 
-   input    logic                retire_exception_flag,  // Input:   TRUE for regular exceptions and also for interrupt exceptions
-   input    logic                retire_interrupt_flag,  // Input:   TRUE is retire_exception_flag is TRUE and the MS bit of the exception cause is TRUE
-
-   output   logic          [1:0] mode,
-   output   logic          [1:0] nxt_mode,
-
-   `ifdef ext_U
-   `ifdef ext_N
-   input    logic                uret,
-   `endif
-   `endif
-
-   `ifdef ext_S
-   input    logic                sret,
-   `endif
-   input    logic                mret,
-
-   output   logic    [PC_SZ-1:2] trap_pc,                // Output: trap vector handler address - connects to WB stage. minimum 2 byte alignment
    input    logic                ext_irq,
 
-   output   logic                irq_flag,               // Output: 1 = take an interrupt trap - connects to WB stage
-   output   logic      [RSZ-1:0] irq_cause,              // Output: value specifying what type of interrupt - connects to WB stage
+   output   logic          [1:0] mode,                               // Output:  mode goes ONLY to stage EXE, where it travels to proceeding stages with the instruction
+   output   logic          [1:0] nxt_mode,                           // Output:  mode goes ONLY to csr_regs.sv
 
-   // only a few of these CSR registers are needed by this module
+   CSR_REG_intf.slave            csr_reg_bus,                        // slave:   inputs: Ucsr, Scsr, Mcsr
+
+   CSR_WR_intf.slave             csr_wr_bus,                         // slave:   inputs: csr_wr, csr_wr_addr, csr_wr_data, sw_irq, exception, current_events, instr_mode, uret, sret, mret
+
+   TRAP_intf.master              trap_bus                            // master:  output: trap_pc, irq_flag, irq_cause
+);
+
    `ifdef ext_U
    `ifdef ext_N
-   input var UCSR                ucsr,                   // Input:   current register state of all the User Mode Control & Status Registers
+      logic       uret;
+      UCSR        Ucsr;                                              // Input:   current register state of all the User Mode Control & Status Registers
+      assign uret = csr_wr_bus.uret;
+      assign Ucsr = csr_reg_bus.Ucsr;
    `endif
    `endif
 
    `ifdef ext_S
-   input var SCSR                scsr,                   // Input:   current register state of all the Supervisor Mode Control & Status Registers
+      logic       sret;
+      SCSR        Scsr;                                              // Input:   current register state of all the Supervisor Mode Control & Status Registers
+      assign sret = csr_wr_bus.sret;
+      assign Scsr = csr_reg_bus.Scsr;
    `endif
 
-   input var MCSR                mcsr                    // Input:   current register state of all the Machine Mode Control & Status Registers
-);
+   logic          mret;
+   MCSR           Mcsr;                                              // Input:   current register state of all the Machine Mode Control & Status Registers
+   assign mret = csr_wr_bus.mret;
+   assign Mcsr = csr_reg_bus.Mcsr;
+
+   logic          retire_exception_flag;                             // Input:   TRUE for regular exceptions and also for interrupt exceptions
+   logic          retire_interrupt_flag;                             // Input:   1 = retire_exception_flag is TRUE and the MS bit of the exception cause is TRUE
+
+   assign retire_exception_flag = csr_wr_bus.exception.flag;         // Input:   An exception occured for the retiring instruction
+   assign retire_interrupt_flag = csr_wr_bus.exception.cause[RSZ-1]; // Input:   cause bit set if exception is due to an interrupt
+
+   logic     [PC_SZ-2-1:0] trap_pc;
+   logic                   irq_flag;
+   logic         [RSZ-1:0] irq_cause;
+
+   assign trap_bus.trap_pc    = trap_pc;                             // lower two bits are missing (beause they're always 0), will get added once it reaches WB stage where it gets used
+   assign trap_bus.irq_flag   = irq_flag;
+   assign trap_bus.irq_cause  = irq_cause;
 
    //--------------------------------------------------------------------------------------
    //------------------------------------- Interrupts -------------------------------------
@@ -92,43 +102,43 @@ module mode_irq
    // see Machine Mode Mie register 12'h304
    `ifdef ext_U
    `ifdef ext_N
-      assign usie = ucsr.uie.usie;           // USIE - User       mode Software Interrupt Enable
-      assign utie = ucsr.uie.utie;           // UTIE - User       mode Timer    Interrupt Enable
-      assign ueie = ucsr.uie.ueie;           // UEIE - User       mode External Interrupt Enable
+      assign usie = Ucsr.uie.usie;           // USIE - User       mode Software Interrupt Enable
+      assign utie = Ucsr.uie.utie;           // UTIE - User       mode Timer    Interrupt Enable
+      assign ueie = Ucsr.uie.ueie;           // UEIE - User       mode External Interrupt Enable
    `endif
    `endif
 
    `ifdef ext_S
-      assign ssie = scsr.sie.ssie;           // SSIE - Supervisor mode Software Interrupt Enable
-      assign stie = scsr.sie.stie;           // STIE - Supervisor mode Timer    Interrupt Enable
-      assign seie = scsr.sie.seie;           // SEIE - Supervisor mode External Interrupt Enable
+      assign ssie = Scsr.sie.ssie;           // SSIE - Supervisor mode Software Interrupt Enable
+      assign stie = Scsr.sie.stie;           // STIE - Supervisor mode Timer    Interrupt Enable
+      assign seie = Scsr.sie.seie;           // SEIE - Supervisor mode External Interrupt Enable
    `endif
 
-   assign msie = mcsr.mie.msie;              // MSIE - Machine    mode Software Interrupt Enable
-   assign mtie = mcsr.mie.mtie;              // MTIE - Machine    mode Timer    Interrupt Enable
-   assign meie = mcsr.mie.meie;              // MEIE - Machine    mode External Interrupt Enable
+   assign msie = Mcsr.mie.msie;              // MSIE - Machine    mode Software Interrupt Enable
+   assign mtie = Mcsr.mie.mtie;              // MTIE - Machine    mode Timer    Interrupt Enable
+   assign meie = Mcsr.mie.meie;              // MEIE - Machine    mode External Interrupt Enable
 
    // ---------------------- Interrupt Pending bits ----------------------
    // see Machine Mode Mip register 12'h344
    `ifdef ext_U
    `ifdef ext_N
-      assign usip = ucsr.uip.usip;           // USIP - User       mode Software Interrupt Pending
-      assign utip = ucsr.uip.utip;           // UTIP - User       mode Timer    Interrupt Pending
-      assign ueip = ucsr.uip.ueip;           // UEIP - User       mode External Interrupt Pending
+      assign usip = Ucsr.uip.usip;           // USIP - User       mode Software Interrupt Pending
+      assign utip = Ucsr.uip.utip;           // UTIP - User       mode Timer    Interrupt Pending
+      assign ueip = Ucsr.uip.ueip;           // UEIP - User       mode External Interrupt Pending
    `endif
    `endif
 
    `ifdef ext_S
-      assign ssip = scsr.sip.ssip;           // SSIP - Supervisor mode Software Interrupt Pending
-      assign stip = scsr.sip.stip;           // STIP - Supervisor mode Timer    Interrupt Pending
+      assign ssip = Scsr.sip.ssip;           // SSIP - Supervisor mode Software Interrupt Pending
+      assign stip = Scsr.sip.stip;           // STIP - Supervisor mode Timer    Interrupt Pending
       // The logical-OR of the software-writable bit and the signal from the external interrupt
       // controller is used to generate external interrupts to the supervisor. see p 30 riscv-privileged.pdf
-      assign seip = scsr.sip.seip & ext_irq; // SEIP - Supervisor mode External Interrupt Pending
+      assign seip = Scsr.sip.seip & ext_irq; // SEIP - Supervisor mode External Interrupt Pending
    `endif
 
-   assign msip = mcsr.mip.msip;              // MSIP - Machine    mode Software Interrupt Pending
-   assign mtip = mcsr.mip.mtip;              // MTIP - Machine    mode Timer    Interrupt Pending
-   assign meip = mcsr.mip.meip;              // MEIP - Machine    mode External Interrupt Pending
+   assign msip = Mcsr.mip.msip;              // MSIP - Machine    mode Software Interrupt Pending
+   assign mtip = Mcsr.mip.mtip;              // MTIP - Machine    mode Timer    Interrupt Pending
+   assign meip = Mcsr.mip.meip;              // MEIP - Machine    mode External Interrupt Pending
 
    // ---------------------- IRQs ----------------------
    assign m_irq = (msip & msie) | (mtip & mtie) | (meip & meie);  // any of the machine mode interrupts
@@ -163,7 +173,7 @@ module mode_irq
       case(mode)   // what should the interrupt priority be if multiple interrupts???????????????????????????????????? SW, then Timer, then External ??????????????????
          M_MODE:
          begin
-            irq_flag = (mcsr.mstatus.mie & m_irq);
+            irq_flag = (Mcsr.mstatus.mie & m_irq);
 
             if      (msip & msie) irq_cause = (1'b1 << (RSZ-1)) | 'd3;  // Machine Mode Software Interrupt
             else if (mtip & mtie) irq_cause = (1'b1 << (RSZ-1)) | 'd7;  // Machine Mode Timer Interrupt
@@ -173,7 +183,7 @@ module mode_irq
          `ifdef ext_S
          S_MODE:
          begin
-            irq_flag = (m_irq  | (scsr.sstatus.sie & s_irq));
+            irq_flag = (m_irq  | (Scsr.sstatus.sie & s_irq));
 
             if      (ssip & ssie) irq_cause = (1'b1 << (RSZ-1)) | 'd1;  // Supervisor Mode Software Interrupt
             else if (stip & stie) irq_cause = (1'b1 << (RSZ-1)) | 'd5;  // Supervisor Mode Timer Interrupt
@@ -185,7 +195,7 @@ module mode_irq
          `ifdef ext_N
          U_MODE:
          begin
-            irq_flag = (m_irq |  `ifdef ext_S s_irq | `endif (ucsr.ustatus.uie & u_irq));
+            irq_flag = (m_irq |  `ifdef ext_S s_irq | `endif (Ucsr.ustatus.uie & u_irq));
 
             if      (usip & usie) irq_cause = (1'b1 << (RSZ-1)) | 'd0;  // User Mode Software Interrupt
             else if (utip & utie) irq_cause = (1'b1 << (RSZ-1)) | 'd4;  // User Mode Timer Interrupt
@@ -201,12 +211,12 @@ module mode_irq
    //----------------------------------------------------------------------------------------------------------------------------------------
 
    // csr_mstatus info
-   logic       [1:0] mpp;                       // from mcsr.mstatus[12:11]
-   assign mpp = mcsr.mstatus.mpp;
+   logic       [1:0] mpp;                       // from Mcsr.mstatus[12:11]
+   assign mpp = Mcsr.mstatus.mpp;
 
    `ifdef ext_S
-   logic    spp;  // from mcsr.mstatus[8]
-   assign spp = scsr.sstatus.spp;
+   logic    spp;  // from Mcsr.mstatus[8]
+   assign spp = Scsr.sstatus.spp;
    `endif
 
    always_ff @(posedge clk_in)
@@ -231,8 +241,8 @@ module mode_irq
 
    always_comb
    begin
-      tvec        = mcsr.mtvec;                 // This default Trap PC will only get used if retire_exception_flag asserts when an instruction tries to retire in stage WB
-      cause       = mcsr.mcause[DEL_SZ-1:0];
+      tvec        = Mcsr.mtvec;                 // This default Trap PC will only get used if retire_exception_flag asserts when an instruction tries to retire in stage WB
+      cause       = Mcsr.mcause[DEL_SZ-1:0];
 
       // By default, all traps at any privilege level are handled in machine mode, though a machine-mode
       // handler can redirect traps back to the appropriate level with the MRET instruction
@@ -247,17 +257,17 @@ module mode_irq
 
          // ----------------------------------------------  logic to include if delegation is allowed
          `ifdef MDLG
-            mdlg     = mcsr.medeleg[cause];     // Machine    delegation bit based on mcause
+            mdlg     = Mcsr.medeleg[cause];     // Machine    delegation bit based on mcause
             `ifdef ext_S
-            sdlg     = scsr.sedeleg[cause];     // Supervisor delegation bit based on mcause
+            sdlg     = Scsr.sedeleg[cause];     // Supervisor delegation bit based on mcause
             `endif
 
             if (retire_interrupt_flag)          // interrupt flag from instruction that is retiring in stage WB. We'll let interrupt override normal exception causes
             begin
-               mdlg     = mcsr.mideleg[cause];
+               mdlg     = Mcsr.mideleg[cause];
                `ifdef ext_S
                `ifdef ext_N
-               sdlg     = scsr.sideleg[cause];
+               sdlg     = Scsr.sideleg[cause];
                `endif
                `endif
             end
@@ -273,7 +283,7 @@ module mode_irq
                   // delegate the corresponding trap in (S-mode or U-mode) to the S-mode trap handler. p. 28 - riscv-privileged.pdf
                   if (mdlg && (mode <= S_MODE))
                   begin
-                     tvec     = scsr.stvec;
+                     tvec     = Scsr.stvec;
                      nxt_mode = S_MODE;
                   end
                   `ifdef ext_U
@@ -282,7 +292,7 @@ module mode_irq
                   // to delegate traps that occur in U-mode to the U-mode trap handler.  see p. 28 riscv-privileged.pdf
                   if (sdlg && (mode == U_MODE))
                   begin
-                     tvec     = ucsr.utvec;
+                     tvec     = Ucsr.utvec;
                      nxt_mode = U_MODE;
                   end
                   `endif // ext_N
@@ -294,8 +304,8 @@ module mode_irq
                   `ifdef ext_N
                      if (mdlg && (mode == U_MODE))
                      begin
-                        tvec     = ucsr.utvec;
-                        nxt_mode = U_MODE;      // will cause ucsr.ucause, ucsr.uepc, and ucsr.utval to be updated with exception information. see csr_nxt_reg.sv
+                        tvec     = Ucsr.utvec;
+                        nxt_mode = U_MODE;      // will cause Ucsr.ucause, Ucsr.uepc, and Ucsr.utval to be updated with exception information. see csr_nxt_reg.sv
                      end
                   `endif
                   `endif

@@ -210,11 +210,17 @@ module RisKy1_core
    // 4th Stage Memory interface signals
    M2W_intf                            M2W_bus();
 
-   // interface between MEM stage and CSR Functional Unit inside EXE stage
-   WB_CSR_intf                         WB_CSR_bus();
+   EPC_bus_intf                        epc_bus();
 
-   // signals shared between CSR and EXE stage
-   CSR_EXE_intf                        csr_exe_bus();
+   // interface between WB stage and CSR Functional Unit inside EXE stage
+   CSR_WR_intf                         csr_wr_bus();  // master <- outputs: csr_wr, csr_wr_addr, csr_wr_data, sw_irq, exception, current_events, instr_mode, uret, sret, mret);
+
+   // All CSR registers shared between CSREGS and CSR Functional Unit inside EXE stage
+   CSR_RD_intf                         csr_rd_bus();  // master: outputs: csr_rd_addr, input  csr_rd_avail, csr_rd_data, csr_fwd_data
+
+   CSR_REG_intf                        csr_reg_bus(); // master: outputs: Ucsr, Scsr, Mcsr
+
+   TRAP_intf                           trap_bus();    // master: outputs: trap_pc, irq, irq_cause
 
    // register forwarding signals
    FWD_CSR                             fwd_mem_csr;
@@ -229,8 +235,6 @@ module RisKy1_core
    FWD_FPR                             fwd_wb_fpr;
    `endif
 
-   CSR_NXT_intf                        csr_nxt_bus();
-
    logic                               mtime_lo_wr, mtime_hi_wr, mtimecmp_lo_wr, mtimecmp_hi_wr;
    logic                   [2*RSZ-1:0] mtime, mtimecmp;
    logic                     [RSZ-1:0] mmr_wr_data;
@@ -239,16 +243,19 @@ module RisKy1_core
    logic                               timer_irq;
    logic                               sw_irq;
 
+   logic                         [1:0] mode;
+   logic                         [1:0] nxt_mode;
+
    // GPR signals
    logic       [MAX_GPR-1:0] [RSZ-1:0] gpr;                                   // MAX_GPR General Purpose registers
 
-   RBUS_intf                           gpr_bus();
+   GPR_RD_intf                         gpr_rd_bus();
+   GPR_WR_intf                         gpr_wr_bus();
 
    `ifdef ext_F
    // FPR signals
-   logic      [MAX_FPR-1:0] [FLEN-1:0] fpr;                                   // MAX_FPR Floating Point Registers
-
-   FBUS_intf                           fpr_bus();
+   FP_RD_intf                          fpr_rd_bus();
+   FP_WR_intf                          fpr_wr_bus();
    `endif
 
    logic                               cpu_halt;
@@ -268,7 +275,9 @@ module RisKy1_core
    assign ic_reload        = wb_rld_ic_flag;
    assign pc_reload_addr   = wb_rld_pc_flag ? wb_rld_pc_addr : exe_rld_pc_addr;
 
+   //---------------------------------------------------------------------------
    // 1st Stage = Fetch Stage
+   //---------------------------------------------------------------------------
    fetch FET
    (
       .clk_in(clk_in), .reset_in(reset_in),                                   // Inputs:  system clock and reset
@@ -287,7 +296,9 @@ module RisKy1_core
       .F2D_bus(F2D_bus)
    );
 
+   //---------------------------------------------------------------------------
    // 2nd Stage = Decode Stage
+   //---------------------------------------------------------------------------
    decode DEC
    (
       .clk_in(clk_in), .reset_in(reset_in),                                   // Inputs:  system clock and reset
@@ -304,10 +315,9 @@ module RisKy1_core
       .D2E_bus(D2E_bus)
    );
 
+   //---------------------------------------------------------------------------
    // 3rd Stage = Execute Stage
-
-   RCSR_intf csr_rd_bus();
-
+   //---------------------------------------------------------------------------
    execute EXE
    (
       .clk_in(clk_in), .reset_in(reset_in),                                   // Inputs:  system clock and reset
@@ -315,14 +325,19 @@ module RisKy1_core
       .cpu_halt(cpu_halt),                                                    // Input:   Cause the CPU to stop processing instructions and data
       .sw_irq(sw_irq),                                                        // Input:   Software Interrupt Pending. used in csr_fu.sv. then passed on to MEM and WB/CSR
 
-      // signals shared between CSR and EXE stage
-      .csr_exe_bus(csr_exe_bus),                                              // Input:   mepc,sepc,uepc,mert  Output: sret,uret,mode
+      .mode(mode),                                                            // Input:   from mode_irq() - mode follows instruction
+
+      // All CSR registers shared between CSREGS and CSR Functional Unit inside EXE stage
+      .csr_rd_bus(csr_rd_bus),                                                // master <- outputs: csr_rd_addr, inputs: csr_rd_avail, csr_rd_data, csr_fwd_data
+      .trap_bus(trap_bus),                                                    // slave <- inputs: trap_pc, irq_flag, irq_cause
 
       // Time to flush pipeline and reload PC signal
       .pipe_flush(pipe_flush_exe),                                            // Input:   1 = flush pipeline
 
       .rld_pc_flag(exe_rld_pc_flag),                                          // Output:  Cause the Fetch unit to reload the PC
       .rld_pc_addr(exe_rld_pc_addr),                                          // Output:  PC address that will need to be reloaded
+
+      .epc_bus(epc_bus),                                                      // slave:   inputs: mepc, sepc, uepc
 
       // interface to forwarding signals
       .fwd_mem_csr(fwd_mem_csr),                                              // Input:   Mem stage CSR forwarding info
@@ -331,7 +346,7 @@ module RisKy1_core
       .fwd_wb_gpr(fwd_wb_gpr),                                                // Input:   WB stage register forwarding info
 
       // interface to GPR
-      .gpr(gpr),                                                              // Input:   read access to all MAX_GPR General Purpose registers - all registers can be read at anytime
+      .gpr_rd_bus(gpr_rd_bus),                                                // Input:   read access to all MAX_GPR General Purpose registers
 
       `ifdef ext_F
       // interface to forwarding signals
@@ -339,22 +354,19 @@ module RisKy1_core
       .fwd_wb_fpr(fwd_wb_fpr),                                                // Input:   WB stage register forwarding info
 
       // interface to FPR
-      .fpr(fpr),                                                              // Input:   read access to all MAX_FPR single-precision Floating Point registers - all registers can be read at anytime
+      .fpr_rd_bus(fpr_rd_bus),                                                // Input:   read access to all MAX_FPR single-precision Floating Point registers - all registers can be read at anytime
       `endif
 
       // interface to Decode stage
       .D2E_bus(D2E_bus),
 
       // interface to Memory stage
-      .E2M_bus(E2M_bus),
-
-      // interface to CSR in order to read CSR[addr]
-      .csr_rd_bus(csr_rd_bus),
-
-      .csr_nxt_bus(csr_nxt_bus)                                               // returns the value of CSR registers after a CSR write would occur, but does not change ANY registers
+      .E2M_bus(E2M_bus)
    );
 
+   //---------------------------------------------------------------------------
    // 4th Stage = Memory Stage
+   //---------------------------------------------------------------------------
    mem MEM
    (
       .clk_in(clk_in), .reset_in(reset_in),                                   // Inputs:  system clock and reset
@@ -401,8 +413,9 @@ module RisKy1_core
       .M2W_bus(M2W_bus)
    );
 
+   //---------------------------------------------------------------------------
    // 5th Stage = Write Back Stage
-   WB_2_CSR_wr_intf  csr_wr_bus();
+   //---------------------------------------------------------------------------
    logic             trigger_wfi;
 
    wb WB
@@ -429,62 +442,85 @@ module RisKy1_core
       .fwd_wb_fpr(fwd_wb_fpr),                                                // Output:  WB stage register forwarding for FPR info
 
       // interface to FPR
-      .fpr_bus(fpr_bus)
+      .fpr_wr_bus(fpr_wr_bus)
       `endif
 
       // interface to GPR
-      .gpr_bus(gpr_bus),                                                      // writes data to a specific architectural register
-
-      // interface to CSR
-      .csr_wr_bus(csr_wr_bus),                                                // writes data to a specific CSR
+      .gpr_wr_bus(gpr_wr_bus),                                                // writes data to a specific architectural register
 
       // signals from WB stage
-      .WB_CSR_bus(WB_CSR_bus)                                                 // master -> signals needed by CSR
+      .csr_wr_bus(csr_wr_bus)                                                 // master -> output: csr_wr, csr_wr_addr, csr_wr_data, sw_irq, exception, current_events, instr_mode, uret, sret, mret
    );
 
-   csr CSREGS
+   //---------------------------------------------------------------------------
+   // Architectural CSR Registers
+   //---------------------------------------------------------------------------
+   csr_regs CSREGS
    (
       .clk_in(clk_in),
       .reset_in(reset_in),
 
+      .mtime(mtime),                                                          // Input:
+
+      .mode(mode),                                                            // Input:   current instruction mode needed by EXE stage
+      .nxt_mode(nxt_mode),                                                    // Input:   next instruction mode
+
       .ext_irq(ext_irq),                                                      // Input:   External Interrupt
       .timer_irq(timer_irq),                                                  // Input:   Timer & Software Interrupt from clint.sv
 
-      // signals shared between CSR and EXE stage
-      .csr_exe_bus(csr_exe_bus),
+      .epc_bus(epc_bus),                                                      // master:  outputs: mepc, sepc, uepc
 
-      // signals from WB stage
-      .WB_CSR_bus(WB_CSR_bus),                                                // Input:   signals needed by CSR logic
+      .csr_reg_bus(csr_reg_bus),                                              // master:  outputs: Ucsr, Scsr, Mcsr
 
-      .mtime(mtime),                                                          // Input:   mtime counter from irq module can be read through CSRs
+      .csr_rd_bus(csr_rd_bus),                                                // slave:   inputs: csr_rd_addr, outputs: csr_rd_avail, csr_rd_data, csr_fwd_data
 
-      .csr_wr_bus(csr_wr_bus),                                                // slave <- Write port used by WB stage
-
-      .csr_rd_bus(csr_rd_bus),                                                // Read port used by CSR Functional Unit inside EXE stage
-
-      .csr_nxt_bus(csr_nxt_bus)                                               // returns the value of CSR registers after a CSR write would occur, but does not change ANY registers
+      .csr_wr_bus(csr_wr_bus)                                                 // slave:   inputs: csr_wr, csr_wr_addr, csr_wr_data, sw_irq, exception, current_events, instr_mode, uret, sret, mret
    );
 
+   //---------------------------------------------------------------------------
+   // Produces signals: mode, trap_pc, irq_flag, and irq_cause based on related signal inputs irq_cause, sw_irq, ....
+   //---------------------------------------------------------------------------
+   mode_irq MIRQ
+   (
+      .clk_in(clk_in),                                                        // Input:
+      .reset_in(reset_in),                                                    // Input:
+
+      .ext_irq(ext_irq),                                                      // Input:
+
+      .mode(mode),                                                            // Output:  to EXE stage - mode follows instruction
+      .nxt_mode(nxt_mode),                                                    // Output:  next instruction mode used by csr_regs.sv
+
+      .csr_reg_bus(csr_reg_bus),                                              // slave:   inputs: Ucsr, Scsr, Mcsr
+
+      .csr_wr_bus(csr_wr_bus),                                                // slave:   input: csr_wr, csr_wr_addr, csr_wr_data, sw_irq, exception, current_events, instr_mode, uret, sret, mret
+
+      .trap_bus(trap_bus)                                                     // master:  output: trap_pc, irq_flag, irq_cause
+   );
+
+   //---------------------------------------------------------------------------
    // General Purpose Registers - 32 x 32 bits for RV32i
+   //---------------------------------------------------------------------------
    gpr GPR
    (
       .clk_in(clk_in), .reset_in(reset_in),                                   // Inputs:  system clock and reset
 
-      .gpr(gpr),                                                              // Output:  MAX_GPR General Purpose registers - all registers can be read at anytime
+      .gpr_rd_bus(gpr_rd_bus),
 
-      .gpr_bus(gpr_bus)
+      .gpr_wr_bus(gpr_wr_bus)
    );
 
-   // NOTE: The following will not currently connect to anything - ext_F is not yet completed
-   `ifdef ext_F
+   //---------------------------------------------------------------------------
    // Single Precision Floating Point Registers
+   // NOTE: DO NOT USE ext_F. It is not yet completed
+   //---------------------------------------------------------------------------
+   `ifdef ext_F
    fpr FPR
    (
       .clk_in(clk_in), .reset_in(reset_in),                                   // Inputs:  system clock and reset
 
-      .fpr(fpr),                                                              // Output:  MAX_FPR General Purpose registers - all registers can be read at anytime
+      .fpr_rd_bus(fpr_rd_bus),                                                // read from MAX_FPR General Purpose registers
 
-      .fpr_bus(fpr_bus)
+      .fpr_wr_bus(fpr_wr_bus)
    );
    `endif
 
