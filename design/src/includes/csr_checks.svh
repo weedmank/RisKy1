@@ -47,9 +47,9 @@
 
       if (MISA_RO != 32'hFFFF_FFFF)                                           $warning ("Currently, no logic is implemented to allow dynamic change of this register mask");
 
-      if (SET_MCOUNTINHIBIT == 1)                                             $warning("Setting SET_MCOUNTINHIBIT == 1 forces CSR to read a constant value of SET_MCOUNTINHIBIT_BITS. See cpu_params.svh");
-      if (SET_MCOUNTINHIBIT >= 2)                                             $fatal ("SET_MCOUNTINHIBIT must be 0 or 1");
-      if (SET_MCOUNTINHIBIT_BITS < (1<<32))                                   $error ("SET_MCOUNTINHIBIT_BITS should only be 32 bits in width");
+//      if (SET_MCOUNTINHIBIT == 1)                                             $warning("Setting SET_MCOUNTINHIBIT == 1 forces CSR to read a constant value of SET_MCOUNTINHIBIT_BITS. See csr_params.svh");
+//      if (SET_MCOUNTINHIBIT >= 2)                                             $fatal ("SET_MCOUNTINHIBIT must be 0 or 1");
+//      if (SET_MCOUNTINHIBIT_BITS < (1<<32))                                   $error ("SET_MCOUNTINHIBIT_BITS should only be 32 bits in width");
       if (NUM_MHPM > 29)                                                      $fatal ("NUM_MHPM must be a value of 29 or less");
 
 
