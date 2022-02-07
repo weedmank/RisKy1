@@ -96,17 +96,17 @@ Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 
 Top level modules:
 	mem
 
-} {} {}} C:/RisKy1/design/src/cpu_src/csr.sv {1 {vlog -work work -sv -stats=none C:/RisKy1/design/src/cpu_src/csr.sv
+} {} {}} C:/RisKy1/design/src/debug/disasm_RV.sv {1 {vlog -work work -sv -stats=none C:/RisKy1/design/src/debug/disasm_RV.sv
 Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
--- Compiling package csr_sv_unit
+-- Compiling package disasm_RV_sv_unit
 -- Importing package functions_pkg
 -- Importing package logic_params_pkg
 -- Importing package cpu_params_pkg
 -- Importing package cpu_structs_pkg
--- Compiling module csr
+-- Compiling module disasm
 
 Top level modules:
-	csr
+	disasm
 
 } {} {}} C:/RisKy1/design/src/cpu_src/mode_irq.sv {1 {vlog -work work -sv -stats=none C:/RisKy1/design/src/cpu_src/mode_irq.sv
 Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
@@ -120,17 +120,17 @@ Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 
 Top level modules:
 	mode_irq
 
-} {} {}} C:/RisKy1/design/src/debug/disasm_RV.sv {1 {vlog -work work -sv -stats=none C:/RisKy1/design/src/debug/disasm_RV.sv
+} {} {}} C:/RisKy1/design/sim/eio/top_tb1.sv {1 {vlog -work work -sv -stats=none C:/RisKy1/design/sim/eio/top_tb1.sv
 Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
--- Compiling package disasm_RV_sv_unit
+-- Compiling package top_tb1_sv_unit
 -- Importing package functions_pkg
 -- Importing package logic_params_pkg
 -- Importing package cpu_params_pkg
 -- Importing package cpu_structs_pkg
--- Compiling module disasm
+-- Compiling module top_tb1
 
 Top level modules:
-	disasm
+	top_tb1
 
 } {} {}} C:/RisKy1/design/src/cpu_src/cpu_intf.sv {1 {vlog -work work -sv -stats=none C:/RisKy1/design/src/cpu_src/cpu_intf.sv
 Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
@@ -161,17 +161,17 @@ Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 
 Top level modules:
 	--none--
 
-} {} {}} C:/RisKy1/design/sim/eio/top_tb1.sv {1 {vlog -work work -sv -stats=none C:/RisKy1/design/sim/eio/top_tb1.sv
+} {} {}} C:/RisKy1/design/src/cpu_src/csr.sv {1 {vlog -work work -sv -stats=none C:/RisKy1/design/src/cpu_src/csr.sv
 Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
--- Compiling package top_tb1_sv_unit
+-- Compiling package csr_sv_unit
 -- Importing package functions_pkg
 -- Importing package logic_params_pkg
 -- Importing package cpu_params_pkg
 -- Importing package cpu_structs_pkg
--- Compiling module top_tb1
+-- Compiling module csr
 
 Top level modules:
-	top_tb1
+	csr
 
 } {} {}} C:/RisKy1/design/src/cpu_src/gpr.sv {1 {vlog -work work -sv -stats=none C:/RisKy1/design/src/cpu_src/gpr.sv
 Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020

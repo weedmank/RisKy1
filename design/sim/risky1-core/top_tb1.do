@@ -33,6 +33,8 @@
 # NOTE1: If SIM_DEBUG is needed in one group, then it should be used in all groups. Same reasoning goes for use_xxx
 # NOTE2: All +SIM_DEBUG, +BIND_ASSERTS defines should be removed if doing synthesis for FPGA or ASIC
 
+rm -rf work/*
+
 # Package Folder Files +ext_M+SIM_DEBUG
 vlog  -sv -hazards +define+ext_M+ext_C+ext_S+ext_U+ext_N+SIM_DEBUG                                                         ../../src/pkg/logic_params_pkg.sv
 vlog  -sv -hazards +define+ext_M+ext_C+ext_S+ext_U+ext_N+SIM_DEBUG                                                         ../../src/pkg/functions_pkg.sv
@@ -50,13 +52,9 @@ vlog  -sv          +define+ext_M+ext_C+ext_S+ext_U+ext_N+SIM_DEBUG              
 # +zdefine+ext_M+ext_C+ext_S+ext_U+ext_N+SIM_DEBUG
 vlog  -sv -hazards +define+ext_M+ext_C+ext_S+ext_U+ext_N+SIM_DEBUG  +cover                                                 ../../src/cpu_src/alu_fu.sv
 vlog  -sv -hazards +define+ext_M+ext_C+ext_S+ext_U+ext_N+SIM_DEBUG  +cover                                                 ../../src/cpu_src/br_fu.sv
-vlog  -sv -hazards +define+ext_M+ext_C+ext_S+ext_U+ext_N+SIM_DEBUG  +cover                                                 ../../src/cpu_src/csr.sv
-vlog  -sv -hazards +define+ext_M+ext_C+ext_S+ext_U+ext_N+SIM_DEBUG  +cover                                                 ../../src/cpu_src/csr_av_rdata.sv
-vlog  -sv -hazards +define+ext_M+ext_C+ext_S+ext_U+ext_N+SIM_DEBUG  +cover                                                 ../../src/cpu_src/csr_ff.sv
 vlog  -sv -hazards +define+ext_M+ext_C+ext_S+ext_U+ext_N+SIM_DEBUG  +cover                                                 ../../src/cpu_src/csr_fu.sv
-vlog  -sv -hazards +define+ext_M+ext_C+ext_S+ext_U+ext_N+SIM_DEBUG  +cover                                                 ../../src/cpu_src/csr_lo_cnt.sv
-vlog  -sv -hazards +define+ext_M+ext_C+ext_S+ext_U+ext_N+SIM_DEBUG  +cover                                                 ../../src/cpu_src/csr_nxt_reg.sv
 vlog  -sv -hazards +define+ext_M+ext_C+ext_S+ext_U+ext_N+SIM_DEBUG  +cover                                                 ../../src/cpu_src/csr_regs.sv
+vlog  -sv -hazards +define+ext_M+ext_C+ext_S+ext_U+ext_N+SIM_DEBUG  +cover                                                 ../../src/cpu_src/csr_sel_rdata.sv
 vlog  -sv -hazards +define+ext_M+ext_C+ext_S+ext_U+ext_N+SIM_DEBUG  +cover                                                 ../../src/cpu_src/decode.sv
 vlog  -sv -hazards +define+ext_M+ext_C+ext_S+ext_U+ext_N+SIM_DEBUG  +cover                                                 ../../src/cpu_src/decode_core.sv
 vlog  -sv -hazards +define+ext_M+ext_C+ext_S+ext_U+ext_N+SIM_DEBUG  +cover                                                 ../../src/cpu_src/execute.sv
