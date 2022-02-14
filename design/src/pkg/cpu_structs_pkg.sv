@@ -520,141 +520,141 @@ import cpu_params_pkg::*;
 
    // ------------------------ Machine mode CSRs ------------------------
    typedef struct packed {
-      MSTATUS_SIGS                           mstatus;          // 12'h300
-      logic                        [RSZ-1:0] misa;             // 12'h301
+      MSTATUS_SIGS                           Mstatus;          // 12'h300
+      logic                        [RSZ-1:0] Misa;             // 12'h301
       `ifdef MDLG   // "In systems with S-mode, the medeleg and mideleg registers must exist,..." see p. 28 riscv-privileged.pdf, csr_wr_mach.svh
-      logic                        [RSZ-1:0] medeleg;          // 12'h302
-      logic                        [RSZ-1:0] mideleg;          // 12'h303
+      logic                        [RSZ-1:0] Medeleg;          // 12'h302
+      logic                        [RSZ-1:0] Mideleg;          // 12'h303
       `endif
-      MIE_SIGS                               mie;              // 12'h304  - NOTE: just the used bits, not a whole 32 bit register
-      logic                        [RSZ-1:0] mtvec;            // 12'h305
+      MIE_SIGS                               Mie;              // 12'h304  - NOTE: just the used bits, not a whole 32 bit register
+      logic                        [RSZ-1:0] Mtvec;            // 12'h305
       `ifdef ext_U // what about ext_N???
-      logic                        [RSZ-1:0] mcounteren;       // 12'h306
+      logic                        [RSZ-1:0] Mcounteren;       // 12'h306
       `endif
-      logic                        [RSZ-1:0] mcountinhibit;    // 12'h320
+      logic                        [RSZ-1:0] Mcountinhibit;    // 12'h320
       `ifdef use_MHPM
-      logic   [NUM_MHPM-1:0] [EV_SEL_SZ-1:0] mhpmevent;        // 12'h323 - 12'h33F, mhpmevent3 - mhpmevent31
+      logic   [NUM_MHPM-1:0] [EV_SEL_SZ-1:0] Mhpmevent;        // 12'h323 - 12'h33F, mhpmevent3 - mhpmevent31
       `endif
 
-      logic                        [RSZ-1:0] mscratch;         // 12'h340
-      logic                        [RSZ-1:0] mepc;             // 12'h341
-      logic                        [RSZ-1:0] mcause;           // 12'h342
-      logic                        [RSZ-1:0] mtval;            // 12'h343
-      MIP_SIGS                               mip;              // 12'h344  - NOTE: just the used bits, not a whole 32 bit register
+      logic                        [RSZ-1:0] Mscratch;         // 12'h340
+      logic                        [RSZ-1:0] Mepc;             // 12'h341
+      logic                        [RSZ-1:0] Mcause;           // 12'h342
+      logic                        [RSZ-1:0] Mtval;            // 12'h343
+      MIP_SIGS                               Mip;              // 12'h344  - NOTE: just the used bits, not a whole 32 bit register
 
       `ifdef USE_PMPCFG
-      logic                        [RSZ-1:0] pmpcfg0;          // 12'h3A0
-      logic                        [RSZ-1:0] pmpcfg1;          // 12'h3A1
-      logic                        [RSZ-1:0] pmpcfg2;          // 12'h3A2
-      logic                        [RSZ-1:0] pmpcfg3;          // 12'h3A3
+      logic                        [RSZ-1:0] Mpmpcfg0;         // 12'h3A0
+      logic                        [RSZ-1:0] Mpmpcfg1;         // 12'h3A1
+      logic                        [RSZ-1:0] Mpmpcfg2;         // 12'h3A2
+      logic                        [RSZ-1:0] Mpmpcfg3;         // 12'h3A3
       `endif
 
       `ifdef PMP_ADDR0
-      logic                        [RSZ-1:0] pmpaddr0;         // 12'h3B0
+      logic                        [RSZ-1:0] Mpmpaddr0;        // 12'h3B0
       `endif
       `ifdef PMP_ADDR1
-      logic                        [RSZ-1:0] pmpaddr1;         // 12'h3B1
+      logic                        [RSZ-1:0] Mpmpaddr1;        // 12'h3B1
       `endif
       `ifdef PMP_ADDR2
-      logic                        [RSZ-1:0] pmpaddr2;         // 12'h3B2
+      logic                        [RSZ-1:0] Mpmpaddr2;        // 12'h3B2
       `endif
       `ifdef PMP_ADDR3
-      logic                        [RSZ-1:0] pmpaddr3;         // 12'h3B3
+      logic                        [RSZ-1:0] Mpmpaddr3;        // 12'h3B3
       `endif
       `ifdef PMP_ADDR4
-      logic                        [RSZ-1:0] pmpaddr4;         // 12'h3B4
+      logic                        [RSZ-1:0] Mpmpaddr4;        // 12'h3B4
       `endif
       `ifdef PMP_ADDR5
-      logic                        [RSZ-1:0] pmpaddr5;         // 12'h3B5
+      logic                        [RSZ-1:0] Mpmpaddr5;        // 12'h3B5
       `endif
       `ifdef PMP_ADDR6
-      logic                        [RSZ-1:0] pmpaddr6;         // 12'h3B6
+      logic                        [RSZ-1:0] Mpmpaddr6;        // 12'h3B6
       `endif
       `ifdef PMP_ADDR7
-      logic                        [RSZ-1:0] pmpaddr7;         // 12'h3B7
+      logic                        [RSZ-1:0] Mpmpaddr7;        // 12'h3B7
       `endif
       `ifdef PMP_ADDR8
-      logic                        [RSZ-1:0] pmpaddr8;         // 12'h3B8
+      logic                        [RSZ-1:0] Mpmpaddr8;        // 12'h3B8
       `endif
       `ifdef PMP_ADDR9
-      logic                        [RSZ-1:0] pmpaddr9;         // 12'h3B9
+      logic                        [RSZ-1:0] Mpmpaddr9;        // 12'h3B9
       `endif
       `ifdef PMP_ADDR10
-      logic                        [RSZ-1:0] pmpaddr10;        // 12'h3BA
+      logic                        [RSZ-1:0] Mpmpaddr10;       // 12'h3BA
       `endif
       `ifdef PMP_ADDR11
-      logic                        [RSZ-1:0] pmpaddr11;        // 12'h3BB
+      logic                        [RSZ-1:0] Mpmpaddr11;       // 12'h3BB
       `endif
       `ifdef PMP_ADDR12
-      logic                        [RSZ-1:0] pmpaddr12;        // 12'h3BC
+      logic                        [RSZ-1:0] Mpmpaddr12;       // 12'h3BC
       `endif
       `ifdef PMP_ADDR13
-      logic                        [RSZ-1:0] pmpaddr13;        // 12'h3BD
+      logic                        [RSZ-1:0] Mpmpaddr13;       // 12'h3BD
       `endif
       `ifdef PMP_ADDR14
-      logic                        [RSZ-1:0] pmpaddr14;        // 12'h3BE
+      logic                        [RSZ-1:0] Mpmpaddr14;       // 12'h3BE
       `endif
       `ifdef PMP_ADDR15
-      logic                        [RSZ-1:0] pmpaddr15;        // 12'h3BF
+      logic                        [RSZ-1:0] Mpmpaddr15;       // 12'h3BF
       `endif
 
       `ifdef add_DM
-      logic                        [RSZ-1:0] tselect;          // 12'h7A0
-      logic                        [RSZ-1:0] tdata1;           // 12'h7A1
-      logic                        [RSZ-1:0] tdata2;           // 12'h7A2
-      logic                        [RSZ-1:0] tdata3;           // 12'h7A3
-      logic                        [RSZ-1:0] dcsr;             // 12'h7B0
-      logic                        [RSZ-1:0] dpc;              // 12'h7B1
-      logic                        [RSZ-1:0] dscratch0;        // 12'h7B2
-      logic                        [RSZ-1:0] dscratch1;        // 12'h7B3
+      logic                        [RSZ-1:0] Mtselect;         // 12'h7A0
+      logic                        [RSZ-1:0] Mtdata1;          // 12'h7A1
+      logic                        [RSZ-1:0] Mtdata2;          // 12'h7A2
+      logic                        [RSZ-1:0] Mtdata3;          // 12'h7A3
+      logic                        [RSZ-1:0] Mdcsr;            // 12'h7B0
+      logic                        [RSZ-1:0] Mdpc;             // 12'h7B1
+      logic                        [RSZ-1:0] Mdscratch0;       // 12'h7B2
+      logic                        [RSZ-1:0] Mdscratch1;       // 12'h7B3
       `endif
 
-      logic                        [RSZ-1:0] mcycle_lo;        // 12'hB00
-      logic                        [RSZ-1:0] mcycle_hi;        // 12'hB80
-      logic                        [RSZ-1:0] minstret_lo;      // 12'hB02
-      logic                        [RSZ-1:0] minstret_hi;      // 12'hB82
+      logic                        [RSZ-1:0] Mcycle_lo;        // 12'hB00
+      logic                        [RSZ-1:0] Mcycle_hi;        // 12'hB80
+      logic                        [RSZ-1:0] Minstret_lo;      // 12'hB02
+      logic                        [RSZ-1:0] Minstret_hi;      // 12'hB82
 
       `ifdef use_MHPM
-      logic         [NUM_MHPM-1:0] [RSZ-1:0] mhpmcounter_lo;   // 12'hB03 - 12'B1F
-      logic         [NUM_MHPM-1:0] [RSZ-1:0] mhpmcounter_hi;   // 12'hB83 - 12'B9F
+      logic         [NUM_MHPM-1:0] [RSZ-1:0] Mhpmcounter_lo;   // 12'hB03 - 12'B1F
+      logic         [NUM_MHPM-1:0] [RSZ-1:0] Mhpmcounter_hi;   // 12'hB83 - 12'B9F
       `endif
 
-      logic                        [RSZ-1:0] mvendorid;        // 12'hF11
-      logic                        [RSZ-1:0] marchid;          // 12'hF12
-      logic                        [RSZ-1:0] mimpid;           // 12'hF13
-      logic                        [RSZ-1:0] mhartid;          // 12'hF14
+      logic                        [RSZ-1:0] Mvendorid;        // 12'hF11
+      logic                        [RSZ-1:0] Marchid;          // 12'hF12
+      logic                        [RSZ-1:0] Mimpid;           // 12'hF13
+      logic                        [RSZ-1:0] Mhartid;          // 12'hF14
    } MCSR;
 
    // ------------------------ Supervisor mode CSRs ------------------------
    // Supervisor mode Registers
    typedef struct packed {
-      SSTATUS_SIGS                           sstatus;          // 12'h100
+      SSTATUS_SIGS                           Sstatus;          // 12'h100
       `ifdef ext_N
-      logic                        [RSZ-1:0] sedeleg;          // 12'h102
-      logic                        [RSZ-1:0] sideleg;          // 12'h103
+      logic                        [RSZ-1:0] Sedeleg;          // 12'h102
+      logic                        [RSZ-1:0] Sideleg;          // 12'h103
       `endif // ext_N
-      SIE_SIGS                               sie;              // 12'h104  - NOTE: just the used bits, not a whole 32 bit register
-      logic                        [RSZ-1:0] stvec;            // 12'h105
-      logic                        [RSZ-1:0] scounteren;       // 12'h106  - this register MUST be implemented. see p 60 riscv-privileged.pdf
-      logic                        [RSZ-1:0] sscratch;         // 12'h140
-      logic                        [RSZ-1:0] sepc;             // 12'h141
-      logic                        [RSZ-1:0] scause;           // 12'h142
-      logic                        [RSZ-1:0] stval;            // 12'h143
-      SIP_SIGS                               sip;              // 12'h144  - NOTE: just the used bits, not a whole 32 bit register
-      logic                        [RSZ-1:0] satp;             // 12'h180
+      SIE_SIGS                               Sie;              // 12'h104  - NOTE: just the used bits, not a whole 32 bit register
+      logic                        [RSZ-1:0] Stvec;            // 12'h105
+      logic                        [RSZ-1:0] Scounteren;       // 12'h106  - this register MUST be implemented. see p 60 riscv-privileged.pdf
+      logic                        [RSZ-1:0] Sscratch;         // 12'h140
+      logic                        [RSZ-1:0] Sepc;             // 12'h141
+      logic                        [RSZ-1:0] Scause;           // 12'h142
+      logic                        [RSZ-1:0] Stval;            // 12'h143
+      SIP_SIGS                               Sip;              // 12'h144  - NOTE: just the used bits, not a whole 32 bit register
+      logic                        [RSZ-1:0] Satp;             // 12'h180
    } SCSR;
 
    // ------------------------ User mode CSRs ------------------------
    // User mode Registers
    typedef struct packed {
-      USTATUS_SIGS                           ustatus;          // 12'h000
-      UIE_SIGS                               uie;              // 12'h004  - NOTE: just the used bits, not a whole 32 bit register
-      logic                        [RSZ-1:0] utvec;            // 12'h005
-      logic                        [RSZ-1:0] uscratch;         // 12'h040
-      logic                        [RSZ-1:0] uepc;             // 12'h041
-      logic                        [RSZ-1:0] ucause;           // 12'h042
-      logic                        [RSZ-1:0] utval;            // 12'h043
-      UIP_SIGS                               uip;              // 12'h044  - NOTE: just the used bits, not a whole 32 bit register
+      USTATUS_SIGS                           Ustatus;          // 12'h000
+      UIE_SIGS                               Uie;              // 12'h004  - NOTE: just the used bits, not a whole 32 bit register
+      logic                        [RSZ-1:0] Utvec;            // 12'h005
+      logic                        [RSZ-1:0] Uscratch;         // 12'h040
+      logic                        [RSZ-1:0] Uepc;             // 12'h041
+      logic                        [RSZ-1:0] Ucause;           // 12'h042
+      logic                        [RSZ-1:0] Utval;            // 12'h043
+      UIP_SIGS                               Uip;              // 12'h044  - NOTE: just the used bits, not a whole 32 bit register
    } UCSR;
 
 /*
