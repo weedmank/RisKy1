@@ -129,17 +129,17 @@ module execute
    logic                   ci;
 
    logic       [PC_SZ-1:0] mepc;
-   assign mepc = epc_bus.mepc;
+   assign mepc = epc_bus.Mepc;
 
    `ifdef ext_S
       logic    [PC_SZ-1:0] sepc;
-      assign sepc = epc_bus.sepc;
+      assign sepc = epc_bus.Sepc;
    `endif
 
    `ifdef ext_U
    `ifdef ext_N
       logic    [PC_SZ-1:0] uepc;
-      assign uepc = epc_bus.uepc;
+      assign uepc = epc_bus.Uepc;
    `endif
    `endif
 
@@ -298,7 +298,7 @@ module execute
       .csrfu_bus(csrfu_bus)
    );
 
-   logic         [RSZ-1:0] csr_rd_data;      // value to write into R[Rd]
+//   logic         [RSZ-1:0] csr_rd_data;      // value to write into R[Rd]
 
    logic                   csr_rd;
    logic                   csr_wr;
