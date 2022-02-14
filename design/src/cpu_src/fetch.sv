@@ -69,7 +69,7 @@ module fetch
    logic            [QC_SZ:0] qcnt, nxt_qip_cnt;
    Q_DATA       [Q_DEPTH-1:0] que, nxt_que;
    logic          [QP_SZ-1:0] qip, qop;                              // que input & output pointers
-   logic          [QP_SZ-1:0] nxt_qip, nxt_qop;                      // truncate to be same size as qip, qop
+   logic          [QP_SZ-1:0] nxt_qip;                               // truncate to be same size as qip, qop
 
    logic                      xfer_out;
 
@@ -585,8 +585,6 @@ module fetch
    //------------------------------------------------------------------------------------------------------------------------------------------
    // Update pointers
    //------------------------------------------------------------------------------------------------------------------------------------------
-   assign nxt_qop = QP_SZ'(qop + 1'd1);                                                   // cast result to QP_SZ bits before assigning
-   
    always_ff @(posedge clk_in)
    begin
       if (reset_in | pc_reload | ic_reload)
@@ -604,7 +602,7 @@ module fetch
       if (reset_in | pc_reload | ic_reload)
          qop <= 'd0;
       else if (xfer_out)
-         qop <= nxt_qop;                                                                  // Circular buffer pointer
+         qop <= QP_SZ'(qop + 1'd1);                                                       // cast result to QP_SZ bits before assigning;                                                                  // Circular buffer pointer
 
       if (reset_in | pc_reload | ic_reload)
          que <= 'd0;
