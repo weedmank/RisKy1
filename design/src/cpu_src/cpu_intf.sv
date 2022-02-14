@@ -155,20 +155,20 @@ interface BFU_intf;
 endinterface: BFU_intf
 
 interface EPC_bus_intf;
-   logic       [PC_SZ-1:0] mepc;
+   logic       [PC_SZ-1:0] Mepc;
 
    `ifdef ext_S
-   logic       [PC_SZ-1:0] sepc;
+   logic       [PC_SZ-1:0] Sepc;
    `endif
 
    `ifdef ext_U
    `ifdef ext_N
-   logic       [PC_SZ-1:0] uepc;
+   logic       [PC_SZ-1:0] Uepc;
    `endif
    `endif
 
-   modport master (output `ifdef ext_S sepc, `endif `ifdef ext_U `ifdef ext_N uepc, `endif `endif mepc);
-   modport slave  (input  `ifdef ext_S sepc, `endif `ifdef ext_U `ifdef ext_N uepc, `endif `endif mepc);
+   modport master (output `ifdef ext_S Sepc, `endif `ifdef ext_U `ifdef ext_N Uepc, `endif `endif Mepc);
+   modport slave  (input  `ifdef ext_S Sepc, `endif `ifdef ext_U `ifdef ext_N Uepc, `endif `endif Mepc);
 endinterface: EPC_bus_intf
 
 `ifdef ext_M
@@ -337,27 +337,6 @@ interface EIO_intf;
 endinterface: EIO_intf
 
 // ------------------------ CSR interfaces ------------------------
-interface CSR_NXT_REG_intf;
-   `ifdef add_DM
-   logic                   Dbg_mode;
-   `endif
-
-   `ifdef ext_U
-   `ifdef ext_N
-   UCSR                    nxt_Ucsr;
-   `endif
-   `endif
-
-   `ifdef ext_S
-   SCSR                    next_Scsr;
-   `endif
-
-   MCSR                    nxt_Mcsr;
-
-   modport master (output `ifdef add_DM Dbg_mode `endif `ifdef ext_U `ifdef ext_N nxt_Ucsr, `endif `endif `ifdef ext_S next_Scsr, `endif nxt_Mcsr);
-   modport slave  (input  `ifdef add_DM Dbg_mode `endif `ifdef ext_U `ifdef ext_N nxt_Ucsr, `endif `endif `ifdef ext_S next_Scsr, `endif nxt_Mcsr);
-endinterface: CSR_NXT_REG_intf
-
 interface CSR_REG_intf;
    `ifdef ext_U
    `ifdef ext_N
