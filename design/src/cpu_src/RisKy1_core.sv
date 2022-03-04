@@ -478,7 +478,8 @@ module RisKy1_core
    );
 
    //---------------------------------------------------------------------------
-   // Produces signals: mode, trap_pc, irq_flag, and irq_cause based on related signal inputs irq_cause, sw_irq, ....
+   // Produces signals: mode, trap_pc, irq_flag, and irq_cause based on related
+   //                   signal inputs irq_cause, sw_irq, ....
    //---------------------------------------------------------------------------
    mode_irq MIRQ
    (
