@@ -29,10 +29,10 @@ module tb_alu_fu;
 		#20 reset = 0;
 	end
 
-   	AFU i_intf(clk, reset);   // instantiate the AFU verification interface which supplies the clock and reset signals.
+   AFU i_intf(clk, reset); // instantiate the AFU verification interface which supplies the clock and reset signals.
 
-	test t1(i_intf);          // instantiate the program with randon_test functionality
+	test t1(i_intf);        // instantiate the program with randon_test functionality
 
-    	alu_fu alu (i_intf.slave);// instantiate the  DUT 
+   alu_fu alu (i_intf);    // instantiate the  DUT 
 
 endmodule
