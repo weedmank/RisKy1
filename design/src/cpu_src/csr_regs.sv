@@ -80,31 +80,31 @@ assign csr_nxt_reg_bus.Mcsr      = nxt_Mcsr;
    Dbg_mode  = 1;    // !!!!!!!!!!!!!!!!!!!!! FIX THIS SOMEDAY !!!!!!!!!!!!!!!!!!
 `endif
 
-`define CSR_REG(md, name, reg_addr, INIT, RO_BITS)                                                                                                       \
-   genvar ``md``_``name``_gv;                                                                                                                            \
-   generate                                                                                                                                              \
-      for (``md``_``name``_gv = 0; ``md``_``name``_gv < 32; ``md``_``name``_gv++)                                                                        \
-      begin                                                                                                                                              \
-         if (RO_BITS[``md``_``name``_gv])                                                                                                                \
-         begin                                                                                                                                           \
-            assign nxt_``md``csr.``md``name[``md``_``name``_gv] = INIT[``md``_``name``_gv];                                                              \
-            assign     ``md``csr.``md``name[``md``_``name``_gv] = INIT[``md``_``name``_gv];                                                              \
-         end                                                                                                                                             \
-         else                                                                                                                                            \
-         begin                                                                                                                                           \
-            always_comb                                                                                                                                  \
-            begin                                                                                                                                        \
-               if (reset_in)                                                                                                                             \
-                  nxt_``md``csr.``md``name[``md``_``name``_gv] = INIT[``md``_``name``_gv];                                                               \
-               else if (csr_wr & (csr_wr_addr == ``reg_addr``) & (mode >= ``md``_MODE))                                                                  \
-                  nxt_``md``csr.``md``name[``md``_``name``_gv] = csr_wr_data[``md``_``name``_gv];   /* WARL, WARL affects should be done to csr_data */  \
-               else                                                                                                                                      \
+`define CSR_REG(md, name, reg_addr, INIT, RO_BITS)                                                                                                             \
+   genvar ``md``_``name``_gv;                                                                                                                                  \
+   generate                                                                                                                                                    \
+      for (``md``_``name``_gv = 0; ``md``_``name``_gv < 32; ``md``_``name``_gv++)                                                                              \
+      begin                                                                                                                                                    \
+         if (RO_BITS[``md``_``name``_gv])                                                                                                                      \
+         begin                                                                                                                                                 \
+            assign nxt_``md``csr.``md``name[``md``_``name``_gv] = INIT[``md``_``name``_gv];                                                                    \
+            assign     ``md``csr.``md``name[``md``_``name``_gv] = nxt_``md``csr.``md``name[``md``_``name``_gv];                                                \
+         end                                                                                                                                                   \
+         else                                                                                                                                                  \
+         begin                                                                                                                                                 \
+            always_comb                                                                                                                                        \
+            begin                                                                                                                                              \
+               if (reset_in)                                                                                                                                   \
+                  nxt_``md``csr.``md``name[``md``_``name``_gv] = INIT[``md``_``name``_gv];                                                                     \
+               else if (csr_wr & (csr_wr_addr == ``reg_addr``) & (mode >= ``md``_MODE))                                                                        \
+                  nxt_``md``csr.``md``name[``md``_``name``_gv] = csr_wr_data[``md``_``name``_gv];   /* WARL, WARL affects should be done to csr_data */        \
+               else                                                                                                                                            \
                   nxt_``md``csr.``md``name[``md``_``name``_gv] = ``md``csr.``md``name[``md``_``name``_gv]; /* no change */                                     \
-            end                                                                                                                                          \
-            always_ff @(posedge clk_in)   /* create a resetable, writable, Flop for this bit */                                                          \
+            end                                                                                                                                                \
+            always_ff @(posedge clk_in)   /* create a resetable, writable, Flop for this bit */                                                                \
                ``md``csr.``md``name[``md``_``name``_gv] <= nxt_``md``csr.``md``name[``md``_``name``_gv];   /* WARL, WARL affects should be done to csr_data */ \
-         end                                                                                                                                             \
-      end                                                                                                                                                \
+         end                                                                                                                                                   \
+      end                                                                                                                                                      \
    endgenerate
 
    logic    [RSZ-1:0] total_retired;

@@ -35,7 +35,7 @@ module csr_sel_rdata
 
    CSR_REG_intf.slave            csr_reg_bus,         // slave:   inputs: Ucsr, Scsr, Mcsr
 
-   CSR_REG_intf.slave            csr_nxt_reg_bus,     // slave:   inputs: Ucsr, Scsr, Mcsr
+   CSR_REG_intf.slave            csr_nxt_reg_bus,     // slave:   inputs: nxt_Ucsr, nxt_Scsr, nxt_Mcsr
 
    CSR_RD_intf.slave             csr_rd_bus           // slave:   inputs: csr_rd_addr, outputs: csr_rd_avail, csr_rd_data, csr_fwd_data
 );
