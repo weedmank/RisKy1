@@ -42,7 +42,7 @@ module csr_regs
 
    EPC_bus_intf.master        epc_bus,                // master: Mepc, Sepc, Uepc - needed by Execute stage
 
-   CSR_REG_intf.master        csr_reg_bus,            // master: outputs: Ucsr, Scsr, Mcsr. Need by mode_irq.sv and csr_sel_rdata.sv
+   CSR_REG_intf.master        csr_reg_bus,            // master: outputs: Ucsr, Scsr, Mcsr. Needed by mode_irq.sv and csr_sel_rdata.sv
 
    CSR_RD_intf.slave          csr_rd_bus,             // slave: inputs: csr_rd_addr, outputs: csr_rd_avail, csr_rd_data, csr_fwd_data
 
@@ -140,15 +140,15 @@ assign csr_nxt_reg_bus.Mcsr      = nxt_Mcsr;
    // Get the current contents of CSR[csr_addr] and whether it's available or not
    csr_sel_rdata CSR_SEL
    (
-      .mtime(mtime),                      // Input:
+      .mtime(mtime),                            // Input:
 
-      .mode(mode),                        // Input:
+      .mode(mode),                              // Input:
 
-      .csr_reg_bus(csr_reg_bus),          // slave:   inputs: Ucsr, Scsr, Mcsr
+      .csr_reg_bus(csr_reg_bus.slave),          // slave:   inputs: Ucsr, Scsr, Mcsr
 
-      .csr_nxt_reg_bus(csr_nxt_reg_bus),  // slave:   inputs: nxt_Ucsr, nxt_Scsr, nxt_Mcsr
+      .csr_nxt_reg_bus(csr_nxt_reg_bus.slave),  // slave:   inputs: nxt_Ucsr, nxt_Scsr, nxt_Mcsr
 
-      .csr_rd_bus(csr_rd_bus)             // slave:   inputs: csr_rd_addr, outputs: csr_rd_avail, csr_rd_data, csr_fwd_data
+      .csr_rd_bus(csr_rd_bus)                   // slave:   inputs: csr_rd_addr, outputs: csr_rd_avail, csr_rd_data, csr_fwd_data
    );
 
    // ================================================================== Machine Mode CSRs ==================================================================
@@ -590,10 +590,6 @@ assign csr_nxt_reg_bus.Mcsr      = nxt_Mcsr;
    generate
       for (n = 0; n < NUM_MHPM; n++)
       begin : MHPM_CNTR_EVENTS
-         // Machine hardware performance-monitoring event selectors mhpmevent3 - mhpmevent31
-         // 12'h323 - 12'h33F  mhpmevent3 - mhpmevent31                       (read-write)
-         `CSR_REG(M,hpmevent,12'h323+n,0,0)
-
          // Machine hardware performance-monitoring counters
          // increment Mhpmcounter[] if the Event Selector is not 0 and the corresponding mcountinhibit[] bit is not set.
          // currently there are 24 possible hpm_events[], where event[0] = 0
@@ -610,7 +606,7 @@ assign csr_nxt_reg_bus.Mcsr      = nxt_Mcsr;
                {nxt_Mcsr.Mhpmcounter_hi[n], nxt_Mcsr.Mhpmcounter_lo[n]} = {csr_wr_data,Mcsr.Mhpmcounter_lo[n]};
             else
                {nxt_Mcsr.Mhpmcounter_hi[n], nxt_Mcsr.Mhpmcounter_lo[n]} = Mcsr.mcountinhibit[n+3] ? {Mcsr.Mhpmcounter_hi[n], Mcsr.Mhpmcounter_lo[n]} :
-                 2*RSZ ' ({Mcsr.Mhpmcounter_hi[n], Mcsr.Mhpmcounter_lo[n]} + hpm_events[Mcsr.hpmevent[n]]); // cast result to 2*RSZ bits before assigning
+                 2*RSZ ' ({Mcsr.Mhpmcounter_hi[n], Mcsr.Mhpmcounter_lo[n]} + hpm_events[Mcsr.Mhpmevent[n]]); // cast result to 2*RSZ bits before assigning
          end
          always_ff @(posedge clk_in)
             {Mcsr.Mhpmcounter_hi[n], Mcsr.Mhpmcounter_lo[n]} <= {nxt_Mcsr.Mhpmcounter_hi[n], nxt_Mcsr.Mhpmcounter_lo[n]};
