@@ -308,7 +308,7 @@ module execute
    logic            [11:0] csr_addr, ill_csr_addr;
    logic         [RSZ-1:0] csr_fwd_data;
 
-   // CSR_rd_intf.master  csr_rd_bus : // master <- output: csr_rd_addr, input: csr_rd_avail, csr_rd_data, csr_fwd_data
+   // CSR_rd_intf.master  csr_rd_bus : // master <- output: csr_rd_addr, input: csr_rd_avail, csr_fwd_data
    assign csr_addr               = D2E_bus.data.imm[11:0];
    assign csr_rd_bus.csr_rd_addr = csr_addr;                                  // CSR address to access
 
