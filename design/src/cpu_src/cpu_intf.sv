@@ -249,11 +249,11 @@ interface DCORE_intf;
    modport slave  (input  fet_data, output dec_data);
 endinterface: DCORE_intf
 
-// ------------------------ decode_core.sv interface used in decode.sv ------------------------
+// ------------------------ TRAP_intf.sv interface used in mode_irq.sv ------------------------
 interface TRAP_intf;
    logic     [PC_SZ-2-1:0] trap_pc; // lower two bits (always 0) removed in mode_irq() module
    logic                   irq_flag;
-   logic         [RSZ-1:0] irq_cause;
+   logic             [3:0] irq_cause;
 
    modport master (output trap_pc, irq_flag, irq_cause);
    modport slave  (input  trap_pc, irq_flag, irq_cause);
@@ -284,29 +284,6 @@ interface L1DC_intf;
    modport master (output req, req_data, input  ack, ack_data, ack_fault);
    modport slave  (input  req, req_data, output ack, ack_data, ack_fault);
 endinterface: L1DC_intf
-
-//------------------------ information shared between CSR Functional Unit and WB stage ------------------------
-interface WB2CSR_intf;
-   logic             csr_wr;
-   logic      [11:0] csr_wr_addr;
-   logic   [RSZ-1:0] csr_wr_data;
-   logic             sw_irq;           // msip_reg[3] = Software Interrupt Pending - from EXE stage. see csr_fu.sv
-   EXCEPTION         exception;
-   EVENTS            current_events;   // number of retired instructions for current clock cycle
-   logic             mret;
-   `ifdef ext_S
-   logic             sret;
-   `endif
-   `ifdef ext_U
-   `ifdef ext_N
-   logic             uret;
-   `endif
-   `endif
-   logic       [1:0] mode;
-
-   modport master (output csr_wr, csr_wr_addr, csr_wr_data, sw_irq, exception, current_events, `ifdef ext_U `ifdef ext_N uret, `endif `endif `ifdef ext_S sret, `endif mret);
-   modport slave  (input  csr_wr, csr_wr_addr, csr_wr_data, sw_irq, exception, current_events, `ifdef ext_U `ifdef ext_N uret, `endif `endif `ifdef ext_S sret, `endif mret);
-endinterface: WB2CSR_intf
 
 //------------------------ Loads & Stores that need to be saved into the LS Queue ------------------------
 `ifdef add_LSQ
@@ -358,11 +335,10 @@ endinterface: CSR_REG_intf
 interface CSR_RD_intf;
    logic            [11:0] csr_rd_addr;      // R/W address
    logic                   csr_rd_avail;
-   logic         [RSZ-1:0] csr_rd_data;
    logic         [RSZ-1:0] csr_fwd_data;
 
-   modport master (output csr_rd_addr, input  csr_rd_avail, csr_rd_data, csr_fwd_data);
-   modport slave  (input  csr_rd_addr, output csr_rd_avail, csr_rd_data, csr_fwd_data);
+   modport master (output csr_rd_addr, input  csr_rd_avail, csr_fwd_data);
+   modport slave  (input  csr_rd_addr, output csr_rd_avail, csr_fwd_data);
 endinterface: CSR_RD_intf
 
 interface CSR_WR_intf;
@@ -371,8 +347,8 @@ interface CSR_WR_intf;
    logic         [RSZ-1:0] csr_wr_data;
    logic                   sw_irq;
    EXCEPTION               exception;
-   logic                   current_events;
-   logic             [1:0] instr_mode;
+   EVENTS                  current_events;
+
    `ifdef ext_U
    `ifdef ext_N
    logic                   uret;
@@ -383,8 +359,8 @@ interface CSR_WR_intf;
    `endif
    logic                   mret;
 
-   modport master (output csr_wr, csr_wr_addr, csr_wr_data, sw_irq, exception, current_events, instr_mode, `ifdef ext_U `ifdef ext_N uret, `endif `endif `ifdef ext_S sret,`endif mret);
-   modport slave  (input  csr_wr, csr_wr_addr, csr_wr_data, sw_irq, exception, current_events, instr_mode, `ifdef ext_U `ifdef ext_N uret, `endif `endif `ifdef ext_S sret,`endif mret);
+   modport master (output csr_wr, csr_wr_addr, csr_wr_data, sw_irq, exception, current_events, `ifdef ext_U `ifdef ext_N uret, `endif `endif `ifdef ext_S sret,`endif mret);
+   modport slave  (input  csr_wr, csr_wr_addr, csr_wr_data, sw_irq, exception, current_events, `ifdef ext_U `ifdef ext_N uret, `endif `endif `ifdef ext_S sret,`endif mret);
 endinterface: CSR_WR_intf
 
 // ------------------------ CSR Functional Unit interface ------------------------
