@@ -34,6 +34,8 @@
 # NOTE2: All  +define+SIM_DEBUG, +BIND_ASSERTS defines should be removed if doing synthesis for FPGA or ASIC
 
 rm -rf work/*
+rm -rf tcl_stacktrace.*
+rm -rf *.wlf
 
 # Package Folder Files +ext_M +define+SIM_DEBUG
 vlog  -sv -hazards +define+ext_M +define+ext_C +define+ext_S +define+ext_U +define+ext_N +define+SIM_DEBUG                                          ../../src/pkg/logic_params_pkg.sv
