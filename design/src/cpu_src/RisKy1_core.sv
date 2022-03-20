@@ -216,7 +216,7 @@ module RisKy1_core
    EPC_bus_intf                        epc_bus();
 
    // interface between WB stage and CSR Functional Unit inside EXE stage
-   CSR_WR_intf                         csr_wr_bus();  // master <- outputs: csr_wr, csr_wr_addr, csr_wr_data, sw_irq, exception, current_events, instr_mode, uret, sret, mret);
+   CSR_WR_intf                         csr_wr_bus();  // master <- outputs: csr_wr, csr_wr_addr, csr_wr_data, sw_irq, exception, current_events, uret, sret, mret);
 
    // All CSR registers shared between CSREGS and CSR Functional Unit inside EXE stage
    CSR_RD_intf                         csr_rd_bus();  // master: outputs: csr_rd_addr, input  csr_rd_avail, csr_rd_data, csr_fwd_data
@@ -449,7 +449,7 @@ module RisKy1_core
       .gpr_wr_bus(gpr_wr_bus.master),                                         // writes data to a specific architectural register
 
       // signals from WB stage
-      .csr_wr_bus(csr_wr_bus.master)                                          // master -> output: csr_wr, csr_wr_addr, csr_wr_data, sw_irq, exception, current_events, instr_mode, uret, sret, mret
+      .csr_wr_bus(csr_wr_bus.master)                                          // master -> output: csr_wr, csr_wr_addr, csr_wr_data, sw_irq, exception, current_events, uret, sret, mret
    );
 
    //---------------------------------------------------------------------------
@@ -474,7 +474,7 @@ module RisKy1_core
 
       .csr_rd_bus(csr_rd_bus.slave),                                          // slave:   inputs: csr_rd_addr, outputs: csr_rd_avail, csr_rd_data, csr_fwd_data
 
-      .csr_wr_bus(csr_wr_bus.slave)                                           // slave:   inputs: csr_wr, csr_wr_addr, csr_wr_data, sw_irq, exception, current_events, instr_mode, uret, sret, mret
+      .csr_wr_bus(csr_wr_bus.slave)                                           // slave:   inputs: csr_wr, csr_wr_addr, csr_wr_data, sw_irq, exception, current_events, uret, sret, mret
    );
 
    //---------------------------------------------------------------------------
@@ -493,7 +493,7 @@ module RisKy1_core
 
       .csr_reg_bus(csr_reg_bus.slave),                                        // slave:   inputs: Ucsr, Scsr, Mcsr
 
-      .csr_wr_bus(csr_wr_bus.slave),                                          // slave:   input: csr_wr, csr_wr_addr, csr_wr_data, sw_irq, exception, current_events, instr_mode, uret, sret, mret
+      .csr_wr_bus(csr_wr_bus.slave),                                          // slave:   input: csr_wr, csr_wr_addr, csr_wr_data, sw_irq, exception, current_events, uret, sret, mret
 
       .trap_bus(trap_bus.master)                                              // master:  output: trap_pc, irq_flag, irq_cause
    );
