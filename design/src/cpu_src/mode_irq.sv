@@ -37,7 +37,7 @@ module mode_irq
 
    CSR_REG_intf.slave            csr_reg_bus,                        // slave:   inputs: Ucsr, Scsr, Mcsr
 
-   CSR_WR_intf.slave             csr_wr_bus,                         // slave:   inputs: csr_wr, csr_wr_addr, csr_wr_data, sw_irq, exception, current_events, instr_mode, uret, sret, mret
+   CSR_WR_intf.slave             csr_wr_bus,                         // slave:   inputs: csr_wr, csr_wr_addr, csr_wr_data, sw_irq, exception, current_events, uret, sret, mret
 
    TRAP_intf.master              trap_bus                            // master:  output: trap_pc, irq_flag, irq_cause
 );
@@ -64,14 +64,14 @@ module mode_irq
    assign Mcsr = csr_reg_bus.Mcsr;
 
    logic          retire_exception_flag;                             // Input:   TRUE for regular exceptions and also for interrupt exceptions
-   logic          retire_interrupt_flag;                             // Input:   1 = retire_exception_flag is TRUE and the MS bit of the exception cause is TRUE
+   logic          retire_interrupt_flag;                             // Input:   1 = both retire_exception_flag is TRUE and the MS bit of the exception cause is TRUE
 
    assign retire_exception_flag = csr_wr_bus.exception.flag;         // Input:   An exception occured for the retiring instruction
-   assign retire_interrupt_flag = csr_wr_bus.exception.cause[RSZ-1]; // Input:   cause bit set if exception is due to an interrupt
+   assign retire_interrupt_flag = csr_wr_bus.exception.cause[RSZ-1]; // Input:   Was exception due due to an interrupt
 
    logic     [PC_SZ-2-1:0] trap_pc;
    logic                   irq_flag;
-   logic         [RSZ-1:0] irq_cause;
+   logic             [3:0] irq_cause;
 
    assign trap_bus.trap_pc    = trap_pc;                             // lower two bits are missing (beause they're always 0), will get added once it reaches WB stage where it gets used
    assign trap_bus.irq_flag   = irq_flag;
@@ -175,9 +175,9 @@ module mode_irq
          begin
             irq_flag = (Mcsr.Mstatus.mie & m_irq);
 
-            if      (msip & msie) irq_cause = (1'b1 << (RSZ-1)) | 'd3;  // Machine Mode Software Interrupt
-            else if (mtip & mtie) irq_cause = (1'b1 << (RSZ-1)) | 'd7;  // Machine Mode Timer    Interrupt
-            else if (meip & meie) irq_cause = (1'b1 << (RSZ-1)) | 'd11; // Machine Mode External Interrupt
+            if      (msip & msie) irq_cause = 'd3;  // Machine Mode Software Interrupt
+            else if (mtip & mtie) irq_cause = 'd7;  // Machine Mode Timer    Interrupt
+            else if (meip & meie) irq_cause = 'd11; // Machine Mode External Interrupt
          end
 
          `ifdef ext_S
@@ -185,9 +185,9 @@ module mode_irq
          begin
             irq_flag = (m_irq  | (Scsr.Sstatus.sie & s_irq));
 
-            if      (ssip & ssie) irq_cause = (1'b1 << (RSZ-1)) | 'd1;  // Supervisor Mode Software Interrupt
-            else if (stip & stie) irq_cause = (1'b1 << (RSZ-1)) | 'd5;  // Supervisor Mode Timer    Interrupt
-            else if (seip & seie) irq_cause = (1'b1 << (RSZ-1)) | 'd9;  // Supervisor Mode External Interrupt
+            if      (ssip & ssie) irq_cause = 'd1;  // Supervisor Mode Software Interrupt
+            else if (stip & stie) irq_cause = 'd5;  // Supervisor Mode Timer    Interrupt
+            else if (seip & seie) irq_cause = 'd9;  // Supervisor Mode External Interrupt
          end
          `endif
 
@@ -197,9 +197,9 @@ module mode_irq
          begin
             irq_flag = (m_irq |  `ifdef ext_S s_irq | `endif (Ucsr.Ustatus.uie & u_irq));
 
-            if      (usip & usie) irq_cause = (1'b1 << (RSZ-1)) | 'd0;  // User Mode Software Interrupt
-            else if (utip & utie) irq_cause = (1'b1 << (RSZ-1)) | 'd4;  // User Mode Timer    Interrupt
-            else if (ueip & ueie) irq_cause = (1'b1 << (RSZ-1)) | 'd8;  // User Mode External Interrupt
+            if      (usip & usie) irq_cause = 'd0;  // User Mode Software Interrupt
+            else if (utip & utie) irq_cause = 'd4;  // User Mode Timer    Interrupt
+            else if (ueip & ueie) irq_cause = 'd8;  // User Mode External Interrupt
          end
          `endif
          `endif
@@ -242,7 +242,7 @@ module mode_irq
    always_comb
    begin
       tvec        = Mcsr.Mtvec;                 // This default Trap PC will only get used if retire_exception_flag asserts when an instruction tries to retire in stage WB
-      cause       = Mcsr.Mcause[DEL_SZ-1:0];
+      cause       = csr_wr_bus.exception.cause;
 
       // By default, all traps at any privilege level are handled in machine mode, though a machine-mode
       // handler can redirect traps back to the appropriate level with the MRET instruction
@@ -253,6 +253,7 @@ module mode_irq
 
       if (retire_exception_flag)                // exception flag from instruction that tried to retire in stage WB, but instead it caused an exception
       begin
+         cause       = Mcsr.Mcause[DEL_SZ-1:0];
          nxt_mode    = M_MODE;                  // default unless delegation occurs
 
          // ----------------------------------------------  logic to include if delegation is allowed
