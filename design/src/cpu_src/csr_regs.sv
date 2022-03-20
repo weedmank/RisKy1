@@ -116,25 +116,27 @@ assign csr_nxt_reg_bus.Mcsr      = nxt_Mcsr;
    logic             sw_irq;
    EXCEPTION         exception;
    EVENTS            current_events;
-   logic             uret, sret, mret;
+   assign current_events   = csr_wr_bus.current_events;
 
    assign csr_wr           = csr_wr_bus.csr_wr;
    assign csr_wr_addr      = csr_wr_bus.csr_wr_addr;
    assign csr_wr_data      = csr_wr_bus.csr_wr_data;
    assign sw_irq           = csr_wr_bus.sw_irq;                // sw_irq, exception, current_events, uret, sret, mret
    assign exception        = csr_wr_bus.exception;
-   assign current_events   = csr_wr_bus.current_events;
 
    `ifdef ext_U
    `ifdef ext_N
+   logic             uret;
    assign uret             = csr_wr_bus.uret;
    `endif
    `endif
 
    `ifdef ext_S
+   logic             sret;
    assign sret             = csr_wr_bus.sret;
    `endif
 
+   logic             mret;
    assign mret             = csr_wr_bus.mret;
 
    // Get the current contents of CSR[csr_addr] and whether it's available or not
