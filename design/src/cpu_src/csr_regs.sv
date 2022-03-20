@@ -44,7 +44,7 @@ module csr_regs
 
    CSR_REG_intf.master        csr_reg_bus,            // master: outputs: Ucsr, Scsr, Mcsr. Needed by mode_irq.sv and csr_sel_rdata.sv
 
-   CSR_RD_intf.slave          csr_rd_bus,             // slave: inputs: csr_rd_addr, outputs: csr_rd_avail, csr_rd_data, csr_fwd_data
+   CSR_RD_intf.slave          csr_rd_bus,             // slave: inputs: csr_rd_addr, outputs: csr_rd_avail, csr_fwd_data
 
    CSR_WR_intf.slave          csr_wr_bus              // slave: input: csr_wr, csr_wr_addr, csr_wr_data, sw_irq, exception, current_events, uret, sret, mret
 );
@@ -146,11 +146,11 @@ assign csr_nxt_reg_bus.Mcsr      = nxt_Mcsr;
 
       .mode(mode),                              // Input:
 
-      .csr_reg_bus(csr_reg_bus.slave),          // slave:   inputs: Ucsr, Scsr, Mcsr
+      .csr_reg_bus(csr_reg_bus),                // slave:   inputs: Ucsr, Scsr, Mcsr
 
-      .csr_nxt_reg_bus(csr_nxt_reg_bus.slave),  // slave:   inputs: nxt_Ucsr, nxt_Scsr, nxt_Mcsr
+      .csr_nxt_reg_bus(csr_nxt_reg_bus),        // slave:   inputs: nxt_Ucsr, nxt_Scsr, nxt_Mcsr
 
-      .csr_rd_bus(csr_rd_bus)                   // slave:   inputs: csr_rd_addr, outputs: csr_rd_avail, csr_rd_data, csr_fwd_data
+      .csr_rd_bus(csr_rd_bus)                   // slave:   inputs: csr_rd_addr, outputs: csr_rd_avail, csr_fwd_data
    );
 
    // ================================================================== Machine Mode CSRs ==================================================================
