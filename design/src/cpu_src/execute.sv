@@ -305,14 +305,13 @@ module execute
    logic         [RSZ-1:0] csr_rw_data;      // csr_rd_data from csr_regs plus any software interrupt modifications (depends on csr_addr) done inside CSR FU
    logic         [RSZ-1:0] csr_wr_data;      // value to write into CSR[csr_addr} in WB stage
    logic                   ill_csr_access;   // 1 = illegal csr access
-   logic            [11:0] ill_csr_addr;
+   logic            [11:0] csr_addr, ill_csr_addr;
    logic         [RSZ-1:0] csr_fwd_data;
 
    // CSR_rd_intf.master  csr_rd_bus : // master <- output: csr_rd_addr, input: csr_rd_avail, csr_rd_data, csr_fwd_data
    assign csr_addr               = D2E_bus.data.imm[11:0];
    assign csr_rd_bus.csr_rd_addr = csr_addr;                                  // CSR address to access
 
-//   assign csr_rd_data            = csr_rd_bus.csr_rd_data;                    // ???????????This is passed into CSR_FU which MAY modify it, then return final it as csr_rw_data
    assign csr_fwd_data           = csr_rd_bus.csr_fwd_data;
 
    // ----------------------------------- csrfu_bus interface
