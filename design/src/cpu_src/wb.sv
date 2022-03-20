@@ -91,7 +91,7 @@ module wb
 
    logic       [PC_SZ-1:0] trap_pc;                                                 // Output:  trap vector handler address.
    logic                   irq_flag;                                                // 1 = take an interrupt trap
-   logic         [RSZ-1:0] irq_cause;                                               // value specifying what type of interrupt
+   logic             [3:0] irq_cause;                                               // value specifying what type of interrupt
 
 
    // --------------------------------- signals from MEM stage that are used in WB stage
@@ -107,7 +107,7 @@ module wb
    assign op_type             = M2W_bus.data.op_type;
    assign mio_ack_fault       = M2W_bus.data.mio_ack_fault;
    assign instr_mode          = M2W_bus.data.instr_mode;
-   
+
    assign trap_pc             = {M2W_bus.data.trap_pc, 2'b00};                      // lower 2 bits (always 0) reattached. see mode_irq() module where they got removed
    assign irq_flag            = M2W_bus.data.irq_flag;
    assign irq_cause           = M2W_bus.data.irq_cause;
@@ -146,7 +146,7 @@ module wb
    assign fwd_wb_csr.csr_data    = wb_csr_fwd_data;
 
    //-------------------- csr_wr_bus --------------------
-   // master (output: csr_wr, csr_wr_addr, csr_wr_data, sw_irq, exception, current_events, instr_mode, uret, sret, mret);
+   // master (output: csr_wr, csr_wr_addr, csr_wr_data, sw_irq, exception, current_events, uret, sret, mret);
    logic   mret;
    assign csr_wr_bus.mret  = mret;
 
@@ -162,7 +162,6 @@ module wb
    `endif
    `endif
 
-   assign csr_wr_bus.instr_mode     = instr_mode;
    assign csr_wr_bus.csr_wr         = xfer_in & wb_csr_wr;                          // when to write
    assign csr_wr_bus.csr_wr_addr    = wb_csr_addr;                                  // Which destination register
    assign csr_wr_bus.csr_wr_data    = wb_csr_wr_data;                               // data for destination register
@@ -291,10 +290,12 @@ module wb
 
             exception.pc               = ipd.pc;                                    // save address of current instruction
             exception.tval             = ipd.instruction;                           // current Instruction
-            exception.cause            = irq_cause;                                 // Machine, Supervisor, or User external interrupt. see riscv-privileged.pdf p 91
+            exception.cause            = (1'b1 << (RSZ-1)) | irq_cause;             // Machine, Supervisor, or User external interrupt. see riscv-privileged.pdf p 91
             exception.flag             = TRUE;                                      // control signal to save exception.pc, exception.tval and exception.cause in csr.sv
 
+            `ifdef use_MHPM
             current_events.ext_irq     = TRUE;                                      // can't be covered by e_flag...becuase irq_cause is a 32 bit value that would interfere with e_cause numbers, so just set a single bit flag (ext_irq)
+            `endif
          end
          else
             case(ig_type)                                                           // select which functional unit output data is the appropriate one to process
@@ -308,9 +309,10 @@ module wb
                exception.cause         = 2;                                         // 2 = Illegal Instruction
                exception.flag          = TRUE;                                      // control signal to save exception.pc, exception.tval and exception.cause in csr.sv
 
-               current_events.e_flag   = TRUE;
+               `ifdef use_MHPM
+               current_events.e_flag   = TRUE;                                      // only used when use_MHPM is defined. See hpm_events in csr_regs.sv
                current_events.e_cause  = exception.cause;
-
+               `endif
                current_events.ret_cnt[UNK_RET] = 1'b1;                              // number of ALU instructions retiring this clock cycle
             end
 
@@ -352,8 +354,10 @@ module wb
                         exception.cause         = 2;                                // 2 = Illegal Instruction
                         exception.flag          = TRUE;                             // control signal to save exception.pc, exception.tval and exception.cause in csr.sv
 
+                        `ifdef use_MHPM
                         current_events.e_flag   = TRUE;
                         current_events.e_cause  = exception.cause;
+                        `endif
                      end
                      else
                          sret                   = TRUE;                             // SRET completed correctly - "xRET sets the pc to the value stored in the x epc register." riscv-privileged. p 40
@@ -374,8 +378,10 @@ module wb
                         exception.cause         = 2;                                // 2 = Illegal Instruction
                         exception.flag          = TRUE;                             // control signal to save exception.pc, exception.tval and exception.cause in csr.sv
 
+                        `ifdef use_MHPM
                         current_events.e_flag   = TRUE;
                         current_events.e_cause  = exception.cause;
+                        `endif
                      end
                      else
                         mret                    = TRUE;                             // MRET completed correctly - "xRET sets the pc to the value stored in the x epc register." riscv-privileged. p 40
@@ -401,8 +407,10 @@ module wb
                         exception.cause         = 0;                                // 0 = Instruction Address Misaligned
                         exception.flag          = TRUE;                             // control signal to save exception.pc, exception.tval and exception.cause in csr.sv
 
+                        `ifdef use_MHPM
                         current_events.e_flag   = TRUE;
                         current_events.e_cause  = exception.cause;
+                        `endif
                      end
                      else
                      `endif
@@ -425,8 +433,10 @@ module wb
                         exception.cause         = 0;                                // 0 = Instruction Address Misaligned
                         exception.flag          = TRUE;                             // control signal to save exception.pc, exception.tval and exception.cause in csr.sv
 
+                        `ifdef use_MHPM
                         current_events.e_flag   = TRUE;
                         current_events.e_cause  = exception.cause;
+                        `endif
                      end
                      else
                      `endif
@@ -514,8 +524,10 @@ module wb
                      exception.cause            = {2'b10,instr_mode};               // ECALL generates a different exception for each originating privilege mode so that environment call exceptions can be selectively delegated.
                      exception.flag             = TRUE;                             // control signal to save exception.pc, exception.tval and exception.cause in csr.sv
 
+                     `ifdef use_MHPM
                      current_events.e_flag      = TRUE;
                      current_events.e_cause     = exception.cause;
+                     `endif
                      current_events.ret_cnt[SYS_RET] = 1'b1;                        // number of SYS instructions retiring this clock cycle
                   end
 
@@ -529,8 +541,10 @@ module wb
                      exception.cause            = 3;                                // 3 = Environment Break. see p. 38 riscv-privileged.pdf
                      exception.flag             = TRUE;                             // control signal to save exception.pc, exception.tval and exception.cause in csr.sv
 
+                     `ifdef use_MHPM
                      current_events.e_flag      = TRUE;
                      current_events.e_cause     = exception.cause;
+                     `endif
                      current_events.ret_cnt[SYS_RET] = 1'b1;                        // number of SYS instructions retiring this clock cycle
                   end
 
@@ -541,10 +555,10 @@ module wb
 //                     begin
                      trigger_wfi = TRUE;
 //                     end
+
+                     current_events.ret_cnt[SYS_RET] = 1'b1;                              // number of SYS instructions retiring this clock cycle
                   end
                endcase
-
-               current_events.ret_cnt[SYS_RET] = 1'b1;                              // number of SYS instructions retiring this clock cycle
             end
 
             CSR_INSTR:
@@ -559,8 +573,10 @@ module wb
                   exception.cause         = 1;                                      // 1 = Instruction Access Fault
                   exception.flag          = TRUE;                                   // control signal to save exception.pc, exception.tval and exception.cause in csr.sv
 
+                  `ifdef use_MHPM
                   current_events.e_flag   = TRUE;
                   current_events.e_cause  = exception.cause;
+                  `endif
                end
                else
                begin
@@ -575,7 +591,6 @@ module wb
 
                   sw_irq                  = M2W_bus.data.sw_irq;                    // from EXE stage - now needed in csr_fu.sv to complete instruction
                end
-
                current_events.ret_cnt[CSR_RET] = 1'b1;                              // number of CSR instructions retiring this clock cycle
             end
 
@@ -592,8 +607,10 @@ module wb
                   exception.cause         = 4;                                      // 4 = Load Address Misaligned
                   exception.flag          = TRUE;                                   // control signal to save exception.pc, exception.tval and exception.cause in csr.sv
 
+                  `ifdef use_MHPM
                   current_events.e_flag   = TRUE;
                   current_events.e_cause  = exception.cause;
+                  `endif
                end
                else if (mio_ack_fault)                                              // Raise exception for access to an unused address space? p7 Volume I: RISC-V Unprivileged ISA V20190608-Base-Ratified
                begin
@@ -605,8 +622,10 @@ module wb
                   exception.cause         = 5;                                      // 5 = Load Access Fault
                   exception.flag          = TRUE;                                   // control signal to save exception.pc, exception.tval and exception.cause in csr.sv
 
+                  `ifdef use_MHPM
                   current_events.e_flag   = TRUE;
                   current_events.e_cause  = exception.cause;
+                  `endif
                end
                else
                begin
@@ -630,8 +649,10 @@ module wb
                   exception.cause         = 6;                                      // 6 = Store Address Misaligned
                   exception.flag          = TRUE;                                   // control signal to save exception.pc, exception.tval and exception.cause in csr.sv
 
+                  `ifdef use_MHPM
                   current_events.e_flag   = TRUE;
                   current_events.e_cause  = exception.cause;
+                  `endif
                end
                else if (mio_ack_fault)                                              // Raise exception for access to an unused address space. p7 Volume I: RISC-V Unprivileged ISA V20190608-Base-Ratified
                begin
@@ -643,8 +664,10 @@ module wb
                   exception.cause         = 7;                                      // 7 = Store Access Fault
                   exception.flag          = TRUE;                                   // control signal to save exception.pc, exception.tval and exception.cause in csr.sv
 
+                  `ifdef use_MHPM
                   current_events.e_flag   = TRUE;
                   current_events.e_cause  = exception.cause;
+                  `endif
                end
                else
                begin
@@ -670,5 +693,5 @@ module wb
    assign csr_wr_bus.exception      = exception;
    assign csr_wr_bus.sw_irq         = sw_irq;                                       // msip_reg[3] = Software Interrupt Pending - from EXE stage
    assign csr_wr_bus.current_events = current_events;                               // number of retired instructions for current clock cycle
- 
+
 endmodule
