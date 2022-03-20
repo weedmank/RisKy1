@@ -155,17 +155,21 @@ import cpu_params_pkg::*;
    // There will be a ret_cnt for each of these type of instructions
    typedef enum {LD_RET, ST_RET, CSR_RET, SYS_RET, ALU_RET, BXX_RET, JAL_RET, JALR_RET, IM_RET, ID_RET, IR_RET, HINT_RET, `ifdef ext_F FLD_RET, FST_RET, FP_RET, `endif  UNK_RET} RETIRE_TYPE;
 
-   // Verilog
-//   `ifdef MODELSIM
-      localparam RET_SZ = 15;                                  // must change depending on number of RETIRE_TYPE entries!!!!!!!!!!!!!
-//   `else
+// `ifdef MODELSIM
+   `ifdef ext_F
+      localparam RET_SZ = 16;                                  // must change depending on number of RETIRE_TYPE entries!!!!!!!!!!!!!
+   `else
+      localparam RET_SZ = 13;
+   `endif
+// `else
 //      localparam RET_SZ = RETIRE_TYPE.num();                   // Modelsim 2020.1 and lower can't handle this
-//   `endif
+// `endif
 
    typedef struct packed {                                     // each entry contains count of how many instructions  of that typeretired this clock cycle
+//    logic   [RET_SZ-1:0] [n-1:0] ret_cnt;                      // general format to use if more than 1 instruction retires per clock cycle - where n is the number of bits needed to hold maximum count
+      logic      [RET_SZ-1:0] ret_cnt;                         // only 1 instruction maximum retires per clock cycle in this pipelined RV32imc... design
+      `ifdef use_MHPM
       logic                   ext_irq;                         // External Interrutp Request count - not one of the faults but usefull information - only 1 of these can ever occur during a clock cycle
-//    logic   [RET_SZ:0] [n-1:0] ret_cnt;                      // general format to use if more than 1 instruction retires per clock cycle - where n is the number of bits needed to hold maximum count
-      logic        [RET_SZ:0] ret_cnt;                         // only 1 instruction maximum retires per clock cycle in this pipelined RV32imc... design
       logic                   e_flag;                          // e_flag = 1 = the type of problem that occured with this instrucion is specified in e_cause
       logic         [RSZ-1:0] e_cause;                         // 0 = Instruction Address Misaligned
                                                                // 1 = Instruction Access Fault
@@ -179,6 +183,7 @@ import cpu_params_pkg::*;
                                                                // 9 = Supervisor ECALL
                                                                // 10 = Hypervsor ECALL - not used in this design
                                                                // 11 = Machine ECALL
+      `endif
    } EVENTS;
 
    typedef struct packed {
