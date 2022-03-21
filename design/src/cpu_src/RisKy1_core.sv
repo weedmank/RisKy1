@@ -160,7 +160,7 @@ module RisKy1_core
 
    assign EIO_bus.ack            = io_ack;                                    // Input:   I/O Acknowledge
    assign EIO_bus.ack_fault      = io_ack_fault;                              // Input:   I/O Acknowledge
-   assign EIO_bus.ack_data        = io_ack_data;                               // Input:   I/O Read data
+   assign EIO_bus.ack_data       = io_ack_data;                               // Input:   I/O Read data
 `else // Normal System Verilog style
 module RisKy1_core
 (
@@ -293,7 +293,7 @@ module RisKy1_core
       .L1IC_bus(L1IC_bus),
 
       // interface to Decode stage
-      .F2D_bus(F2D_bus.master)
+      .F2D_bus(F2D_bus)                                                       // master:
    );
 
    //---------------------------------------------------------------------------
@@ -309,10 +309,10 @@ module RisKy1_core
       .pipe_flush(pipe_flush_dec),                                            // Input:   1 = flush pipeline
 
       // interface to Fetch stage
-      .F2D_bus(F2D_bus.slave),
+      .F2D_bus(F2D_bus),                                                      // slave:
 
       // interface to Execute stage
-      .D2E_bus(D2E_bus.master)
+      .D2E_bus(D2E_bus)                                                       // master:
    );
 
    //---------------------------------------------------------------------------
@@ -328,8 +328,8 @@ module RisKy1_core
       .mode(mode),                                                            // Input:   from mode_irq() - mode follows instruction
 
       // All CSR registers shared between CSREGS and CSR Functional Unit inside EXE stage
-      .csr_rd_bus(csr_rd_bus.master),                                         // master <- outputs: csr_rd_addr, inputs: csr_rd_avail, csr_rd_data, csr_fwd_data
-      .trap_bus(trap_bus.slave),                                              // slave <- inputs: trap_pc, irq_flag, irq_cause
+      .csr_rd_bus(csr_rd_bus),                                                // master <- outputs: csr_rd_addr, inputs: csr_rd_avail, csr_fwd_data
+      .trap_bus(trap_bus),                                                    // slave <- inputs: trap_pc, irq_flag, irq_cause
 
       // Time to flush pipeline and reload PC signal
       .pipe_flush(pipe_flush_exe),                                            // Input:   1 = flush pipeline
@@ -337,7 +337,7 @@ module RisKy1_core
       .rld_pc_flag(exe_rld_pc_flag),                                          // Output:  Cause the Fetch unit to reload the PC
       .rld_pc_addr(exe_rld_pc_addr),                                          // Output:  PC address that will need to be reloaded
 
-      .epc_bus(epc_bus.slave),                                                // slave:   inputs: mepc, sepc, uepc
+      .epc_bus(epc_bus),                                                      // slave:   inputs: mepc, sepc, uepc
 
       // interface to forwarding signals
       .fwd_mem_csr(fwd_mem_csr),                                              // Input:   Mem stage CSR forwarding info
@@ -346,7 +346,7 @@ module RisKy1_core
       .fwd_wb_gpr(fwd_wb_gpr),                                                // Input:   WB stage register forwarding info
 
       // interface to GPR
-      .gpr_rd_bus(gpr_rd_bus.master),                                         // master:   read access to all MAX_GPR General Purpose registers
+      .gpr_rd_bus(gpr_rd_bus),                                                // master:   read access to all MAX_GPR General Purpose registers
 
       `ifdef ext_F
       // interface to forwarding signals
@@ -354,14 +354,14 @@ module RisKy1_core
       .fwd_wb_fpr(fwd_wb_fpr),                                                // Input:   WB stage register forwarding info
 
       // interface to FPR
-      .fpr_rd_bus(fpr_rd_bus.master),                                         // Master:   read access to all MAX_FPR single-precision Floating Point registers - all registers can be read at anytime
+      .fpr_rd_bus(fpr_rd_bus),                                                // master:   read access to all MAX_FPR single-precision Floating Point registers - all registers can be read at anytime
       `endif
 
       // interface to Decode stage
-      .D2E_bus(D2E_bus.slave),                                                // slave:
+      .D2E_bus(D2E_bus),                                                      // slave:
 
       // interface to Memory stage
-      .E2M_bus(E2M_bus.master)                                                // master:
+      .E2M_bus(E2M_bus)                                                       // master:
    );
 
    //---------------------------------------------------------------------------
@@ -401,13 +401,13 @@ module RisKy1_core
       `endif
 
       // Interface between MEM_IO and L1 D$
-      .L1DC_bus(L1DC_bus.master),                                             // master:
+      .L1DC_bus(L1DC_bus),                                                    // master:
 
       // External I/O accesses
-      .EIO_bus(EIO_bus.master),                                               // master:
+      .EIO_bus(EIO_bus),                                                      // master:
 
       // interface to Execute stage
-      .E2M_bus(E2M_bus.slave),                                                // slave:
+      .E2M_bus(E2M_bus),                                                      // slave:
 
       // interface to WB stage
       .M2W_bus(M2W_bus)
@@ -432,7 +432,7 @@ module RisKy1_core
       .rld_pc_addr(wb_rld_pc_addr),                                           // Output:  New PC when wb_rld_pc_flag == 1
 
       // interface to Memory stage
-      .M2W_bus(M2W_bus.slave),
+      .M2W_bus(M2W_bus), //.M2W_bus(M2W_bus.slave),                                             // salve:
 
       // GPR forwarding data
       .fwd_wb_gpr(fwd_wb_gpr),                                                // Output:  WB stage register forwarding for GPR info
@@ -442,14 +442,14 @@ module RisKy1_core
       .fwd_wb_fpr(fwd_wb_fpr),                                                // Output:  WB stage register forwarding for FPR info
 
       // interface to FPR
-      .fpr_wr_bus(fpr_wr_bus.master)
+      .fpr_wr_bus(fpr_wr_bus),                                                // master:
       `endif
 
       // interface to GPR
-      .gpr_wr_bus(gpr_wr_bus.master),                                         // writes data to a specific architectural register
+      .gpr_wr_bus(gpr_wr_bus),                                                // master: writes data to a specific architectural register
 
-      // signals from WB stage
-      .csr_wr_bus(csr_wr_bus.master)                                          // master -> output: csr_wr, csr_wr_addr, csr_wr_data, sw_irq, exception, current_events, uret, sret, mret
+      // interface to csr_regs
+      .csr_wr_bus(csr_wr_bus)                                                 // master: output: csr_wr, csr_wr_addr, csr_wr_data, sw_irq, exception, current_events, uret, sret, mret
    );
 
    //---------------------------------------------------------------------------
@@ -468,13 +468,13 @@ module RisKy1_core
       .ext_irq(ext_irq),                                                      // Input:   External Interrupt
       .timer_irq(timer_irq),                                                  // Input:   Timer & Software Interrupt from clint.sv
 
-      .epc_bus(epc_bus.master),                                               // master:  outputs: mepc, sepc, uepc
+      .epc_bus(epc_bus),                                                      // master:  outputs: mepc, sepc, uepc
 
-      .csr_reg_bus(csr_reg_bus.master),                                       // master:  outputs: Ucsr, Scsr, Mcsr
+      .csr_reg_bus(csr_reg_bus),                                              // master:  outputs: Ucsr, Scsr, Mcsr
 
-      .csr_rd_bus(csr_rd_bus.slave),                                          // slave:   inputs: csr_rd_addr, outputs: csr_rd_avail, csr_rd_data, csr_fwd_data
+      .csr_rd_bus(csr_rd_bus),                                                // slave:   inputs: csr_rd_addr, outputs: csr_rd_avail, csr_fwd_data
 
-      .csr_wr_bus(csr_wr_bus.slave)                                           // slave:   inputs: csr_wr, csr_wr_addr, csr_wr_data, sw_irq, exception, current_events, uret, sret, mret
+      .csr_wr_bus(csr_wr_bus)                                                 // slave:   inputs: csr_wr, csr_wr_addr, csr_wr_data, sw_irq, exception, current_events, uret, sret, mret
    );
 
    //---------------------------------------------------------------------------
@@ -491,11 +491,11 @@ module RisKy1_core
       .mode(mode),                                                            // Output:  to EXE stage - mode follows instruction
       .nxt_mode(nxt_mode),                                                    // Output:  next instruction mode used by csr_regs.sv
 
-      .csr_reg_bus(csr_reg_bus.slave),                                        // slave:   inputs: Ucsr, Scsr, Mcsr
+      .csr_reg_bus(csr_reg_bus),                                              // slave:   inputs: Ucsr, Scsr, Mcsr
 
-      .csr_wr_bus(csr_wr_bus.slave),                                          // slave:   input: csr_wr, csr_wr_addr, csr_wr_data, sw_irq, exception, current_events, uret, sret, mret
+      .csr_wr_bus(csr_wr_bus),                                                // slave:   input: csr_wr, csr_wr_addr, csr_wr_data, sw_irq, exception, current_events, uret, sret, mret
 
-      .trap_bus(trap_bus.master)                                              // master:  output: trap_pc, irq_flag, irq_cause
+      .trap_bus(trap_bus)                                                     // master:  output: trap_pc, irq_flag, irq_cause
    );
 
    //---------------------------------------------------------------------------
@@ -505,9 +505,9 @@ module RisKy1_core
    (
       .clk_in(clk_in), .reset_in(reset_in),                                   // Inputs:  system clock and reset
 
-      .gpr_rd_bus(gpr_rd_bus.slave),
+      .gpr_rd_bus(gpr_rd_bus),                                                // slave
 
-      .gpr_wr_bus(gpr_wr_bus.slave)
+      .gpr_wr_bus(gpr_wr_bus)                                                 // slave
    );
 
    //---------------------------------------------------------------------------
@@ -519,9 +519,9 @@ module RisKy1_core
    (
       .clk_in(clk_in), .reset_in(reset_in),                                   // Inputs:  system clock and reset
 
-      .fpr_rd_bus(fpr_rd_bus.slave),                                          // slave: read from MAX_FPR General Purpose registers
+      .fpr_rd_bus(fpr_rd_bus),                                                // slave: read from MAX_FPR General Purpose registers
 
-      .fpr_wr_bus(fpr_wr_bus.slave)
+      .fpr_wr_bus(fpr_wr_bus)                                                 // slave:
    );
    `endif
 
