@@ -335,10 +335,11 @@ endinterface: CSR_REG_intf
 interface CSR_RD_intf;
    logic            [11:0] csr_rd_addr;      // R/W address
    logic                   csr_rd_avail;
-   logic         [RSZ-1:0] csr_fwd_data;
+   logic         [RSZ-1:0] csr_rd_data;
+   logic         [RSZ-1:0] csr_nxt_rd_data;
 
-   modport master (output csr_rd_addr, input  csr_rd_avail, csr_fwd_data);
-   modport slave  (input  csr_rd_addr, output csr_rd_avail, csr_fwd_data);
+   modport master (output csr_rd_addr, input  csr_rd_avail, csr_rd_data, csr_nxt_rd_data);
+   modport slave  (input  csr_rd_addr, output csr_rd_avail, csr_rd_data, csr_nxt_rd_data);
 endinterface: CSR_RD_intf
 
 interface CSR_WR_intf;
