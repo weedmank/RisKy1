@@ -219,7 +219,7 @@ module RisKy1_core
    CSR_WR_intf                         csr_wr_bus();  // master <- outputs: csr_wr, csr_wr_addr, csr_wr_data, sw_irq, exception, current_events, uret, sret, mret);
 
    // All CSR registers shared between CSREGS and CSR Functional Unit inside EXE stage
-   CSR_RD_intf                         csr_rd_bus();  // master: outputs: csr_rd_addr, input  csr_rd_avail, csr_rd_data, csr_fwd_data
+   CSR_RD_intf                         csr_rd_bus();  // master: outputs: csr_rd_addr, input  csr_rd_avail, csr_rd_data, csr_nxt_rd_data
 
    CSR_REG_intf                        csr_reg_bus(); // master: outputs: Ucsr, Scsr, Mcsr
 
@@ -328,7 +328,7 @@ module RisKy1_core
       .mode(mode),                                                            // Input:   from mode_irq() - mode follows instruction
 
       // All CSR registers shared between CSREGS and CSR Functional Unit inside EXE stage
-      .csr_rd_bus(csr_rd_bus),                                                // master <- outputs: csr_rd_addr, inputs: csr_rd_avail, csr_fwd_data
+      .csr_rd_bus(csr_rd_bus),                                                // master <- outputs: csr_rd_addr, inputs: csr_rd_avail, csr_rd_data, csr_nxt_rd_data
       .trap_bus(trap_bus),                                                    // slave <- inputs: trap_pc, irq_flag, irq_cause
 
       // Time to flush pipeline and reload PC signal
@@ -472,7 +472,7 @@ module RisKy1_core
 
       .csr_reg_bus(csr_reg_bus),                                              // master:  outputs: Ucsr, Scsr, Mcsr
 
-      .csr_rd_bus(csr_rd_bus),                                                // slave:   inputs: csr_rd_addr, outputs: csr_rd_avail, csr_fwd_data
+      .csr_rd_bus(csr_rd_bus),                                                // slave:   inputs: csr_rd_addr, outputs: csr_rd_avail, csr_rd_data, csr_nxt_rd_data
 
       .csr_wr_bus(csr_wr_bus)                                                 // slave:   inputs: csr_wr, csr_wr_addr, csr_wr_data, sw_irq, exception, current_events, uret, sret, mret
    );
@@ -493,7 +493,7 @@ module RisKy1_core
 
       .csr_reg_bus(csr_reg_bus),                                              // slave:   inputs: Ucsr, Scsr, Mcsr
 
-      .csr_wr_bus(csr_wr_bus),                                                // slave:   input: csr_wr, csr_wr_addr, csr_wr_data, sw_irq, exception, current_events, uret, sret, mret
+      .csr_wr_bus(csr_wr_bus),                                                // slave:   inputs: csr_wr, csr_wr_addr, csr_wr_data, sw_irq, exception, current_events, uret, sret, mret
 
       .trap_bus(trap_bus)                                                     // master:  output: trap_pc, irq_flag, irq_cause
    );
