@@ -35,7 +35,7 @@ module execute
    input    logic                   [1:0] mode,                            // Input:   current mode from mode_irq()
 
    // signals shared between EXE stage and csr.sv
-   CSR_RD_intf.master                     csr_rd_bus,                      // master: outputs: csr_rd_addr,  inputs: csr_rd_avail, csr_rd_data, csr_fwd_data
+   CSR_RD_intf.master                     csr_rd_bus,                      // master: outputs: csr_rd_addr,  inputs: csr_rd_avail, csr_rd_data, csr_nxt_rd_data
 
    TRAP_intf.slave                        trap_bus,                        // slave <- inputs: trap_pc, irq_flag, irq_cause
 
@@ -306,13 +306,14 @@ module execute
    logic         [RSZ-1:0] csr_wr_data;      // value to write into CSR[csr_addr} in WB stage
    logic                   ill_csr_access;   // 1 = illegal csr access
    logic            [11:0] csr_addr, ill_csr_addr;
-   logic         [RSZ-1:0] csr_fwd_data;
+   logic         [RSZ-1:0] csr_rd_data, csr_nxt_rd_data;
 
-   // CSR_rd_intf.master  csr_rd_bus : // master <- output: csr_rd_addr, input: csr_rd_avail, csr_fwd_data
+   // CSR_rd_intf.master  csr_rd_bus : // master: output: csr_rd_addr, input: csr_rd_avail, csr_rd_data, csr_nxt_rd_data
    assign csr_addr               = D2E_bus.data.imm[11:0];
    assign csr_rd_bus.csr_rd_addr = csr_addr;                                  // CSR address to access
 
-   assign csr_fwd_data           = csr_rd_bus.csr_fwd_data;
+   assign csr_rd_data            = csr_rd_bus.csr_rd_data;                    // This data is passed on to the forwarding logic which either pass this value to csr functional unit OR forwarding data from another stage.
+   assign csr_nxt_rd_data        = csr_rd_bus.csr_nxt_rd_data;                // This data is passed on to next CPU stage i.e. mem stage
 
    // ----------------------------------- csrfu_bus interface
    assign csrfu_bus.is_csr_inst  = (ig_type == CSR_INSTR) & D2E_bus.valid;    // CSR FU Input:   valid == 1 - a CSR read & write happens this clock cycle
@@ -432,7 +433,7 @@ module execute
       else if (csr_rd & fwd_wb_csr.valid & fwd_wb_csr.csr_wr & (csr_addr == fwd_wb_csr.csr_addr))
          FU_csr_data = fwd_wb_csr.csr_data;
       else
-         FU_csr_data = csr_fwd_data;        // taken from CSR[csr_addr] in csr_sel_data
+         FU_csr_data = csr_rd_data;        // taken from CSR[csr_addr] in csr_sel_data
    end
 
    // ****** Decide which Functional Unit output data will get used and passed to next stage *****
@@ -455,7 +456,7 @@ module execute
 
          // trap_pc, irq_flag, irq_cause need to come from mode_irq() module in this stage so they can be passed to next stages as they relate to current instruction. These will
          // be used in the WB stage to crete the exception data
-         // slave: inputs: csr_rd_addr, output: csr_rd_avail, csr_rd_data, csr_fwd_data, trap_pc, irq_flag, irq_cause
+         // slave: inputs: csr_rd_addr, output: csr_rd_avail, csr_rd_data, csr_nxt_rd_data, trap_pc, irq_flag, irq_cause
          exe_dout.trap_pc           = trap_bus.trap_pc;                             // current trap_pc, irq_flag, irq_cause not used in this stage,but needed in WB stage
          exe_dout.irq_flag          = trap_bus.irq_flag;
          exe_dout.irq_cause         = trap_bus.irq_cause;
@@ -640,7 +641,7 @@ module execute
                   exe_dout.csr_wr      = csr_wr;
                   exe_dout.csr_addr    = csr_addr;
                   exe_dout.csr_wr_data = csr_wr_data;                               // Data to be written at WB stage
-                  exe_dout.csr_fwd_data = csr_fwd_data;                             // This is the data that should be used in forwarding as it may be different than csr_wr_data
+                  exe_dout.csr_fwd_data = csr_nxt_rd_data;                          // This is the data that should be used in forwarding as it may be different than csr_wr_data
                end
             end
 
