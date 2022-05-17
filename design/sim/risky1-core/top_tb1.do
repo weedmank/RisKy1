@@ -43,13 +43,13 @@ vlog  -sv -hazards +define+ext_M +define+ext_C +define+ext_S +define+ext_U +defi
 vlog  -sv -hazards +define+ext_M +define+ext_C +define+ext_S +define+ext_U +define+ext_N +define+SIM_DEBUG                                          ../../src/pkg/cpu_params_pkg.sv
 vlog  -sv -hazards +define+ext_M +define+ext_C +define+ext_S +define+ext_U +define+ext_N +define+SIM_DEBUG +define+MODELSIM                         ../../src/pkg/cpu_structs_pkg.sv
 vlog  -sv -hazards +define+ext_M +define+ext_C +define+ext_S +define+ext_U +define+ext_N +define+SIM_DEBUG                                          ../../src/pkg/csr_params_pkg.sv
-      
-# Interfaces      
+
+# Interfaces
 vlog  -sv -hazards +define+ext_M +define+ext_C +define+ext_S +define+ext_U +define+ext_N +define+SIM_DEBUG                                          ../../src/cpu_src/cpu_intf.sv
-      
-# Debug Files     
+
+# Debug Files
 vlog  -sv          +define+ext_M +define+ext_C +define+ext_S +define+ext_U +define+ext_N +define+SIM_DEBUG                                          ../../src/debug/disasm_RV.sv
-      
+
 # RTL Synthesizable Files
 # +zdefine+ext_M +define+ext_C +define+ext_S +define+ext_U +define+ext_N +define+SIM_DEBUG
 vlog  -sv -hazards +define+ext_M +define+ext_C +define+ext_S +define+ext_U +define+ext_N +define+SIM_DEBUG  +cover                                  ../../src/cpu_src/alu_fu.sv
@@ -84,22 +84,22 @@ vlog  -sv -hazards +define+ext_M +define+ext_C +define+ext_S +define+ext_U +defi
 vlog  -sv -hazards                                                                                                         ../../src/peripherals/L1_dcache.sv
 vlog  -sv -hazards                                                                                                         ../../src/peripherals/L1_icache.sv
 vlog  -sv -hazards                                                                                                         ../../src/peripherals/cache_arbiter.sv
-      
-# Models - non synthesizable. Note: arb_sysmem_model affectively substitutes for cache_arbiter + sys_mem_model    
+
+# Models - non synthesizable. Note: arb_sysmem_model affectively substitutes for cache_arbiter + sys_mem_model
 vlog  -sv -hazards +define+ext_M +define+ext_C +define+ext_S +define+ext_U +define+ext_N +define+SIM_DEBUG +define+TEST_FILE=\"instr_tests/factorial.rom\"  ../../src/models/sys_mem_model.sv
-      
-# Top Level Simulation File - add +BIND_ASSERTS if doing assertion testing    
+
+# Top Level Simulation File - add +BIND_ASSERTS if doing assertion testing
 #vlog  -sv -hazards +define+ext_M +define+ext_C +define+ext_S +define+ext_U +define+ext_N +define+SIM_DEBUG+BIND_ASSERTS                                            top_tb1.sv
 vlog  -sv -hazards +define+ext_M +define+ext_C +define+ext_S +define+ext_U +define+ext_N +define+SIM_DEBUG                                                         top_tb1.sv
-      
-# Questa Formal Properties files    
-vlog  -sv -hazards +define+ext_M +define+ext_C +define+ext_S +define+ext_U +define+ext_N +define+SIM_DEBUG                                                   ../../src/questa_formal/property_checks/RV_EMU_params_pkg.sv
-vlog  -sv -hazards +define+ext_M +define+ext_C +define+ext_S +define+ext_U +define+ext_N +define+SIM_DEBUG                                                   ../../src/questa_formal/property_checks/RV_EMU_core.sv
-vlog  -sv -hazards +define+ext_M +define+ext_C +define+ext_S +define+ext_U +define+ext_N +define+SIM_DEBUG   +incdir+../../src/questa_formal/property_checks ../../src/questa_formal/property_checks/RV_EMU_asserts.sv
-#vlog  -sv -hazards +define+ext_M +define+ext_C +define+ext_S +define+ext_U +define+ext_N +define+SIM_DEBUG                                                   ../../src/questa_formal/property_checks/RV_EMU_core.svp
-#vlog  -sv -hazards +define+ext_M +define+ext_C +define+ext_S +define+ext_U +define+ext_N +define+SIM_DEBUG   +incdir+../../src/questa_formal/property_checks ../../src/questa_formal/property_checks/RV_EMU_asserts.svp
-      
-# Assertion/Property Files    
+
+# Questa Formal Properties files
+vlog  -sv -hazards +define+ext_M +define+ext_C +define+ext_S +define+ext_U +define+ext_N +define+SIM_DEBUG                                                   ../../src/questa_formal/property_checks/RV32imc_params_pkg.sv
+vlog  -sv -hazards +define+ext_M +define+ext_C +define+ext_S +define+ext_U +define+ext_N +define+SIM_DEBUG                                                   ../../src/questa_formal/property_checks/RV32imc_model.sv
+vlog  -sv -hazards +define+ext_M +define+ext_C +define+ext_S +define+ext_U +define+ext_N +define+SIM_DEBUG   +incdir+../../src/questa_formal/property_checks ../../src/questa_formal/property_checks/RV32imc_asserts.sv
+#vlog  -sv -hazards +define+ext_M +define+ext_C +define+ext_S +define+ext_U +define+ext_N +define+SIM_DEBUG                                                   ../../src/questa_formal/property_checks/RV32imc_model.svp
+#vlog  -sv -hazards +define+ext_M +define+ext_C +define+ext_S +define+ext_U +define+ext_N +define+SIM_DEBUG   +incdir+../../src/questa_formal/property_checks ../../src/questa_formal/property_checks/RV32imc_asserts.svp
+
+# Assertion/Property Files
 vlog  -sv -hazards +define+ext_M +define+ext_C +define+ext_S +define+ext_U +define+ext_N +define+SIM_DEBUG                                                   ../../src/sva/csr_asserts.sv
 vlog  -sv -hazards +define+ext_M +define+ext_C +define+ext_S +define+ext_U +define+ext_N +define+SIM_DEBUG                                                   ../../src/sva/gpr_asserts.sv
 vlog  -sv -hazards +define+ext_M +define+ext_C +define+ext_S +define+ext_U +define+ext_N +define+SIM_DEBUG                                                   ../../src/sva/mem_asserts.sv
@@ -117,8 +117,11 @@ view structure
 
 #For use with free version of Modelsim
 #vsim -assertdebug -voptargs=+acc -t 1ps +autofindloop top_tb1
-vsim -assertdebug -voptargs=+acc -t 1ps top_tb1
+vsim -coverage -assertdebug -voptargs=+acc -t 1ps top_tb1
 
 
 do wave_tb1.do
 run -all
+#coverage save jf_coverage.ucdb
+#vcover   report -html jf_coverage.html
+coverage report -output jf_coverage.rpt

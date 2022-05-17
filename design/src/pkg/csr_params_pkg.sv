@@ -23,7 +23,7 @@ import cpu_params_pkg::*;
 
 //   parameter SET_MCOUNTINHIBIT = 0;
 //   parameter SET_MCOUNTINHIBIT_BITS = 0;
-   
+
    // ================================================================== Machine Mode CSRs ==================================================================
    // "The mstatush register is not required to be implemented if every field would be hardwired to zero." riscv_privileged 1.12 draft
    // ------------------------------ Machine Status Register
@@ -108,7 +108,7 @@ import cpu_params_pkg::*;
                   | 32'b0000_0000_0001_0000_0000_0000_0000_0000      /* U bit - User mode support */
    `endif
    ;//                         ZY XWVU TSRQ PONM LKJI HGFE DCBA
-   localparam  MISA_INIT         = MISA;                    // static bits for now
+   localparam  MISA_INIT         = (MISA);                    // static bits for now
    localparam  MISA_RO           = 32'hFFFF_FFFF;           // each bit == 1 specifies Read Only. Currently, no logic is implemented to allow dynamic change of this register
 
    // example to have ext M be turned on or off

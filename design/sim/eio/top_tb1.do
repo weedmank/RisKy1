@@ -39,14 +39,14 @@ vlog  -sv -hazards +define+SIM_DEBUG                                            
 vlog  -sv -hazards +define+SIM_DEBUG                                                                                 ../../src/pkg/cpu_params_pkg.sv
 vlog  -sv -hazards +define+SIM_DEBUG                                                                                 ../../src/pkg/cpu_structs_pkg.sv
 vlog  -sv -hazards +define+SIM_DEBUG                                                                                 ../../src/pkg/csr_params_pkg.sv
-                                                                                      
-# Interfaces                                                                          
+
+# Interfaces
 vlog  -sv -hazards +define+SIM_DEBUG                                                                                 ../../src/cpu_src/cpu_intf.sv
-                                                                                      
-# Debug Files                                                                         
+
+# Debug Files
 vlog  -sv          +define+SIM_DEBUG                                                                                 ../../src/debug/disasm_RV.sv
-                                                                                      
-# RTL Synthesizable Files                                                             
+
+# RTL Synthesizable Files
 vlog  -sv -hazards +define+SIM_DEBUG  +cover                                                                         ../../src/cpu_src/alu_fu.sv
 vlog  -sv -hazards +define+SIM_DEBUG  +cover                                                                         ../../src/cpu_src/br_fu.sv
 vlog  -sv -hazards +define+SIM_DEBUG  +cover                                                                         ../../src/cpu_src/csr.sv
@@ -93,13 +93,13 @@ vlog  -sv -hazards +define+TEST_FILE=\"instr_tests/eio.hex\"                    
 # Top Level Simulation File - add +BIND_ASSERTS if doing assertion testing
 #vlog  -sv -hazards +define+SIM_DEBUG+BIND_ASSERTS                                                                    top_tb1.sv
 vlog  -sv -hazards +define+SIM_DEBUG                                                                                 top_tb1.sv
-                              
-# Questa Formal Properties files    
-vlog  -sv -hazards +define+SIM_DEBUG                                                                                 ../../src/questa_formal/property_checks/RV_EMU_params_pkg.sv
-vlog  -sv -hazards +define+SIM_DEBUG                                                                                 ../../src/questa_formal/property_checks/RV_EMU_core.svp
-vlog  -sv -hazards +define+SIM_DEBUG                                 +incdir+../../src/questa_formal/property_checks ../../src/questa_formal/property_checks/RV_EMU_asserts.svp
 
-# Assertion/Property Files                            
+# Questa Formal Properties files
+vlog  -sv -hazards +define+SIM_DEBUG                                                                                 ../../src/questa_formal/property_checks/RV32imc_params_pkg.sv
+vlog  -sv -hazards +define+SIM_DEBUG                                                                                 ../../src/questa_formal/property_checks/RV32imc_model.svp
+vlog  -sv -hazards +define+SIM_DEBUG                                 +incdir+../../src/questa_formal/property_checks ../../src/questa_formal/property_checks/RV32imc_asserts.svp
+
+# Assertion/Property Files
 vlog  -sv -hazards +define+SIM_DEBUG                                                                                 ../../src/sva/csr_asserts.sv
 vlog  -sv -hazards +define+SIM_DEBUG                                                                                 ../../src/sva/gpr_asserts.sv
 vlog  -sv -hazards +define+SIM_DEBUG                                                                                 ../../src/sva/mem_asserts.sv

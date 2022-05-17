@@ -39,14 +39,14 @@ vlog  -sv -hazards +define+ext_M+ext_C+ext_U+SIM_DEBUG                          
 vlog  -sv -hazards +define+ext_M+ext_C+ext_U+SIM_DEBUG                                                         ../../src/pkg/cpu_params_pkg.sv
 vlog  -sv -hazards +define+ext_M+ext_C+ext_U+SIM_DEBUG                                                         ../../src/pkg/cpu_structs_pkg.sv
 vlog  -sv -hazards +define+ext_M+ext_C+ext_U+SIM_DEBUG                                                         ../../src/pkg/csr_params_pkg.sv
-   
-# Interfaces   
+
+# Interfaces
 vlog  -sv -hazards +define+ext_M+ext_C+ext_U+SIM_DEBUG                                                         ../../src/cpu_src/cpu_intf.sv
-   
-# Debug Files  
+
+# Debug Files
 vlog  -sv          +define+ext_M+ext_C+ext_U+SIM_DEBUG                                                         ../../src/debug/disasm_RV.sv
-   
-# RTL Synthesizable Files  
+
+# RTL Synthesizable Files
 vlog  -sv -hazards +define+ext_M+ext_C+ext_U+SIM_DEBUG                                                         ../../src/cpu_src/alu_fu.sv
 vlog  -sv -hazards +define+ext_M+ext_C+ext_U+SIM_DEBUG                                                         ../../src/cpu_src/br_fu.sv
 vlog  -sv -hazards +define+ext_M+ext_C+ext_U+SIM_DEBUG                                                         ../../src/cpu_src/csr.sv
@@ -95,9 +95,9 @@ vlog  -sv -hazards +define+ext_M+ext_C+ext_U+SIM_DEBUG+TEST_FILE=\"instr_tests/c
 vlog  -sv -hazards +define+ext_M+ext_C+ext_U+SIM_DEBUG+MAX_CYC=30                                              top_tb1.sv
 
 # Questa Formal Properties files
-vlog  -sv -hazards +define+ext_M+ext_C+ext_U+SIM_DEBUG                                                         ../../src/questa_formal/property_checks/RV_EMU_params_pkg.sv
-vlog  -sv -hazards +define+ext_M+ext_C+ext_U+SIM_DEBUG                                                         ../../src/questa_formal/property_checks/RV_EMU_core.svp
-vlog  -sv -hazards +define+ext_M+ext_C+ext_U+SIM_DEBUG        +incdir+../../src/questa_formal/property_checks  ../../src/questa_formal/property_checks/RV_EMU_asserts.svp
+vlog  -sv -hazards +define+ext_M+ext_C+ext_U+SIM_DEBUG                                                         ../../src/questa_formal/property_checks/RV32imc_params_pkg.sv
+vlog  -sv -hazards +define+ext_M+ext_C+ext_U+SIM_DEBUG                                                         ../../src/questa_formal/property_checks/RV32imc_model.svp
+vlog  -sv -hazards +define+ext_M+ext_C+ext_U+SIM_DEBUG        +incdir+../../src/questa_formal/property_checks  ../../src/questa_formal/property_checks/RV32imc_asserts.svp
 
 # Assertion/Property Files
 vlog  -sv -hazards +define+ext_M+ext_C+ext_U+SIM_DEBUG                                                         ../../src/sva/csr_asserts.sv
