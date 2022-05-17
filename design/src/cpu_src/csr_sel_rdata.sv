@@ -55,20 +55,20 @@ module csr_sel_rdata
    `ifdef ext_U
    `ifdef ext_N
       UCSR  Ucsr, nxt_Ucsr;                           // all of the User mode Control & Status Registers
-      assign Ucsr = csr_reg_bus.Ucsr;
-      assign nxt_Ucsr = csr_nxt_reg_bus.Ucsr;
+      assign Ucsr       = csr_reg_bus.Ucsr;
+      assign nxt_Ucsr   = csr_nxt_reg_bus.Ucsr;
    `endif
    `endif
 
    `ifdef ext_S
       SCSR  Scsr, nxt_Scsr;                           // all of the Supervisor mode Control & Status Registers
-      assign Scsr = csr_reg_bus.Scsr;
-      assign nxt_Scsr = csr_nxt_reg_bus.Scsr;
+      assign Scsr       = csr_reg_bus.Scsr;
+      assign nxt_Scsr   = csr_nxt_reg_bus.Scsr;
    `endif
 
    MCSR  Mcsr, nxt_Mcsr;                              // all of the Machine mode Control & Status Registers
-   assign Mcsr = csr_reg_bus.Mcsr;
-   assign nxt_Mcsr = csr_nxt_reg_bus.Mcsr;
+   assign Mcsr       = csr_reg_bus.Mcsr;
+   assign nxt_Mcsr   = csr_nxt_reg_bus.Mcsr;
 
    // The counter-enable registers mcounteren and scounteren are 32-bit registers that control the
    // availability of the hardware performance-monitoring counters to the next-lowest privileged mode....
@@ -117,14 +117,14 @@ module csr_sel_rdata
             begin
                csr_rd_avail      = TRUE;
                csr_rd_data       = Mcsr.Mhpmcounter_lo[n];
-               csr_nxt_rd_data      = nxt_Mcsr.Mhpmcounter_lo[n];
+               csr_nxt_rd_data   = nxt_Mcsr.Mhpmcounter_lo[n];
             end
             // 12'hB83 - 12'hB9F
             if (csr_rd_addr == (12'hB83+n))
             begin
                csr_rd_avail      = TRUE;
                csr_rd_data       = Mcsr.Mhpmcounter_hi[n];
-               csr_nxt_rd_data      = nxt_Mcsr.Mhpmcounter_hi[n];
+               csr_nxt_rd_data   = nxt_Mcsr.Mhpmcounter_hi[n];
             end
 
             // 12'hC03 - 12'hC1F
@@ -132,14 +132,14 @@ module csr_sel_rdata
             begin
                csr_rd_avail      = TRUE;
                csr_rd_data       = Mcsr.Mhpmcounter_lo[n];
-               csr_nxt_rd_data      = nxt_Mcsr.Mhpmcounter_lo[n];
+               csr_nxt_rd_data   = nxt_Mcsr.Mhpmcounter_lo[n];
             end
             // 12'hC83 - 12'hC9F
             if ((csr_rd_addr == (12'hC83+n)) & av)
             begin
                csr_rd_avail      = TRUE;
                csr_rd_data       = Mcsr.Mhpmcounter_hi[n];
-               csr_nxt_rd_data      = nxt_Mcsr.Mhpmcounter_hi[n];
+               csr_nxt_rd_data   = nxt_Mcsr.Mhpmcounter_hi[n];
             end
 
             // ------------------------------ Machine hardware performance-monitoring event selectors mhpmevent3 - mhpmevent31
@@ -148,7 +148,7 @@ module csr_sel_rdata
             begin
                csr_rd_avail      = TRUE;
                csr_rd_data       = Mcsr.Mhpmevent[n];
-               csr_nxt_rd_data      = nxt_Mcsr.Mhpmevent[n];
+               csr_nxt_rd_data   = nxt_Mcsr.Mhpmevent[n];
             end
          end
       endgenerate
@@ -167,7 +167,7 @@ module csr_sel_rdata
          begin
             csr_rd_avail      = TRUE;
             csr_rd_data       = Mcsr.Mstatus;
-            csr_nxt_rd_data      = nxt_Mcsr.Mstatus;
+            csr_nxt_rd_data   = nxt_Mcsr.Mstatus;
          end
          // ------------------------------ Machine ISA
          // ISA and extensions
@@ -183,7 +183,7 @@ module csr_sel_rdata
          begin
             csr_rd_avail      = TRUE;
             csr_rd_data       = Mcsr.Misa;
-            csr_nxt_rd_data      = nxt_Mcsr.Misa;
+            csr_nxt_rd_data   = nxt_Mcsr.Misa;
          end
          // In systems with only M-mode and U-mode, the medeleg and mideleg registers should only be implemented if the N extension for user-mode interrupts is implemented.
          // In systems with only M-mode, or with both M-mode and U-mode but without U-mode trap support, the medeleg and mideleg registers should not exist. seee riscv-privileged.pdf p 28
@@ -195,7 +195,7 @@ module csr_sel_rdata
          begin
             csr_rd_avail      = TRUE;
             csr_rd_data       = Mcsr.Medeleg;
-            csr_nxt_rd_data      = nxt_Mcsr.Medeleg;
+            csr_nxt_rd_data   = nxt_Mcsr.Medeleg;
          end
 
          // ------------------------------ Machine Interrupt Delegation Register
@@ -204,7 +204,7 @@ module csr_sel_rdata
          begin
             csr_rd_avail      = TRUE;
             csr_rd_data       = Mcsr.Mideleg;
-            csr_nxt_rd_data      = nxt_Mcsr.Mideleg;
+            csr_nxt_rd_data   = nxt_Mcsr.Mideleg;
          end
          `endif
 
@@ -216,7 +216,7 @@ module csr_sel_rdata
          begin
             csr_rd_avail      = TRUE;
             csr_rd_data       = Mcsr.Mie;
-            csr_nxt_rd_data      = nxt_Mcsr.Mie;
+            csr_nxt_rd_data   = nxt_Mcsr.Mie;
          end
 
          // ------------------------------ Machine Trap-handler base address.
@@ -226,7 +226,7 @@ module csr_sel_rdata
          begin
             csr_rd_avail      = TRUE;
             csr_rd_data       = Mcsr.Mtvec;
-            csr_nxt_rd_data      = nxt_Mcsr.Mtvec;
+            csr_nxt_rd_data   = nxt_Mcsr.Mtvec;
          end
 
          // Andrew Waterman: 12/31/2020 - "There is also a clear statement that mcounteren exists if and only if U mode is implemented"
@@ -237,7 +237,7 @@ module csr_sel_rdata
          begin
             csr_rd_avail      = TRUE;
             csr_rd_data       = Mcsr.Mcounteren;
-            csr_nxt_rd_data      = nxt_Mcsr.Mcounteren;
+            csr_nxt_rd_data   = nxt_Mcsr.Mcounteren;
          end
          `endif
 
@@ -248,7 +248,7 @@ module csr_sel_rdata
          begin
             csr_rd_avail      = TRUE;
             csr_rd_data       = Mcsr.Mcountinhibit;
-            csr_nxt_rd_data      = nxt_Mcsr.Mcountinhibit;
+            csr_nxt_rd_data   = nxt_Mcsr.Mcountinhibit;
          end
 
          // ------------------------------ Machine Trap Handling
@@ -258,7 +258,7 @@ module csr_sel_rdata
          begin
             csr_rd_avail      = TRUE;
             csr_rd_data       = Mcsr.Mscratch;
-            csr_nxt_rd_data      = nxt_Mcsr.Mscratch;
+            csr_nxt_rd_data   = nxt_Mcsr.Mscratch;
          end
 
          // ------------------------------ Machine Exception Program Counter. Used by MRET instruction at end of Machine mode trap handler
@@ -267,7 +267,7 @@ module csr_sel_rdata
          begin
             csr_rd_avail      = TRUE;
             csr_rd_data       = Mcsr.Mepc;
-            csr_nxt_rd_data      = nxt_Mcsr.Mepc;
+            csr_nxt_rd_data   = nxt_Mcsr.Mepc;
          end
 
          // ------------------------------ Machine Exception Cause
@@ -276,7 +276,7 @@ module csr_sel_rdata
          begin
             csr_rd_avail      = TRUE;
             csr_rd_data       = Mcsr.Mcause;
-            csr_nxt_rd_data      = nxt_Mcsr.Mcause;
+            csr_nxt_rd_data   = nxt_Mcsr.Mcause;
          end
 
          // ------------------------------ Machine Exception Trap Value     see riscv-privileged p. 38-39
@@ -285,7 +285,7 @@ module csr_sel_rdata
          begin
             csr_rd_avail      = TRUE;
             csr_rd_data       = Mcsr.Mtval;
-            csr_nxt_rd_data      = nxt_Mcsr.Mtval;
+            csr_nxt_rd_data   = nxt_Mcsr.Mtval;
          end
 
 // ?????????????When the SEIP bit is read with a CSRRW, CSRRS, or CSRRC instruction, the value returned in the
@@ -301,7 +301,7 @@ module csr_sel_rdata
          begin
             csr_rd_avail      = TRUE;
             csr_rd_data       = Mcsr.Mip;
-            csr_nxt_rd_data      = nxt_Mcsr.Mip;
+            csr_nxt_rd_data   = nxt_Mcsr.Mip;
          end
 
          // ------------------------------ Machine Protection and Translation
@@ -313,28 +313,28 @@ module csr_sel_rdata
          begin
             csr_rd_avail      = TRUE;
             csr_rd_data       = Mcsr.pmpcfg0;
-            csr_nxt_rd_data      = nxt_Mcsr.pmpcfg0;
+            csr_nxt_rd_data   = nxt_Mcsr.pmpcfg0;
          end
          // 12'h3A1 = 12'b0011_1010_0001  pmpcfg1                          (read-write)
          12'h3A1:
          begin
             csr_rd_avail      = TRUE;
             csr_rd_data       = Mcsr.pmpcfg1;
-            csr_nxt_rd_data      = nxt_Mcsr.pmpcfg1;
+            csr_nxt_rd_data   = nxt_Mcsr.pmpcfg1;
          end
          // 12'h3A2 = 12'b0011_1010_0010  pmpcfg2                          (read-write)
          12'h3A2:
          begin
             csr_rd_avail      = TRUE;
             csr_rd_data       = Mcsr.pmpcfg2;
-            csr_nxt_rd_data      = nxt_Mcsr.pmpcfg2;
+            csr_nxt_rd_data   = nxt_Mcsr.pmpcfg2;
          end
          // 12'h3A3 = 12'b0011_1010_0011  pmpcfg3                          (read-write)
          12'h3A3:
          begin
             csr_rd_avail      = TRUE;
             csr_rd_data       = Mcsr.pmpcfg3;
-            csr_nxt_rd_data      = nxt_Mcsr.pmpcfg3;
+            csr_nxt_rd_data   = nxt_Mcsr.pmpcfg3;
          end
          `endif
 
@@ -382,7 +382,7 @@ module csr_sel_rdata
          begin
             csr_rd_avail      = TRUE;
             csr_rd_data       = Mcsr.Mcycle_lo;
-            csr_nxt_rd_data      = nxt_Mcsr.Mcycle_lo;
+            csr_nxt_rd_data   = nxt_Mcsr.Mcycle_lo;
          end
 
          // ------------------------------ Upper 32 bits of mcycle
@@ -391,7 +391,7 @@ module csr_sel_rdata
          begin
             csr_rd_avail      = TRUE;
             csr_rd_data       = Mcsr.Mcycle_hi;
-            csr_nxt_rd_data      = nxt_Mcsr.Mcycle_hi;
+            csr_nxt_rd_data   = nxt_Mcsr.Mcycle_hi;
          end
 
          // ------------------------------ Machine Instructions-Retired Counter - IR
@@ -400,7 +400,7 @@ module csr_sel_rdata
          begin
             csr_rd_avail      = TRUE;
             csr_rd_data       = Mcsr.Minstret_lo;
-            csr_nxt_rd_data      = nxt_Mcsr.Minstret_lo;
+            csr_nxt_rd_data   = nxt_Mcsr.Minstret_lo;
          end
 
          // ------------------------------ Upper 32 bits of minstret
@@ -409,7 +409,7 @@ module csr_sel_rdata
          begin
             csr_rd_avail      = TRUE;
             csr_rd_data       = Mcsr.Minstret_hi;
-            csr_nxt_rd_data      = nxt_Mcsr.Minstret_hi;
+            csr_nxt_rd_data   = nxt_Mcsr.Minstret_hi;
          end
 
          // ------------------------------ Counter/Timers (12'hCxx = Read Only - readable by Machine, Supervisor and User modes)
@@ -419,7 +419,7 @@ module csr_sel_rdata
          begin
             csr_rd_avail   = av;
             if (av) csr_rd_data     = Mcsr.Mcycle_lo;
-            if (av) csr_nxt_rd_data    = nxt_Mcsr.Mcycle_lo;
+            if (av) csr_nxt_rd_data = nxt_Mcsr.Mcycle_lo;
          end
 
          // ------------------------------ Timer Counter - TM
@@ -428,7 +428,7 @@ module csr_sel_rdata
          begin
             csr_rd_avail   = av;
             if (av) csr_rd_data     = mtime[RSZ-1:0];
-            if (av) csr_nxt_rd_data    = mtime[RSZ-1:0];
+            if (av) csr_nxt_rd_data = mtime[RSZ-1:0];
          end
 
          // ------------------------------ Number of Instructions Retired
@@ -437,7 +437,7 @@ module csr_sel_rdata
          begin
             csr_rd_avail   = av;
             if (av) csr_rd_data     = Mcsr.Minstret_lo;
-            if (av) csr_nxt_rd_data    = nxt_Mcsr.Minstret_lo;
+            if (av) csr_nxt_rd_data = nxt_Mcsr.Minstret_lo;
          end
 
 
@@ -447,7 +447,7 @@ module csr_sel_rdata
          begin
             csr_rd_avail   = av;
             if (av) csr_rd_data     = Mcsr.Mcycle_hi;
-            if (av) csr_nxt_rd_data    = nxt_Mcsr.Mcycle_hi;
+            if (av) csr_nxt_rd_data = nxt_Mcsr.Mcycle_hi;
          end
 
          // ------------------------------ Upper 32 bits of Timer Counter - TM
@@ -456,7 +456,7 @@ module csr_sel_rdata
          begin
             csr_rd_avail   = av;
             if (av) csr_rd_data     = mtime[RSZ*2-1:RSZ];
-            if (av) csr_nxt_rd_data    = mtime[RSZ*2-1:RSZ];
+            if (av) csr_nxt_rd_data = mtime[RSZ*2-1:RSZ];
          end
 
          // ------------------------------ Upper 32 bits of Instructions Retired, RV32I only.
@@ -465,7 +465,7 @@ module csr_sel_rdata
          begin
             csr_rd_avail   = av;
             if (av) csr_rd_data     = Mcsr.Minstret_hi;
-            if (av) csr_nxt_rd_data    = nxt_Mcsr.Minstret_hi;
+            if (av) csr_nxt_rd_data = nxt_Mcsr.Minstret_hi;
          end
 
          // ------------------------------ Machine Information Registers
@@ -475,7 +475,7 @@ module csr_sel_rdata
          begin
             csr_rd_avail      = TRUE;
             csr_rd_data       = Mcsr.Mvendorid;
-            csr_nxt_rd_data      = nxt_Mcsr.Mvendorid;
+            csr_nxt_rd_data   = nxt_Mcsr.Mvendorid;
          end
 
          // ------------------------------ Architecture ID
@@ -484,7 +484,7 @@ module csr_sel_rdata
          begin
             csr_rd_avail      = TRUE;
             csr_rd_data       = Mcsr.Marchid;
-            csr_nxt_rd_data      = nxt_Mcsr.Marchid;
+            csr_nxt_rd_data   = nxt_Mcsr.Marchid;
          end
 
          // ------------------------------ Implementation ID
@@ -493,7 +493,7 @@ module csr_sel_rdata
          begin
             csr_rd_avail      = TRUE;
             csr_rd_data       = Mcsr.Mimpid;
-            csr_nxt_rd_data      = nxt_Mcsr.Mimpid;
+            csr_nxt_rd_data   = nxt_Mcsr.Mimpid;
          end
 
          // ------------------------------ Hardware Thread ID
@@ -502,7 +502,7 @@ module csr_sel_rdata
          begin
             csr_rd_avail      = TRUE;
             csr_rd_data       = Mcsr.Mhartid;
-            csr_nxt_rd_data      = nxt_Mcsr.Mhartid;
+            csr_nxt_rd_data   = nxt_Mcsr.Mhartid;
          end
 
          `ifdef ext_S
@@ -516,7 +516,7 @@ module csr_sel_rdata
          begin
             csr_rd_avail      = TRUE;
             csr_rd_data       = Scsr.Sstatus;
-            csr_nxt_rd_data      = nxt_Scsr.Sstatus;
+            csr_nxt_rd_data   = nxt_Scsr.Sstatus;
          end
 
          // In systems with S-mode, the  medeleg and mideleg registers must exist, whereas the sedeleg and sideleg registers should only
@@ -528,7 +528,7 @@ module csr_sel_rdata
          begin
             csr_rd_avail      = TRUE;
             csr_rd_data       = Scsr.Sedeleg;
-            csr_nxt_rd_data      = nxt_Scsr.Sedeleg;
+            csr_nxt_rd_data   = nxt_Scsr.Sedeleg;
          end
 
          // ------------------------------ Supervisor Interrupt Delegation Register.
@@ -537,7 +537,7 @@ module csr_sel_rdata
          begin
             csr_rd_avail      = TRUE;
             csr_rd_data       = Scsr.Sideleg;
-            csr_nxt_rd_data      = nxt_Scsr.Sideleg;
+            csr_nxt_rd_data   = nxt_Scsr.Sideleg;
          end
          `endif // ext_N
 
@@ -549,7 +549,7 @@ module csr_sel_rdata
          begin
             csr_rd_avail      = TRUE;
             csr_rd_data       = Scsr.Sie;
-            csr_nxt_rd_data      = nxt_Scsr.Sie;
+            csr_nxt_rd_data   = nxt_Scsr.Sie;
          end
 
          // ------------------------------ Supervisor Trap handler base address.
@@ -559,7 +559,7 @@ module csr_sel_rdata
          begin
             csr_rd_avail      = TRUE;
             csr_rd_data       = Scsr.Stvec;
-            csr_nxt_rd_data      = nxt_Scsr.Stvec;
+            csr_nxt_rd_data   = nxt_Scsr.Stvec;
          end
 
          // 12/31/202 - Andrew Waterman "scounteren only exists if S Mode is implemented"
@@ -569,7 +569,7 @@ module csr_sel_rdata
          begin
             csr_rd_avail      = TRUE;
             csr_rd_data       = Scsr.Scounteren;
-            csr_nxt_rd_data      = nxt_Scsr.Scounteren;
+            csr_nxt_rd_data   = nxt_Scsr.Scounteren;
          end
 
          // ------------------------------ Supervisor Scratch Register
@@ -579,7 +579,7 @@ module csr_sel_rdata
          begin
             csr_rd_avail      = TRUE;
             csr_rd_data       = Scsr.Sscratch;
-            csr_nxt_rd_data      = nxt_Scsr.Sscratch;
+            csr_nxt_rd_data   = nxt_Scsr.Sscratch;
          end
 
          // ------------------------------ Supervisor Exception Program Counter.
@@ -588,7 +588,7 @@ module csr_sel_rdata
          begin
             csr_rd_avail      = TRUE;
             csr_rd_data       = Scsr.Sepc;
-            csr_nxt_rd_data      = nxt_Scsr.Sepc;
+            csr_nxt_rd_data   = nxt_Scsr.Sepc;
          end
 
          // ------------------------------ Supervisor Trap Cause.
@@ -597,7 +597,7 @@ module csr_sel_rdata
          begin
             csr_rd_avail      = TRUE;
             csr_rd_data       = Scsr.Scause;
-            csr_nxt_rd_data      = nxt_Scsr.Scause;
+            csr_nxt_rd_data   = nxt_Scsr.Scause;
          end
 
          // ------------------------------ Supervisor Trap Value = bad address or instruction.
@@ -606,7 +606,7 @@ module csr_sel_rdata
          begin
             csr_rd_avail      = TRUE;
             csr_rd_data       = Scsr.Stval;
-            csr_nxt_rd_data      = nxt_Scsr.Stval;
+            csr_nxt_rd_data   = nxt_Scsr.Stval;
          end
 
 // ???????When the SEIP bit is read with a CSRRW, CSRRS, or CSRRC instruction, the value returned in the
@@ -622,7 +622,7 @@ module csr_sel_rdata
          begin
             csr_rd_avail      = TRUE;
             csr_rd_data       = Scsr.Sip;
-            csr_nxt_rd_data      = nxt_Scsr.Sip;
+            csr_nxt_rd_data   = nxt_Scsr.Sip;
          end
 
          // ------------------------------ Supervisor Protection and Translation
@@ -632,7 +632,7 @@ module csr_sel_rdata
          begin
             csr_rd_avail      = TRUE;
             csr_rd_data       = Scsr.Satp;
-            csr_nxt_rd_data      = nxt_Scsr.Satp;
+            csr_nxt_rd_data   = nxt_Scsr.Satp;
          end
          `endif // ext_S
 
@@ -647,7 +647,7 @@ module csr_sel_rdata
             begin
                csr_rd_avail      = TRUE;
                csr_rd_data       = Ucsr.Ustatus;
-               csr_nxt_rd_data      = nxt_Ucsr.Ustatus;
+               csr_nxt_rd_data   = nxt_Ucsr.Ustatus;
             end
 
             // ------------------------------ User Floating-Point CSRs
@@ -663,7 +663,7 @@ module csr_sel_rdata
             begin
                csr_rd_avail      = TRUE;
                csr_rd_data       = Ucsr.Uie;
-               csr_nxt_rd_data      = nxt_Ucsr.Uie;
+               csr_nxt_rd_data   = nxt_Ucsr.Uie;
             end
 
             // ------------------------------ User Trap Handler Base address
@@ -672,7 +672,7 @@ module csr_sel_rdata
             begin
                csr_rd_avail      = TRUE;
                csr_rd_data       = Ucsr.Utvec;
-               csr_nxt_rd_data      = nxt_Ucsr.Utvec;
+               csr_nxt_rd_data   = nxt_Ucsr.Utvec;
             end
 
             // ------------------------------ User Trap Handling
@@ -682,7 +682,7 @@ module csr_sel_rdata
             begin
                csr_rd_avail      = TRUE;
                csr_rd_data       = Ucsr.Uscratch;
-               csr_nxt_rd_data      = nxt_Ucsr.Uscratch;
+               csr_nxt_rd_data   = nxt_Ucsr.Uscratch;
             end
 
             // ------------------------------ User Exception Program Counter
@@ -691,7 +691,7 @@ module csr_sel_rdata
             begin
                csr_rd_avail      = TRUE;
                csr_rd_data       = Ucsr.Uepc;
-               csr_nxt_rd_data      = nxt_Ucsr.Uepc;
+               csr_nxt_rd_data   = nxt_Ucsr.Uepc;
             end
 
             // ------------------------------ User Exception Cause
@@ -700,7 +700,7 @@ module csr_sel_rdata
             begin
                csr_rd_avail      = TRUE;
                csr_rd_data       = Ucsr.Ucause;
-               csr_nxt_rd_data      = nxt_Ucsr.Ucause;
+               csr_nxt_rd_data   = nxt_Ucsr.Ucause;
             end
 
             // ------------------------------ User Trap Value = bad address or instruction
@@ -709,7 +709,7 @@ module csr_sel_rdata
             begin
                csr_rd_avail      = TRUE;
                csr_rd_data       = Ucsr.Utval;
-               csr_nxt_rd_data      = nxt_Ucsr.Utval;
+               csr_nxt_rd_data   = nxt_Ucsr.Utval;
             end
 
             // ------------------------------ User Interrupt Pending.
@@ -720,7 +720,7 @@ module csr_sel_rdata
             begin
                csr_rd_avail      = TRUE;
                csr_rd_data       = Ucsr.Uip;
-               csr_nxt_rd_data      = nxt_Ucsr.Uip;
+               csr_nxt_rd_data   = nxt_Ucsr.Uip;
             end
             `endif // ext_N
          `endif // ext_U
