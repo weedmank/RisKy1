@@ -92,7 +92,7 @@ vlog  -sv -hazards +define+ext_M +define+ext_C +define+ext_S +define+ext_U +defi
 #vlog  -sv -hazards +define+ext_M +define+ext_C +define+ext_S +define+ext_U +define+ext_N +define+SIM_DEBUG+BIND_ASSERTS                                            top_tb1.sv
 vlog  -sv -hazards +define+ext_M +define+ext_C +define+ext_S +define+ext_U +define+ext_N +define+SIM_DEBUG                                                         top_tb1.sv
 
-# Questa Formal Properties files - not available to public
+# Questa Formal Properties files - not avaigitlable to public
 # vlog  -sv -hazards +define+ext_M +define+ext_C +define+ext_S +define+ext_U +define+ext_N +define+SIM_DEBUG                                                   ../../src/questa_formal/property_checks/RV32imc_params_pkg.sv
 # vlog  -sv -hazards +define+ext_M +define+ext_C +define+ext_S +define+ext_U +define+ext_N +define+SIM_DEBUG                                                   ../../src/questa_formal/property_checks/RV32imc_model.sv
 # vlog  -sv -hazards +define+ext_M +define+ext_C +define+ext_S +define+ext_U +define+ext_N +define+SIM_DEBUG   +incdir+../../src/questa_formal/property_checks ../../src/questa_formal/property_checks/RV32imc_asserts.sv
