@@ -266,9 +266,9 @@ assign csr_nxt_reg_bus.Mcsr      = nxt_Mcsr;
          nxt_Mcsr.Mie = Mcsr.Mie;                                             // default unless overrriden by logic
 
          `ifdef ext_S
-         nxt_Mcsr.Mie.seie = Scsr.Sie.seie;
-         nxt_Mcsr.Mie.stie = Scsr.Sie.stie;
-         nxt_Mcsr.Mie.ssie = Scsr.Sie.ssie;
+         nxt_Mcsr.Mie.seie = nxt_Scsr.Sie.seie;
+         nxt_Mcsr.Mie.stie = nxt_Scsr.Sie.stie;
+         nxt_Mcsr.Mie.ssie = nxt_Scsr.Sie.ssie;
          `else
          nxt_Mcsr.Mie.seie = 0;
          nxt_Mcsr.Mie.stie = 0;
