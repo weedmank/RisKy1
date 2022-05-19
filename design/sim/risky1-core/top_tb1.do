@@ -92,12 +92,12 @@ vlog  -sv -hazards +define+ext_M +define+ext_C +define+ext_S +define+ext_U +defi
 #vlog  -sv -hazards +define+ext_M +define+ext_C +define+ext_S +define+ext_U +define+ext_N +define+SIM_DEBUG+BIND_ASSERTS                                            top_tb1.sv
 vlog  -sv -hazards +define+ext_M +define+ext_C +define+ext_S +define+ext_U +define+ext_N +define+SIM_DEBUG                                                         top_tb1.sv
 
-# Questa Formal Properties files
-vlog  -sv -hazards +define+ext_M +define+ext_C +define+ext_S +define+ext_U +define+ext_N +define+SIM_DEBUG                                                   ../../src/questa_formal/property_checks/RV32imc_params_pkg.sv
-vlog  -sv -hazards +define+ext_M +define+ext_C +define+ext_S +define+ext_U +define+ext_N +define+SIM_DEBUG                                                   ../../src/questa_formal/property_checks/RV32imc_model.sv
-vlog  -sv -hazards +define+ext_M +define+ext_C +define+ext_S +define+ext_U +define+ext_N +define+SIM_DEBUG   +incdir+../../src/questa_formal/property_checks ../../src/questa_formal/property_checks/RV32imc_asserts.sv
-#vlog  -sv -hazards +define+ext_M +define+ext_C +define+ext_S +define+ext_U +define+ext_N +define+SIM_DEBUG                                                   ../../src/questa_formal/property_checks/RV32imc_model.svp
-#vlog  -sv -hazards +define+ext_M +define+ext_C +define+ext_S +define+ext_U +define+ext_N +define+SIM_DEBUG   +incdir+../../src/questa_formal/property_checks ../../src/questa_formal/property_checks/RV32imc_asserts.svp
+# Questa Formal Properties files - not available to public
+# vlog  -sv -hazards +define+ext_M +define+ext_C +define+ext_S +define+ext_U +define+ext_N +define+SIM_DEBUG                                                   ../../src/questa_formal/property_checks/RV32imc_params_pkg.sv
+# vlog  -sv -hazards +define+ext_M +define+ext_C +define+ext_S +define+ext_U +define+ext_N +define+SIM_DEBUG                                                   ../../src/questa_formal/property_checks/RV32imc_model.sv
+# vlog  -sv -hazards +define+ext_M +define+ext_C +define+ext_S +define+ext_U +define+ext_N +define+SIM_DEBUG   +incdir+../../src/questa_formal/property_checks ../../src/questa_formal/property_checks/RV32imc_asserts.sv
+# #vlog  -sv -hazards +define+ext_M +define+ext_C +define+ext_S +define+ext_U +define+ext_N +define+SIM_DEBUG                                                   ../../src/questa_formal/property_checks/RV32imc_model.svp
+# #vlog  -sv -hazards +define+ext_M +define+ext_C +define+ext_S +define+ext_U +define+ext_N +define+SIM_DEBUG   +incdir+../../src/questa_formal/property_checks ../../src/questa_formal/property_checks/RV32imc_asserts.svp
 
 # Assertion/Property Files
 vlog  -sv -hazards +define+ext_M +define+ext_C +define+ext_S +define+ext_U +define+ext_N +define+SIM_DEBUG                                                   ../../src/sva/csr_asserts.sv
@@ -112,12 +112,12 @@ view structure
 # For use in Questasim
 #vsim -assertdebug -coverage -voptargs=+acc -t 1ps top_tb1
 # -c option is for No GUI (i.e. command line)
-#vsim -assertdebug -coverage -voptargs=+acc -t 1ps top_tb1
+vsim -assertdebug -coverage -voptargs=+acc -t 1ps top_tb1
 #toggle add top_tb1:/RK1/*
 
 #For use with free version of Modelsim
 #vsim -assertdebug -voptargs=+acc -t 1ps +autofindloop top_tb1
-vsim -coverage -assertdebug -voptargs=+acc -t 1ps top_tb1
+#vsim  -assertdebug -voptargs=+acc -t 1ps top_tb1
 
 
 do wave_tb1.do
