@@ -38,7 +38,7 @@ module  top_tb1 ();
       `DelayClockCycles(50);
       reset    = 1'b0;
       $display("Reset completed, Simulation started.");
-      
+
       `ifdef M_MODE_ONLY
          $display("RisKy1 set for M Mode Only");
       `else
@@ -74,7 +74,7 @@ module  top_tb1 ();
       while (!sim_stop);                        // sampling of this signal takes place in middle of clock cycle
       @ (posedge clk_100);
 
-      check_gpr(10,1);                          // return value in x10  - in C tests, use something like "return(n)" inside main() where 1 = pass, 0 = fail
+      check_gpr(10,1);                          // task returns value in x10  - in C tests, use something like "return(n)" inside main() where 1 = pass, 0 = fail
 
       `DelayClockCycles(5);
       $display("Simulation passed.");
@@ -94,9 +94,9 @@ module  top_tb1 ();
 	end
 
    // Invalidate Cache Line request from Memory Arbiter
-   logic                      inv_req;                // Write to L1 D$ caused an invalidate requesdt to L1 I$
-   logic          [PC_SZ-1:0] inv_addr;               // which cache line address to invalidate
-   logic                      inv_ack;                // L1 I$ acknowledge if invalidate
+   logic                      inv_req;          // Write to L1 D$ caused an invalidate requesdt to L1 I$
+   logic          [PC_SZ-1:0] inv_addr;         // which cache line address to invalidate
+   logic                      inv_ack;          // L1 I$ acknowledge if invalidate
 
    //------------------------------------------------------------------------------------------------
    // L1 Instruction Cache model (synthesizable but uses Flip Flops)
@@ -108,13 +108,13 @@ module  top_tb1 ();
    L1_icache #(.A_SZ(PC_SZ)) L1_ic
    (  .clk_in(clk_100), .reset_in(reset),
 
-      .L1IC_bus(L1IC_bus),        // CPU interface
+      .L1IC_bus(L1IC_bus),                      // CPU interface
       .ic_flush(ic_flush),
 
       // Request from L1 D$ to Invalidate a specific Cache Line
-      .inv_req_in(inv_req), .inv_addr_in(inv_addr), .inv_ack_out(inv_ack),            // This can occur when a write to L1 D$ occurs to a location in L1 I$ space
+      .inv_req_in(inv_req), .inv_addr_in(inv_addr), .inv_ack_out(inv_ack),    // This can occur when a write to L1 D$ occurs to a location in L1 I$ space
 
-      .arb_bus(IC_arb_bus)          // Memory Arbiter interface
+      .arb_bus(IC_arb_bus)                      // Memory Arbiter interface
    );
 
    //------------------------------------------------------------------------------------------------
@@ -128,13 +128,13 @@ module  top_tb1 ();
    L1_dcache #(.A_SZ(PC_SZ)) L1_dc
    (  .clk_in(clk_100), .reset_in(reset),
 
-      .L1DC_bus(L1DC_bus),          // CPU interface
+      .L1DC_bus(L1DC_bus),                      // CPU interface
       .dc_flush(dc_flush),
 
       // Request to L1 I$ to Invalidate a specific Cache Line
-      .inv_req_out(inv_req), .inv_addr_out(inv_addr), .inv_ack_in(inv_ack),             // This can occur when a write to L1 D$ occurs to a location in L1 I$ space
+      .inv_req_out(inv_req), .inv_addr_out(inv_addr), .inv_ack_in(inv_ack),   // This can occur when a write to L1 D$ occurs to a location in L1 I$ space
 
-      .arb_bus(DC_arb_bus)          // Memory Arbiter interface
+      .arb_bus(DC_arb_bus)                      // Memory Arbiter interface
    );
 /*
    //------------------------------------------------------------------------------------------------
@@ -177,7 +177,8 @@ module  top_tb1 ();
 	// Risky1 CPU core - synthesizable
    //---------------------------------------------------------------------------
    EIO_intf    EIO_bus();
-   
+   logic    cpu_halt;
+
    assign EIO_bus.ack         = TRUE;
    assign EIO_bus.ack_fault   = TRUE;
    assign EIO_bus.ack_data    = 32'hdeadbeef;
@@ -193,24 +194,31 @@ module  top_tb1 ();
       .L1DC_bus(L1DC_bus),
       .dc_flush(dc_flush),
 
-      .sim_stop(sim_stop),             // used to know when to stop a particular assembly/C program in simulation.
+      .sim_stop(sim_stop),                      // used to know when to stop a particular assembly/C program in simulation.
 
-      .ext_irq(1'b0),                  // Input:  Machine mode External Interrupt - could be driven by this test bench
-      
+      .ext_irq(1'b0),                           // Input:  Machine mode External Interrupt - could be driven by this test bench
+
       // External I/O accesses
-      .EIO_bus(EIO_bus)
+      .EIO_bus(EIO_bus),
+
+      .cpu_halt(cpu_halt)                       // cpu halt status
    );
 
-   `ifdef BIND_ASSERTS
+   `ifdef USE_ASSERTS
+   RV32imc_asserts ASSERTS (
+      .clk_in(clk_100),
+      .reset_in(reset),
+      .ext_irq(1'b0),                           // Input:  Machine mode External Interrupt - could be driven by this test bench
+      .cpu_halt()
+   );
 // Usable in Questasim
 // cmd    DUT-module-name   module-name         instance-name ...
-   bind   RK1               RV_EMU_asserts      b1 (.*);
-   bind   RK1.GPR           gpr_asserts         b2 (.*);
-   bind   RK1.WB            wb_asserts          b3 (.*);
-   bind   RK1.MEM           mem_asserts         b4 (.*);
-   bind   RK1.EXE.CSRFU     csr_asserts         b5 (.*);
+//   bind   RK1.GPR           gpr_asserts         b2 (.*);
+//   bind   RK1.WB            wb_asserts          b3 (.*);
+//   bind   RK1.MEM           mem_asserts         b4 (.*);
+//   bind   RK1.EXE.CSRFU     csr_asserts         b5 (.*);
 //   bind   RK1.EXE.EXE_PIPE  pipe_asserts   b6 (.*); // ** Error: (vsim-8378) Port size (1) does not match connection size (248) for implicit .name connection port 'data_in'. The port definition is at: ../../src/sva/pipe_asserts.sv(30)....
-//   bind   RK1.EXE.EXE_PIPE  pipe_asserts   b6 #( .T(type(EXE_2_MEM)) ) (.*); // Doesn't like trying to pass the type EXE_2_MEM 
+//   bind   RK1.EXE.EXE_PIPE  pipe_asserts   b6 #( .T(type(EXE_2_MEM)) ) (.*); // Doesn't like trying to pass the type EXE_2_MEM
    `endif
 
    task check_gpr;
