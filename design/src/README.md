@@ -28,10 +28,7 @@ Main System Verilog folders needed to create an RV32i type cpu core
 - peripherals: L1 Instruciton and Data Caches and a cache arbiter
 - pkg:         Various System Verilog Packages that most src files need
 - sva:         A few simple System Verilog Assertion filess that are used in a testbench
-               (see sim folder) and then bound to various modules.  Also contains
-               RV_EMU_asserts that creates assertions that use the .../emu/RV_EMU_core.sv
-               CPU model to create hundreds of property assertions based on the design
-               options specified in .../pkg/cpu_params_pkg.sv and in any build scripts
+               (see sim folder) and then bound to various modules.
 - vivado:      Wrappers under development for use in creating a Vivado Block Design
  
 ****************************************************************************************
