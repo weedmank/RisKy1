@@ -73,7 +73,7 @@ import cpu_params_pkg::*;
    `endif
 
 
-   localparam  MSTAT_INIT        = {29'd0,M_MODE,11'b0};    // init to M_MODE
+   localparam  MSTAT_INIT        = {19'd0,M_MODE,11'b0};    // init to M_MODE
    // These bits do not change based on build configuration
    // Each register bit that corresponds to MSTAT_WPTRI=1 will not change and will always output the corresponding MSTAT_INIT bits
    // Each register bit that corresponds to MSTAT_WPTRI=0 will be a FF that will be reset to corresponding MSTAT_INIT bits
@@ -108,7 +108,7 @@ import cpu_params_pkg::*;
                   | 32'b0000_0000_0001_0000_0000_0000_0000_0000      /* U bit - User mode support */
    `endif
    ;//                         ZY XWVU TSRQ PONM LKJI HGFE DCBA
-   localparam  MISA_INIT         = (MISA);                    // static bits for now
+   localparam  MISA_INIT         = (MISA);                  // static bits for now
    localparam  MISA_RO           = 32'hFFFF_FFFF;           // each bit == 1 specifies Read Only. Currently, no logic is implemented to allow dynamic change of this register
 
    // example to have ext M be turned on or off
