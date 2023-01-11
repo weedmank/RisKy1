@@ -88,7 +88,7 @@ assign csr_nxt_reg_bus.Mcsr      = nxt_Mcsr;
          if (RO_BITS[``md``_``name``_gv])                                                                                                                      \
          begin                                                                                                                                                 \
             assign nxt_``md``csr.``md``name[``md``_``name``_gv] = INIT[``md``_``name``_gv];                                                                    \
-            assign     ``md``csr.``md``name[``md``_``name``_gv] = nxt_``md``csr.``md``name[``md``_``name``_gv];                                                \
+            assign     ``md``csr.``md``name[``md``_``name``_gv] = INIT[``md``_``name``_gv];                                                                    \
          end                                                                                                                                                   \
          else                                                                                                                                                  \
          begin                                                                                                                                                 \
@@ -146,11 +146,11 @@ assign csr_nxt_reg_bus.Mcsr      = nxt_Mcsr;
 
       .mode(mode),                              // Input:
 
-      .csr_reg_bus(csr_reg_bus),                // slave:   inputs: Ucsr, Scsr, Mcsr
+      .csr_reg_bus(csr_reg_bus.slave),          // slave:   inputs: Ucsr, Scsr, Mcsr
 
-      .csr_nxt_reg_bus(csr_nxt_reg_bus),        // slave:   inputs: nxt_Ucsr, nxt_Scsr, nxt_Mcsr
+      .csr_nxt_reg_bus(csr_nxt_reg_bus.slave),  // slave:   inputs: nxt_Ucsr, nxt_Scsr, nxt_Mcsr
 
-      .csr_rd_bus(csr_rd_bus)                   // slave:   inputs: csr_rd_addr, outputs: csr_rd_avail, csr_fwd_data
+      .csr_rd_bus(csr_rd_bus.slave)             // slave:   inputs: csr_rd_addr, outputs: csr_rd_avail, csr_fwd_data
    );
 
    // ================================================================== Machine Mode CSRs ==================================================================
@@ -172,14 +172,14 @@ assign csr_nxt_reg_bus.Mcsr      = nxt_Mcsr;
       begin
          nxt_Mcsr.Mstatus     = Mcsr.Mstatus;                                 // default unless overridden by logic below
 
-//       nxt_Mcsr.Mstatus.tsr    = ?;  No logic for these bits yet!!!
-//       nxt_Mcsr.Mstatus.tw     = ?;
-//       nxt_Mcsr.Mstatus.tvm    = ?;
-//       nxt_Mcsr.Mstatus.mxr    = ?;
-//       nxt_Mcsr.Mstatus.sum    = ?;
+//       nxt_Mcsr.Mstatus.tsr    = 0;  No logic for these bits yet!!!
+//       nxt_Mcsr.Mstatus.tw     = 0;
+//       nxt_Mcsr.Mstatus.tvm    = 0;
+//       nxt_Mcsr.Mstatus.mxr    = 0;
+//       nxt_Mcsr.Mstatus.sum    = 0;
 //
-//       nxt_Mcsr.Mstatus.xs     = ?;
-//       nxt_Mcsr.Mstatus.fs     = ?;
+//       nxt_Mcsr.Mstatus.xs     = 0;
+//       nxt_Mcsr.Mstatus.fs     = 0;
 
 `ifdef ext_S
          nxt_Mcsr.Mstatus.spp    = nxt_Scsr.Sstatus.spp;
@@ -225,6 +225,7 @@ assign csr_nxt_reg_bus.Mcsr      = nxt_Mcsr;
             nxt_Mcsr.Mstatus.mie    = csr_wr_data[3];
       end
    end
+
    always_ff @(posedge clk_in)
       Mcsr.Mstatus <= nxt_Mcsr.Mstatus;
 
@@ -522,6 +523,7 @@ assign csr_nxt_reg_bus.Mcsr      = nxt_Mcsr;
    end
    always_ff @(posedge clk_in)
       {Mcsr.Minstret_hi,Mcsr.Minstret_lo} = {nxt_Mcsr.Minstret_hi,nxt_Mcsr.Minstret_lo};
+
    // The size of thefollowig counters must be large enough to hold the maximum number that can retire in a given clock cycle
    // At most, for this pipelined design, only 1 instruction can retire per clock so just OR the retire bits (instead of adding)
    // Just assign the hpm_events that will be used and comment those that are not used. Also adjust the number (i.e. 24 right now)
@@ -885,7 +887,7 @@ assign csr_nxt_reg_bus.Mcsr      = nxt_Mcsr;
                nxt_Ucsr.Uie      = 0;
             else if (csr_wr & (csr_wr_addr[7:0] == 8'h04))                    // writable in all modes
             begin
-               nxt_Ucsr.Uie = 0;                                              // 0 value into bits [31:9],7:5],[3:1]
+               nxt_Ucsr.Uie = 0;                                              // 0 value into bits [31:9],[7:5],[3:1]
                nxt_Ucsr.Uie.usie = csr_wr_data[0];
                nxt_Ucsr.Uie.utie = csr_wr_data[4];
                nxt_Ucsr.Uie.ueie = csr_wr_data[8];
