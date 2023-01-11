@@ -25,6 +25,62 @@ import cpu_params_pkg::*;
    // Instruction Group type
    typedef enum logic [3:0] {ILL_INSTR, ALU_INSTR, BR_INSTR, IM_INSTR, IDR_INSTR, HINT_INSTR, SYS_INSTR, CSR_INSTR, LD_INSTR, ST_INSTR, SPFP_INSTR} IG_TYPE;
 
+   typedef enum logic [7:0]
+   {
+      _internal_error_,
+
+      // extension C - 39 entries
+      _C_ADDI4SPN_,    _C_LW_,          _C_SW_,          _C_NOP_,         _C_NOP_HINT_,
+      _C_ADDI_HINT_,   _C_ADDI_,        _C_JAL_,         _C_LI_,          _C_LI_HINT_,
+      _C_ADDI16SP_,    _C_LUI_,         _C_LUI_HINT_,    _C_SRLI_,        _C_SRLI_HINT_,
+      _C_SRLI_HINT2_,  _C_SRAI_,        _C_SRAI_HINT_,   _C_SRAI_HINT2_,  _C_ANDI_,
+      _C_SUB_,         _C_XOR_,         _C_OR_,          _C_AND_,         _C_J_,
+      _C_BEQZ_,        _C_BNEZ_,        _C_SLLI_,        _C_SLLI_HINT_,   _C_SLLI_HINT2_,
+      _C_LWSP_,        _C_JR_,          _C_MV_,          _C_MV_HINT_,     _C_EBREAK_,
+      _C_ADD_HINT_,    _C_JALR_,        _C_ADD_,         _C_SWSP_,
+
+      // extension C,F
+      _C_FLD_,         _C_FLW_,         _C_FSD_,         _C_FSW_,         _C_FLDSP_,
+      _C_FLWSP_,       _C_FSWSP_,
+
+      // extension F -_ 26 entries
+      _FLW_,           _FSW_,           _FMADD_,         _FMSUB_,         _FNMSUB_,
+      _FNMADD_,        _FADD_,          _FSUB_,          _FMUL_,          _FDIV_,
+      _FSQRT_,         _FSGNJ_,         _FSGNJN_,        _FSGNJX_,        _FMIN_,
+      _FMAX_,          _FCVT_W_,        _FCVT_WU_,       _FMV_X_W_,       _FEQ_,
+      _FLT_,           _FLE_,           _FCLASS_,        _FCVT_S_W_,      _FCVT_S_WU_,
+      _FMV_W_X_,
+
+      // unknown and i_llegal - 4 entries
+      _unknown_,       _ILLEGAL16_,     _ILLEGAL32_,     _ILLEGAL48_,
+
+
+      // RV32i base - _62 entries (includes future instructions)
+      _LB_,            _LH_,            _LW_,            _LBU_,           _LHU_,
+      _WFI_,           _FENCE_,         _FENCE_I_,       _ADDI_,          _ADDI_HINT_,
+      _SLLI_,          _SLLI_HINT_,     _SLTI_,          _SLTI_HINT_,     _SLTIU_,
+      _SLTIU_HINT_,    _XORI_,          _XORI_HINT_,     _SRLI_,          _SRLI_HINT_,
+      _SRAI_,          _SRAI_HINT_,     _ORI_,           _ORI_HINT_,      _ANDI_,
+      _ANDI_HINT_,     _AUIPC_,         _AUIPC_HINT_,    _MRET_,          _ADD_,
+      _ADD_RES_,       _SLL_,           _SLL_RES_,       _SLT_,           _SLT_RES_,
+      _SLTU_,          _SLTU_RES_,      _XOR_,           _XOR_RES_,       _SRL_,
+      _SRL_RES_,       _OR_,            _OR_RES_,        _AND_,           _AND_RES_,
+      _SUB_,           _SUB_RES_,       _SRA_,           _SRA_RES_,       _LUI_,
+      _LUI_HINT_,      _BEQ_,           _BNE_,           _BLT_,           _BGE_,
+      _BLTU_,          _BGEU_,          _JALR_,          _JAL_,           _ECALL_,
+      _EBREAK_,        _URET_,          _SRET_,          _SB_,            _SH_,
+      _SW_,            _CSRRW_,         _CSRRS_,         _CSRRC_,         _CSRRWI_,
+      _CSRRSI_,        _CSRRCI_,
+
+      _STORE_, _LOAD_, _CSR_, // Check to see if these are needed
+
+      // extension M - 8 entries
+      _MUL_,           _MULH_,          _MULHSU_,        _MULHU_,         _DIV_,
+      _DIVU_,          _REM_,           _REMU_
+
+   } INSTR_TYPE;
+
+
    typedef enum logic [2:0] {CSRRW=1,CSRRS,CSRRC,CSRRWI=5,CSRRSI,CSRRCI} CSR_TYPE;  // see funct3 bits in Zicsr table - riscv-spec.pdf p. 131
 
    // ------------------------------------- Operation types ---------------------------------------------------------
@@ -141,6 +197,10 @@ import cpu_params_pkg::*;
       logic     [GPR_ASZ-1:0] Rs2_addr;
       logic     [GPR_ASZ-1:0] Rs1_addr;
       logic     [GPR_ASZ-1:0] Rd_addr;
+      `ifdef FORMAL
+      INSTR_TYPE              itype;                           // _ANDI, _XOR_, etc..
+      logic             [3:0] tag;
+      `endif
    } DEC_2_EXE;
 
    // ---------------------------------------------------------------------------------------------------------------
@@ -153,17 +213,13 @@ import cpu_params_pkg::*;
    } EXCEPTION;
 
    // There will be a ret_cnt for each of these type of instructions
-   typedef enum {LD_RET, ST_RET, CSR_RET, SYS_RET, ALU_RET, BXX_RET, JAL_RET, JALR_RET, IM_RET, ID_RET, IR_RET, HINT_RET, `ifdef ext_F FLD_RET, FST_RET, FP_RET, `endif  UNK_RET} RETIRE_TYPE;
+   typedef enum logic [3:0] {LD_RET, ST_RET, CSR_RET, SYS_RET, ALU_RET, BXX_RET, JAL_RET, JALR_RET, IM_RET, ID_RET, IR_RET, HINT_RET, `ifdef ext_F FLD_RET, FST_RET, FP_RET, `endif  UNK_RET} RETIRE_TYPE;
 
-// `ifdef MODELSIM
    `ifdef ext_F
       localparam RET_SZ = 16;                                  // must change depending on number of RETIRE_TYPE entries!!!!!!!!!!!!!
    `else
       localparam RET_SZ = 13;
    `endif
-// `else
-//      localparam RET_SZ = RETIRE_TYPE.num();                   // Modelsim 2020.1 and lower can't handle this
-// `endif
 
    typedef struct packed {                                     // each entry contains count of how many instructions  of that typeretired this clock cycle
 //    logic   [RET_SZ-1:0] [n-1:0] ret_cnt;                      // general format to use if more than 1 instruction retires per clock cycle - where n is the number of bits needed to hold maximum count
@@ -222,6 +278,10 @@ import cpu_params_pkg::*;
       logic            [11:0] csr_addr;                        // address of which CSR we want to Write
       logic         [RSZ-1:0] csr_wr_data;                     // This is the write back data (produced by csr_fu)
       logic         [RSZ-1:0] csr_fwd_data;                    // This data must used in forwarding, not csr_wr_data
+      `ifdef FORMAL
+      INSTR_TYPE              itype;                           // _ANDI, _XOR_, etc..
+      logic             [3:0] tag;
+      `endif
    } EXE_2_MEM;
 
 
@@ -256,6 +316,10 @@ import cpu_params_pkg::*;
       logic            [11:0] csr_addr;                        // address of which CSR we want to Write
       logic         [RSZ-1:0] csr_wr_data;                     // This is the write back data (produced by csr_fu)
       logic         [RSZ-1:0] csr_fwd_data;                    // This data must used in forwarding, not csr_wr_data
+      `ifdef FORMAL
+      INSTR_TYPE              itype;                           // _ANDI, _XOR_, etc..
+      logic             [3:0] tag;
+      `endif
    } MEM_2_WB;
 
    // *********************************************** Forwarding Info ***********************************************
