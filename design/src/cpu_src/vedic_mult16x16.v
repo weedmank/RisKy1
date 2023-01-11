@@ -46,7 +46,8 @@
 //                                              c[31:8]              c[7:0]
 module vedic_mult16x16
 (
-    input  wire   [15:0] a, b,
+    input  wire   [15:0] a,
+    input  wire   [15:0] b,
     output wire   [31:0] c
 );
 
@@ -72,7 +73,8 @@ module vedic_mult16x16
 endmodule
 
 module vedic_mult8(a,b,c);
-    input   wire  [7:0] a, b;
+    input   wire  [7:0] a;
+    input   wire  [7:0] b;
     output  wire [15:0] c;
 
     wire    [7:0] q0,q1,q2,q3,q4,temp1;
@@ -97,7 +99,8 @@ module vedic_mult8(a,b,c);
 endmodule
 
 module vedic_mult4(a,b,c);
-    input   wire  [3:0] a, b;
+    input   wire  [3:0] a;
+    input   wire  [3:0] b;
     output  wire  [7:0] c;
 
     wire [3:0] q0,q1,q2,q3,q4,temp1;
@@ -122,8 +125,10 @@ endmodule
 
 
 module vedic_mult2(a, b, c);
-    input [1:0]a, b;
+    input [1:0]a;
+    input [1:0]b;
     output [3:0]c;
+
     wire [3:0]c, temp;
 
     assign c[0]=a[0]&b[0];
@@ -137,8 +142,10 @@ module vedic_mult2(a, b, c);
 endmodule
 
 module ha(a,b,s,c);
-    input a,b;
-    output s,c;
+    input a;
+    input b;
+    output s;
+    output c;
 
     assign s = a^b;
     assign c = a&b;
