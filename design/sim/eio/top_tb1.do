@@ -96,8 +96,10 @@ vlog  -sv -hazards +define+SIM_DEBUG                                            
 
 # Questa Formal Properties files
 vlog  -sv -hazards +define+SIM_DEBUG                                                                                 ../../src/questa_formal/property_checks/RV32imc_params_pkg.sv
-vlog  -sv -hazards +define+SIM_DEBUG                                                                                 ../../src/questa_formal/property_checks/RV32imc_model.svp
-vlog  -sv -hazards +define+SIM_DEBUG                                 +incdir+../../src/questa_formal/property_checks ../../src/questa_formal/property_checks/RV32imc_asserts.svp
+#vlog  -sv -hazards +define+SIM_DEBUG                                                                                 ../../src/questa_formal/property_checks/RV32imc_model.svp
+#vlog  -sv -hazards +define+SIM_DEBUG                                 +incdir+../../src/questa_formal/property_checks ../../src/questa_formal/property_checks/RV32imc_asserts.svp
+vlog  -sv -hazards +define+SIM_DEBUG                                                                                 ../../src/questa_formal/property_checks/RV32imc_model.sv
+vlog  -sv -hazards +define+SIM_DEBUG                                 +incdir+../../src/questa_formal/property_checks ../../src/questa_formal/property_checks/RV32imc_asserts.sv
 
 # Assertion/Property Files
 vlog  -sv -hazards +define+SIM_DEBUG                                                                                 ../../src/sva/csr_asserts.sv
