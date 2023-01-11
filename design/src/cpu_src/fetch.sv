@@ -344,7 +344,7 @@ module fetch
                i           = {16'b0,L1IC_bus.ack_data[bit_pos +: CI_SZ]};                 // instruction ready to be written into instr_bin[]
                instr_sz[c] = CBPI;                                                        // 2 bytes per instruction
 
-               b_imm       = {{25{i[12]}},i[6:5],i[2],i[11:10],i[4:3],1'b0};              // offset8_1 see decode_RV.sv
+               b_imm       = {{24{i[12]}},i[6:5],i[2],i[11:10],i[4:3],1'b0};              // offset8_1 see decode_RV.sv
                j_imm       = {{21{i[12]}},i[8],i[10:9],i[6],i[7],i[2],i[11],i[5:3],1'b0}; // see C.JAL. Also see imm11_1 in decode_RV.sv
                rd          = i[11:7];
 
