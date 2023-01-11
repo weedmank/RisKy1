@@ -22,13 +22,13 @@
             $error ("Must define 'ext_U' in order to use ext_N");
          `endif
       `endif
-   
+
       `ifdef ext_F
          `ifndef ext_Zicsr
             $error ("The F extension depends on the 'Zicsr' extension for control and status register access."); // The F extension depends on the â€œZicsrâ€? extension for control and status register access.
          `endif
       `endif
-   
+
       `ifdef use_MHPM_CNTRS
       if (NUM_MHPM == 0)                                                      $error ("use_MHPM_CNTRS is defined but NUM_MHPM is still 0. Change NUM_MHPM value in cpu_params.svh");
       `endif
@@ -47,7 +47,7 @@
 
       if (EV_SEL_SZ > XLEN)                                                   $fatal ("EV_SEL_SZ > XLEN. see cpu_params_pkg.sv");
       if (DEL_SZ > XLEN)                                                      $fatal ("DEL_SZ > XLEN. see cpu_params_pkg.sv");
-      
+
       // Internal I/O address range check
       if (Int_IO_Addr_Hi <= Int_IO_Addr_Lo)                                   $fatal ("Int_IO_Addr_Hi must be > Int_IO_Addr_Lo");
 
@@ -91,5 +91,5 @@
       if (RESET_VECTOR_ADDR[1:0])                                             $fatal ("RESET_VECTOR_ADDR must be 4 byte aligned. i.e. lower 2 bits = 2'b00");
       `endif
       if (!(RESET_VECTOR_ADDR inside {[Phys_Addr_Lo:Phys_Addr_Hi]}))          $fatal ("RESET_VECTOR_ADDR must be inside Phys_Addr_Lo address range");
-      
+
    endgenerate
