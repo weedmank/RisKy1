@@ -75,7 +75,7 @@ module execute
 );
 
    logic                                  xfer_out, xfer_in;
-   logic                                  pipe_full;
+   logic                                  pipe_full, p_rst;
 
    EXE_2_MEM                              exe_dout;
 
@@ -438,6 +438,14 @@ module execute
 
    // ****** Decide which Functional Unit output data will get used and passed to next stage *****
    // record of signals for WB stage verification tests BEFORE changes are made (i.e. changes to Registers, Memory, CSRs, etc..)
+   `ifdef FORMAL
+   INSTR_TYPE        itype;
+   logic       [3:0] tag;
+
+   assign itype   = D2E_bus.data.itype;
+   assign tag     = D2E_bus.data.tag;
+   `endif
+
    always_comb
    begin
       rld_pc_flag       = FALSE;
@@ -467,6 +475,12 @@ module execute
 
          exe_dout.op_type           = op_type;
          exe_dout.instr_mode        = mode;                                         // pass mode value associated with this instruction
+
+         `ifdef FORMAL
+         exe_dout.itype             = itype;
+         exe_dout.tag               = tag;
+         `endif
+
 
          // NOTE: illegal instructions (ILL_INSTR) will cause an exception in WB stage
          case(ig_type)                                                              // select which functional unit output data is the appropriate one and save it
@@ -679,10 +693,12 @@ module execute
       end
    end
 
+   assign p_rst = reset_in | pipe_flush;
+
    // Set of Flip Flops (for pipelining) with control logic ('full' signal) sitting between Execute stage and the Memory stage
    pipe #( .T(type(EXE_2_MEM)) ) EXE_PIPE
    (
-      .clk_in(clk_in),  .reset_in(reset_in | pipe_flush),
+      .clk_in(clk_in),  .reset_in(p_rst),
       .write_in(xfer_in), .data_in(exe_dout), .full_out(pipe_full),
       .read_in(xfer_out), .data_out(E2M_bus.data)
    );
