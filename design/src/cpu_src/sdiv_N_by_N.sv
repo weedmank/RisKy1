@@ -21,6 +21,7 @@
 `timescale 1ns/100ps
 
 
+import logic_params_pkg::*;
 import functions_pkg::*;
 
 module sdiv_N_by_N  #(parameter N = 32)                            // default is 32 x 32 bit signed or unsigned divider
@@ -214,10 +215,10 @@ module sdiv_N_by_N  #(parameter N = 32)                            // default is
 endmodule
 
 // Find highest order bit number that is set in num
-module priority_encoder #(parameter N = 32, localparam BN = bit_size(N-1))
+module priority_encoder #(parameter N = 32, localparam BSN = bit_size(N-1))
 (
    input    logic     [N-1:0] num,
-   output   logic    [BN-1:0] bit_num
+   output   logic   [BSN-1:0] bit_num
 );
    integer j;
    always_comb
@@ -226,7 +227,7 @@ module priority_encoder #(parameter N = 32, localparam BN = bit_size(N-1))
       for (j = 0; j < N; j++)
       begin
          if (num[j])
-            bit_num  = j;                                // bit_num will record the highest bit number that is set, starting at bit 0 and looking through all bits up to N-1
+            bit_num  = j[BSN-1:0];                       // bit_num will record the highest bit number that is set, starting at bit 0 and looking through all bits up to N-1
       end
    end
 endmodule
@@ -239,17 +240,14 @@ endmodule
 //   hotmask = 00...0011...11, where the rightmost '0' is in the position
 //             of the leftmost '1' bit in the input value.
 //
-module onehot #(parameter N = 32, localparam BN = bit_size(N-1))
+module onehot #(parameter N = 32, localparam BS = bit_size(N-1))
 (
    input    logic     [N-1:0] num,
-   output   logic    [BN-1:0] hotbit,
+   output   logic    [BS-1:0] hotbit,
    output   logic     [N-1:0] hotmask,
    output   logic             onehot                     // 1 = num is onehot
 );
-   localparam TRUE   = 1'b1;
-   localparam FALSE  = 1'b0;
-
-   integer k;
+   int k;
    integer bcnt;
    always_comb
    begin
@@ -262,7 +260,7 @@ module onehot #(parameter N = 32, localparam BN = bit_size(N-1))
       begin
          if (num[k])                                     // is this bit set?
          begin
-            hotbit = k;                                  // set hotbit to this bit number
+            hotbit = k[BS-1:0];                          // set hotbit to this bit number
             hotmask  = k ? ({N{1'b1}} >> (N-k)) : 0;     // create the mask
             bcnt++;                                      // count the number of bits that are set
          end
