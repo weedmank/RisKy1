@@ -128,7 +128,9 @@ module RisKy1_core
 
    input    wire                       io_ack,                                // Input:   I/O Acknowledge
    input    wire                       io_ack_fault,                          // Input:   I/O Acknowledge
-   input    wire             [RSZ-1:0] io_ack_data                            // Input:   I/O Read data
+   input    wire             [RSZ-1:0] io_ack_data,                           // Input:   I/O Read data
+
+   output   reg                        cpu_halt
 );
    // Vivado 2019.2 cannot yet handle System Verilog, thus a wrapper has to be created (i.e. RisKy1_RV32i.v) and individual module port signals created/assigned in Verilog style
    L1IC_intf                  L1IC_bus();                                     // OK to use this in RisKy1_core outside of module ports for Vivado
@@ -182,7 +184,9 @@ module RisKy1_core
    output   logic                      dc_flush,
 
    // External I/O accesses
-   EIO_intf.master                     EIO_bus                                // External I/O bus
+   EIO_intf.master                     EIO_bus,                               // External I/O bus
+
+   output   logic                      cpu_halt
 );
 `endif // VIVADO
 
@@ -258,7 +262,6 @@ module RisKy1_core
    FP_WR_intf                          fpr_wr_bus();
    `endif
 
-   logic                               cpu_halt;
    logic                               pipe_flush_dec, pipe_flush_exe, pipe_flush_mem;
    logic                               pc_reload, ic_reload;
    logic                   [PC_SZ-1:0] pc_reload_addr;
