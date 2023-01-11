@@ -44,7 +44,7 @@ module csr_sel_rdata
    logic      [11:0] csr_rd_addr;
    logic             csr_rd_avail;                    // 1 = register exists (available) in design
    logic   [RSZ-1:0] csr_rd_data;                     // based on Mcsr, Scsr, Ucsr
-   logic   [RSZ-1:0] csr_nxt_rd_data;                    // based on csr_rd_addr in EXE stage and nxt_Mcsr, nxt_Scsr, nct_Ucsr
+   logic   [RSZ-1:0] csr_nxt_rd_data;                 // based on csr_rd_addr in EXE stage and nxt_Mcsr, nxt_Scsr, nct_Ucsr
 
    assign csr_rd_addr = csr_rd_bus.csr_rd_addr;
 
