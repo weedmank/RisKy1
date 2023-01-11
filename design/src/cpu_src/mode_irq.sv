@@ -242,7 +242,7 @@ module mode_irq
    always_comb
    begin
       tvec        = Mcsr.Mtvec;                 // This default Trap PC will only get used if retire_exception_flag asserts when an instruction tries to retire in stage WB
-      cause       = csr_wr_bus.exception.cause;
+      cause       = csr_wr_bus.exception.cause[DEL_SZ-1:0]; //.cause is currently R_SZ?
 
       // By default, all traps at any privilege level are handled in machine mode, though a machine-mode
       // handler can redirect traps back to the appropriate level with the MRET instruction
