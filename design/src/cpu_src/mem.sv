@@ -74,7 +74,7 @@ module mem
 );
 
    logic                   xfer_out, xfer_in;
-   logic                   pipe_full;
+   logic                   pipe_full, p_rst;
 
    MEM_2_WB                mem_dout;
 
@@ -141,6 +141,16 @@ module mem
    string   pc_str;
 
    disasm mem_dis (ASSEMBLY,E2M_bus.data.ipd,i_str,pc_str);                         // disassemble each instruction
+   `endif
+
+   `ifdef FORMAL
+   INSTR_TYPE              itype;
+   logic             [3:0] tag;
+
+   assign itype                        = E2M_bus.data.itype;
+   assign tag                          = E2M_bus.data.tag;
+   assign mem_dout.itype               = itype;                                     // pass to next stage
+   assign mem_dout.tag                 = tag;
    `endif
 
    // signals from EXE stage that will be needed in WB stage
@@ -351,10 +361,12 @@ module mem
       end
    end // always_comb
 
+   assign p_rst = reset_in | pipe_flush;
+
    // Set of Flip Flops (for pipelining) with control logic ('full' signal) sitting between Memory stage and the WB stage
    pipe #( .T(type(MEM_2_WB)) ) MEM_PIPE
    (
-      .clk_in(clk_in),    .reset_in(reset_in | pipe_flush),
+      .clk_in(clk_in),    .reset_in(p_rst),
       .write_in(xfer_in), .data_in(mem_dout), .full_out(pipe_full),
       .read_in(xfer_out), .data_out(M2W_bus.data)
    );

@@ -44,8 +44,8 @@ module ls_fu
    // LB       - funct3 = 3'b000 = 0
    // LH       - funct3 = 3'b001 = 1
    // LW       - funct3 = 3'b010 = 2
-   // LBU      - funct3 = 3'b010 = 4
-   // LHU      - funct3 = 3'b010 = 5
+   // LBU      - funct3 = 3'b010 = 4??????
+   // LHU      - funct3 = 3'b010 = 5??????
 
    // Stores
    // C.SW     - funct3 = 3'b110 = 6
@@ -59,7 +59,7 @@ module ls_fu
 
    always_comb
    begin
-      lsfu_bus.size  = 1'd1;                                                  // 1 byte alignment for LB, LBU, SB (funct3 = 4,4,0)
+      lsfu_bus.size  = 1'd1;                                                  // 1 byte alignment for LB, LBU, SB (funct3 = 0,4????,0)
       lsfu_bus.mis   = FALSE;
       case(lsfu_bus.funct3)
          1,5:
@@ -70,7 +70,7 @@ module ls_fu
          2,3,6,7:
          begin
             lsfu_bus.size  = 3'd4;
-            lsfu_bus.mis   = lsfu_bus.ls_addr[1:0];                           // 4 byte alignment required
+            lsfu_bus.mis   = lsfu_bus.ls_addr[1] | lsfu_bus.ls_addr[0];       // 4 byte alignment required
          end
       endcase
    end
