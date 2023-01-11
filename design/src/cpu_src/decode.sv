@@ -36,13 +36,13 @@ module decode
    // connections with FETCH stage
    F2D_intf.slave                   F2D_bus,
 
-   // connections with Decode stage
+   // connections with Execute stage
    D2E_intf.master                  D2E_bus
 );
 
 
    logic       xfer_out, xfer_in;
-   logic       pipe_full;
+   logic       pipe_full, p_rst;
    DEC_2_EXE   dec_out;
 
    DCORE_intf  dcore_bus();
@@ -65,6 +65,21 @@ module decode
 
    decode_core dcore ( .dcore_bus(dcore_bus) );
 
+   `ifdef FORMAL
+   logic    [3:0] tag;
+   
+   always_ff @(posedge clk_in)
+   begin
+      if (reset_in)
+         tag <= 0;
+      else if (xfer_in)
+         tag = tag + 1;
+   end
+
+   assign dcore_bus.dec_data.tag = tag;
+   // itype is defined in frcode_core.sv
+   `endif
+
    always_comb
    begin
       dec_out = '0;     // default values until valid info available
@@ -72,13 +87,15 @@ module decode
          dec_out = dcore_bus.dec_data;
    end
 
+   assign p_rst = reset_in | pipe_flush;
+
    // Set of Flip Flops (for pipelining) with control logic ('pipe_full' signal) sitting between Decode logic and the next stage
    pipe #( .T(type(DEC_2_EXE)) ) DEC_PIPE
    (
-      .clk_in(clk_in),  .reset_in(reset_in | pipe_flush),
+      .clk_in(clk_in),  .reset_in(p_rst),
       .write_in(xfer_in), .data_in(dcore_bus.dec_data), .full_out(pipe_full),
       .read_in(xfer_out), .data_out(D2E_bus.data)
    );
-   
+
    assign D2E_bus.valid = pipe_full;
 endmodule
