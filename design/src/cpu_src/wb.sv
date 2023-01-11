@@ -95,6 +95,14 @@ module wb
 
 
    // --------------------------------- signals from MEM stage that are used in WB stage
+   `ifdef FORMAL
+   INSTR_TYPE              itype;
+   logic             [3:0] tag;
+
+   assign itype               = M2W_bus.data.itype;
+   assign tag                 = M2W_bus.data.tag;
+   `endif
+
    assign ipd                 = M2W_bus.data.ipd;
    assign ls_addr             = M2W_bus.data.ls_addr;
    assign inv_flag            = M2W_bus.data.inv_flag;
@@ -110,7 +118,7 @@ module wb
 
    assign trap_pc             = {M2W_bus.data.trap_pc, 2'b00};                      // lower 2 bits (always 0) reattached. see mode_irq() module where they got removed
    assign irq_flag            = M2W_bus.data.irq_flag;
-   assign irq_cause           = M2W_bus.data.irq_cause;
+   assign irq_cause           = M2W_bus.data.irq_cause[3:0];
 
    // --------------------------------- asserted when this stage is ready to finish it's processing
    assign M2W_bus.rdy         = !reset_in & !cpu_halt;                              // always ready to process results
